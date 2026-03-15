@@ -12,20 +12,23 @@ const handleForgotPassword = () => {
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-[#ecf5fb] relative overflow-hidden font-sans">
-    <div class="absolute top-0 right-0 w-96 h-96 bg-[#3dd5f3] rounded-full blur-[100px] opacity-20 -mr-20 -mt-20 transform rotate-45" />
-    <div class="absolute bottom-0 left-0 w-80 h-80 bg-[#ffa48d] rounded-full blur-[100px] opacity-30 -ml-20 -mb-20" />
+  <div class="min-h-screen w-full flex items-center justify-center bg-[#ecf5fb] relative overflow-hidden font-sans p-4">
+    <div class="absolute top-0 right-0 w-96 h-96 bg-[#3dd5f3] rounded-full blur-[100px] opacity-20 -mr-20 -mt-20 transform rotate-45 pointer-events-none" />
+    <div class="absolute bottom-0 left-0 w-80 h-80 bg-[#ffa48d] rounded-full blur-[100px] opacity-30 -ml-20 -mb-20 pointer-events-none" />
 
-    <div class="bg-white p-10 rounded-3xl shadow-lg w-full max-w-[450px] relative z-10 border border-gray-100 text-center">
+    <div class="bg-white p-8 sm:p-10 rounded-3xl shadow-lg w-full max-w-[450px] relative z-10 border border-gray-100 text-center">
       <div class="flex items-center justify-center mb-6">
-        <Rocket class="text-blue-600 w-6 h-6 mr-2 fill-current" />
-        <h1 class="text-2xl font-bold text-[#1e293b]">
-          USSD ADMIN
-        </h1>
+        <div class="w-12 h-12 bg-[#e0f2fe] rounded-xl flex items-center justify-center shadow-sm">
+           <img src="/images.png" alt="Logo" class="w-8 h-8 object-contain" />
+        </div>
       </div>
+      
+      <h1 class="text-2xl font-bold text-[#1e293b] mb-2">
+        USSD ADMIN
+      </h1>
 
       <p class="text-gray-500 text-sm mb-8 leading-relaxed">
-        Please enter the email address associated with your account and We will email you a link to reset your password.
+        Please enter the email address associated with your account and we will email you a link to reset your password.
       </p>
 
       <form @submit.prevent="handleForgotPassword">

@@ -1,13 +1,126 @@
-<script setup>
-import { ref } from 'vue'
-import { Plus, Smartphone, MoreVertical, PlayCircle, Edit } from 'lucide-vue-next'
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import { Plus, Smartphone, MoreVertical, PlayCircle, Edit, X } from 'lucide-vue-next'
+import SearchInput from '~/components/ui/SearchInput.vue'
+import Pagination from '~/components/ui/Pagination.vue'
+
+const showModal = ref(false)
+const searchQuery = ref('')
+const currentPage = ref(1)
+const itemsPerPage = 8
+
+// Edit mode state
+const isEditing = ref(false)
+const editingId = ref<number | null>(null)
+
+const newApp = ref({
+  merchant: '',
+  merchantId: '',
+  level: 'Secondary',
+  method: 'Automatic',
+  selectedCode: ''
+})
+
+const merchants = ['Kofi Electronics', 'Ama Provisions', 'Tech Solutions', 'Accra Mall Pharmacy', 'Volta Grains']
+const availableCodes = ['123', '456', '789', '999', '000']
 
 const apps = ref([
-  { id: 1, name: 'Main Merchant Menu', code: '*920#', type: 'Menu Flow', status: 'Active', traffic: '12.5k' },
-  { id: 2, name: 'Customer Support', code: '*920*1#', type: 'Interactive', status: 'Active', traffic: '3.2k' },
-  { id: 3, name: 'Promo Campaign', code: '*920*50#', type: 'Menu Flow', status: 'Paused', traffic: '0' },
-  { id: 4, name: 'Direct Payment', code: '*920*Pay#', type: 'Payment API', status: 'Active', traffic: '45.1k' },
+  { id: 1, name: 'Kofi Electronics', merchantId: 'MER-001', code: '*920#', type: 'Primary', status: 'Active', traffic: '12.5k' },
+  { id: 2, name: 'Ama Provisions', merchantId: 'MER-002', code: '*920*1#', type: 'Secondary', status: 'Active', traffic: '3.2k' },
+  { id: 3, name: 'Tech Solutions', merchantId: 'MER-003', code: '*920*50#', type: 'Secondary', status: 'Paused', traffic: '0' },
+  { id: 4, name: 'Accra Mall Pharmacy', merchantId: 'MER-004', code: '*920*Pay#', type: 'Secondary', status: 'Active', traffic: '45.1k' },
 ])
+
+const filteredApps = computed(() => {
+  if (!searchQuery.value) return apps.value
+  const query = searchQuery.value.toLowerCase()
+  return apps.value.filter(app => 
+    app.name.toLowerCase().includes(query) || 
+    app.code.toLowerCase().includes(query)
+  )
+})
+
+const paginatedApps = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return filteredApps.value.slice(start, end)
+})
+
+const handlePageChange = (page: number) => {
+  currentPage.value = page
+}
+
+const openAllocateModal = () => {
+  isEditing.value = false
+  editingId.value = null
+  newApp.value = { merchant: '', merchantId: '', level: 'Secondary', method: 'Automatic', selectedCode: '' }
+  showModal.value = true
+}
+
+const openEditModal = (app: any) => {
+  isEditing.value = true
+  editingId.value = app.id
+  
+  let codeSuffix = ''
+  if (app.code === '*920#') {
+    codeSuffix = ''
+  } else {
+    codeSuffix = app.code.replace(/^\*920\*/, '').replace(/#$/, '')
+  }
+  
+  newApp.value = {
+    merchant: app.name,
+    merchantId: app.merchantId || '',
+    level: app.type, 
+    method: 'Manual',
+    selectedCode: codeSuffix 
+  }
+  
+  showModal.value = true
+}
+
+const handleAllocate = () => {
+  if (!newApp.value.merchant || !newApp.value.merchantId) return
+
+  let allocatedCode = ''
+  
+  if (newApp.value.method === 'Automatic' && !isEditing.value) {
+    allocatedCode = `*920*${Math.floor(100 + Math.random() * 900)}#`
+  } else {
+    if (!newApp.value.selectedCode && newApp.value.selectedCode !== '') return
+    
+    if (newApp.value.selectedCode === '') {
+        allocatedCode = '*920#'
+    } else {
+        allocatedCode = `*920*${newApp.value.selectedCode}#`
+    }
+  }
+
+  if (isEditing.value && editingId.value) {
+    const index = apps.value.findIndex(a => a.id === editingId.value)
+    if (index !== -1) {
+      apps.value[index] = {
+        ...apps.value[index],
+        name: newApp.value.merchant,
+        merchantId: newApp.value.merchantId,
+        code: allocatedCode,
+        type: newApp.value.level
+      }
+    }
+  } else {
+    apps.value.push({
+      id: Date.now(),
+      name: newApp.value.merchant,
+      merchantId: newApp.value.merchantId,
+      code: allocatedCode,
+      type: newApp.value.level,
+      status: 'Active',
+      traffic: '0'
+    })
+  }
+
+  showModal.value = false
+}
 </script>
 
 <template>
@@ -17,48 +130,227 @@ const apps = ref([
         <h1 class="text-2xl font-bold text-gray-800">Allocate</h1>
         <p class="text-sm text-gray-500 mt-1">Manage and allocate USSD service codes</p>
       </div>
-      <button class="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
-        <Plus class="w-4 h-4" />
-        <span>Allocate New Code</span>
-      </button>
+      <div class="flex items-center space-x-4">
+        <SearchInput v-model="searchQuery" placeholder="Search codes..." />
+        <button 
+          @click="openAllocateModal"
+          class="flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm h-10 w-48"
+        >
+          <Plus class="w-4 h-4" />
+          <span>Allocate New Code</span>
+        </button>
+      </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div v-for="app in apps" :key="app.id" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
-        <div class="flex justify-between items-start mb-4">
-          <div class="p-3 bg-blue-50 rounded-xl text-blue-600">
-            <Smartphone class="w-6 h-6" />
-          </div>
-          <div class="flex space-x-2">
-             <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" 
-               :class="app.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'">
-               {{ app.status }}
-             </span>
-             <button class="text-gray-400 hover:text-gray-600"><MoreVertical class="w-4 h-4" /></button>
-          </div>
+    <!-- Allocation Modal -->
+    <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div class="flex items-center justify-between p-6 border-b border-gray-100">
+          <h3 class="text-lg font-bold text-gray-800">{{ isEditing ? 'Edit Allocation' : 'Allocate New USSD Code' }}</h3>
+          <button @click="showModal = false" class="text-gray-400 hover:text-gray-600 hover:bg-gray-50 p-1 rounded-full transition-colors">
+            <X class="w-5 h-5" />
+          </button>
         </div>
         
-        <h3 class="text-lg font-bold text-gray-900 mb-1">{{ app.name }}</h3>
-        <p class="text-sm text-gray-500 font-mono mb-4">{{ app.code }}</p>
-        
-        <div class="flex items-center justify-between text-sm text-gray-600 pt-4 border-t border-gray-50">
-           <span>{{ app.type }}</span>
-           <span class="flex items-center">
-             <span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
-             {{ app.traffic }} reqs
-           </span>
-        </div>
+        <div class="p-6 space-y-4">
+          <!-- Merchant Select -->
+          <div>
+            <label class="block text-xs font-bold text-gray-500 mb-1">Select Merchant</label>
+            <select 
+              v-model="newApp.merchant"
+              class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+            >
+              <option value="" disabled>Choose a merchant...</option>
+              <option v-for="m in merchants" :key="m" :value="m">{{ m }}</option>
+            </select>
+          </div>
+          
+          <!-- Merchant ID -->
+          <div>
+            <label class="block text-xs font-bold text-gray-500 mb-1">Merchant ID</label>
+            <input 
+              v-model="newApp.merchantId"
+              type="text" 
+              class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-mono"
+              placeholder="e.g. MER-001"
+            />
+          </div>
 
-        <div class="mt-4 flex space-x-2">
-           <button class="flex-1 flex items-center justify-center space-x-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg text-sm font-medium transition-colors border border-gray-200">
-             <Edit class="w-3.5 h-3.5" />
-             <span>Edit</span>
-           </button>
-           <button class="flex-1 flex items-center justify-center space-x-2 px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-sm font-medium transition-colors border border-blue-100">
-             <PlayCircle class="w-3.5 h-3.5" />
-             <span>Simulate</span>
-           </button>
+          <!-- Level & Method -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1">Level</label>
+              <div class="flex bg-gray-50 p-1 rounded-lg border border-gray-200">
+                <button 
+                  v-for="level in ['Primary', 'Secondary']" 
+                  :key="level"
+                  @click="newApp.level = level"
+                  class="flex-1 py-1.5 text-xs font-medium rounded-md transition-all"
+                  :class="newApp.level === level ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
+                >
+                  {{ level }}
+                </button>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1">Allocation Method</label>
+              <select 
+                v-model="newApp.method"
+                class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all h-[38px]"
+                :disabled="isEditing"
+              >
+                <option>Automatic</option>
+                <option>Manual</option>
+              </select>
+            </div>
+          </div>
+          
+          <!-- USSD Code Allocation -->
+          <div v-if="newApp.method === 'Automatic' && !isEditing">
+            <label class="block text-xs font-bold text-gray-500 mb-1">Auto-Generated Code</label>
+            <div class="w-full px-4 py-2.5 bg-blue-50 border border-blue-100 rounded-lg text-sm font-mono text-blue-600 flex items-center justify-between">
+              <span>*920*<span class="font-bold text-blue-800">XXX</span>#</span>
+              <span class="text-xs bg-blue-100 px-2 py-0.5 rounded text-blue-700 font-bold">Auto</span>
+            </div>
+            <p class="text-xs text-gray-400 mt-1">System will automatically assign an available code</p>
+          </div>
+
+          <div v-else>
+            <label class="block text-xs font-bold text-gray-500 mb-1">{{ isEditing ? 'Assigned Code' : 'Select Available Code' }}</label>
+            <div v-if="isEditing" class="relative">
+                 <div class="flex items-center w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus-within:ring-2 focus-within:ring-blue-500 focus-within:bg-white transition-all font-mono">
+                    <span class="text-gray-500 mr-1">*920*</span>
+                    <input 
+                      v-model="newApp.selectedCode" 
+                      type="text" 
+                      class="bg-transparent border-none focus:ring-0 p-0 w-full text-gray-800 placeholder-gray-400 outline-none"
+                      placeholder="Code"
+                    />
+                    <span class="text-gray-500 ml-1">#</span>
+                 </div>
+            </div>
+            <select 
+              v-else
+              v-model="newApp.selectedCode"
+              class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-mono"
+            >
+              <option value="" disabled>Choose a code...</option>
+              <option v-for="code in availableCodes" :key="code" :value="code">*920*{{ code }}#</option>
+            </select>
+          </div>
         </div>
+        
+        <div class="p-6 bg-gray-50 border-t border-gray-100 flex justify-end space-x-3">
+          <button 
+            @click="showModal = false"
+            class="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-bold hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            @click="handleAllocate"
+            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold shadow-sm transition-colors flex items-center"
+          >
+            <Plus v-if="!isEditing" class="w-4 h-4 mr-2" />
+            <Edit v-else class="w-4 h-4 mr-2" />
+            {{ isEditing ? 'Save Changes' : 'Allocate Code' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-100 text-xs text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-4 font-bold">Merchant Name</th>
+              <th class="px-6 py-4 font-bold">Service Code</th>
+              <th class="px-6 py-4 font-bold">Type</th>
+              <th class="px-6 py-4 font-bold">Traffic</th>
+              <th class="px-6 py-4 font-bold">Status</th>
+              <th class="px-6 py-4 text-right font-bold">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            <tr v-for="app in paginatedApps" :key="app.id" class="hover:bg-gray-50/50 transition-colors group">
+              <td class="px-6 py-4">
+                <div class="flex items-center">
+                  <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 mr-3">
+                    <Smartphone class="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p class="font-bold text-gray-800">{{ app.name }}</p>
+                    <p class="text-xs text-gray-500">ID: {{ app.id }}</p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <span class="inline-block px-3 py-1 bg-gray-100 text-gray-700 rounded-md font-mono text-sm font-bold border border-gray-200">
+                  {{ app.code }}
+                </span>
+              </td>
+              <td class="px-6 py-4">
+                <span class="text-sm text-gray-600">{{ app.type }}</span>
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex items-center text-sm font-medium text-gray-900">
+                  <PlayCircle class="w-4 h-4 text-green-500 mr-1.5" />
+                  {{ app.traffic }}
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <span 
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border"
+                  :class="app.status === 'Active' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-amber-50 text-amber-700 border-amber-100'"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full mr-1.5" :class="app.status === 'Active' ? 'bg-green-500' : 'bg-amber-500'"></span>
+                  {{ app.status }}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-right">
+                <div class="flex items-center justify-end space-x-2">
+                  <button 
+                    @click="openEditModal(app)" 
+                    class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" 
+                    title="Edit"
+                  >
+                    <Edit class="w-4 h-4" />
+                  </button>
+                  <button class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                    <MoreVertical class="w-4 h-4" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Empty State -->
+      <div v-if="filteredApps.length === 0" class="p-12 text-center">
+        <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Smartphone class="w-8 h-8 text-gray-400" />
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 mb-1">No codes found</h3>
+        <p class="text-gray-500 text-sm mb-6">Try adjusting your search query or allocate a new code.</p>
+        <button 
+          @click="openAllocateModal"
+          class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+        >
+          Allocate Code
+        </button>
+      </div>
+
+      <!-- Pagination -->
+      <div v-if="filteredApps.length > 0" class="border-t border-gray-100 p-4">
+        <Pagination 
+          :current-page="currentPage" 
+          :total-items="filteredApps.length" 
+          :items-per-page="itemsPerPage"
+          @page-change="handlePageChange"
+        />
       </div>
     </div>
   </div>

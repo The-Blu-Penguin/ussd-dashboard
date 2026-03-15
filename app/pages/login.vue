@@ -24,11 +24,20 @@ const handleLogin = () => {
   navigateTo('/')
 }
 
-const floatingChars = ref([])
+const floatingChars = ref<{
+  char: string;
+  left: number;
+  top: number;
+  size: number;
+  duration: number;
+  delay: number;
+  opacity: number;
+}[]>([])
 const ussdChars = ['*', '8', '2', '0', '#']
 
-const moveAway = (index, event) => {
+const moveAway = (index: number, event: MouseEvent) => {
   const char = floatingChars.value[index]
+  if (!char) return
   
   // Get viewport dimensions
   const vw = window.innerWidth
@@ -71,8 +80,9 @@ const moveAway = (index, event) => {
 onMounted(() => {
   // Generate random floating characters
   for (let i = 0; i < 15; i++) {
+    const randomChar = ussdChars[Math.floor(Math.random() * ussdChars.length)] || '*'
     floatingChars.value.push({
-      char: ussdChars[Math.floor(Math.random() * ussdChars.length)],
+      char: randomChar,
       left: Math.random() * 100,
       top: Math.random() * 100,
       size: Math.random() * 60 + 40, // 40px to 100px (Even Bigger)
@@ -85,12 +95,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-[#ecf5fb] relative overflow-hidden font-sans">
-    <div class="absolute top-0 right-0 w-96 h-96 bg-[#3dd5f3] rounded-full blur-[100px] opacity-20 -mr-20 -mt-20 transform rotate-45" />
-    <div class="absolute bottom-0 left-0 w-80 h-80 bg-[#ffa48d] rounded-full blur-[100px] opacity-30 -ml-20 -mb-20" />
+  <div class="min-h-screen w-full flex items-center justify-center bg-[#ecf5fb] relative overflow-hidden font-sans p-4">
+    <div class="absolute top-0 right-0 w-96 h-96 bg-[#3dd5f3] rounded-full blur-[100px] opacity-20 -mr-20 -mt-20 transform rotate-45 pointer-events-none" />
+    <div class="absolute bottom-0 left-0 w-80 h-80 bg-[#ffa48d] rounded-full blur-[100px] opacity-30 -ml-20 -mb-20 pointer-events-none" />
 
     <!-- Floating USSD Characters -->
-    <div class="absolute inset-0 pointer-events-none overflow-hidden">
+    <div class="absolute inset-0 pointer-events-none overflow-hidden hidden sm:block">
       <div v-for="(item, index) in floatingChars" :key="index"
            class="absolute font-mono font-bold text-blue-500 animate-float transition-all duration-500 ease-out pointer-events-auto"
            @mousemove="moveAway(index, $event)"

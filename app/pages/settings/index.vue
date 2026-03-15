@@ -1,6 +1,6 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
-import { Camera, Lock } from 'lucide-vue-next'
+import { Camera, Lock, UserPlus, Trash2, Mail, Shield } from 'lucide-vue-next'
 
 const profileImage = ref('https://i.pravatar.cc/150?img=11')
 const passwordForm = ref({
@@ -9,12 +9,28 @@ const passwordForm = ref({
   confirmPassword: ''
 })
 
-const handleImageUpload = (event) => {
-  const file = event.target.files[0]
+const newUser = ref({
+  name: '',
+  email: '',
+  password: '',
+  role: 'Viewer'
+})
+
+const users = ref([
+  { id: 1, name: 'Admin User', email: 'admin@vibes.com', role: 'Admin', avatar: 'https://i.pravatar.cc/150?img=11' },
+  { id: 2, name: 'Support Agent', email: 'support@vibes.com', role: 'Viewer', avatar: 'https://i.pravatar.cc/150?img=5' },
+  { id: 3, name: 'Developer', email: 'dev@vibes.com', role: 'Editor', avatar: 'https://i.pravatar.cc/150?img=3' },
+])
+
+const handleImageUpload = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
   if (file) {
     const reader = new FileReader()
     reader.onload = (e) => {
-      profileImage.value = e.target.result
+      if (e.target?.result) {
+        profileImage.value = e.target.result as string
+      }
     }
     reader.readAsDataURL(file)
   }
@@ -29,6 +45,24 @@ const handlePasswordChange = () => {
     newPassword: '',
     confirmPassword: ''
   }
+}
+
+const handleAddUser = () => {
+  if (!newUser.value.name || !newUser.value.email || !newUser.value.password) return
+  
+  users.value.push({
+    id: Date.now(),
+    name: newUser.value.name,
+    email: newUser.value.email,
+    role: newUser.value.role,
+    avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`
+  })
+  
+  newUser.value = { name: '', email: '', password: '', role: 'Viewer' }
+}
+
+const removeUser = (id: number) => {
+  users.value = users.value.filter(u => u.id !== id)
 }
 </script>
 
@@ -109,6 +143,108 @@ const handlePasswordChange = () => {
             </button>
           </div>
         </form>
+      </div>
+      <!-- User Management Section -->
+      <div class="bg-white rounded-2xl p-6 shadow-sm md:col-span-2">
+        <div class="flex items-center mb-6">
+          <UserPlus class="w-5 h-5 text-gray-400 mr-2" />
+          <h2 class="text-lg font-bold text-gray-800">Team Members</h2>
+        </div>
+
+        <!-- Add User Form -->
+        <div class="bg-gray-50 rounded-xl p-5 mb-8 border border-gray-100">
+          <h3 class="text-sm font-bold text-gray-700 mb-4">Invite New User</h3>
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1">Full Name</label>
+              <input 
+                v-model="newUser.name"
+                type="text" 
+                class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="John Doe"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1">Email Address</label>
+              <input 
+                v-model="newUser.email"
+                type="email" 
+                class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="john@example.com"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1">Password</label>
+              <input 
+                v-model="newUser.password"
+                type="password" 
+                class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="•••••••"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1">Role</label>
+              <select 
+                v-model="newUser.role"
+                class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option>Admin</option>
+                <option>Editor</option>
+                <option>Viewer</option>
+              </select>
+            </div>
+            <button 
+              @click="handleAddUser"
+              class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold transition-colors flex items-center justify-center h-[38px]"
+            >
+              <UserPlus class="w-4 h-4 mr-2" />
+              Add User
+            </button>
+          </div>
+        </div>
+
+        <!-- Users List -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-gray-100 text-xs text-gray-500 uppercase tracking-wider">
+                <th class="py-3 pl-2 font-bold">User</th>
+                <th class="py-3 font-bold">Role</th>
+                <th class="py-3 font-bold">Status</th>
+                <th class="py-3 pr-2 text-right font-bold">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="text-sm">
+              <tr v-for="user in users" :key="user.id" class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors group">
+                <td class="py-3 pl-2">
+                  <div class="flex items-center">
+                    <img :src="user.avatar" class="w-8 h-8 rounded-full mr-3 object-cover" />
+                    <div>
+                      <p class="font-bold text-gray-800">{{ user.name }}</p>
+                      <p class="text-xs text-gray-500">{{ user.email }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-3">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                    {{ user.role }}
+                  </span>
+                </td>
+                <td class="py-3">
+                  <span class="inline-flex items-center text-green-600 text-xs font-bold">
+                    <span class="w-2 h-2 bg-green-500 rounded-full mr-1.5"></span>
+                    Active
+                  </span>
+                </td>
+                <td class="py-3 pr-2 text-right">
+                  <button @click="removeUser(user.id)" class="text-gray-400 hover:text-red-500 p-1 rounded hover:bg-red-50 transition-colors">
+                    <Trash2 class="w-4 h-4" />
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
