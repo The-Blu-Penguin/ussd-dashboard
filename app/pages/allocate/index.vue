@@ -3,6 +3,17 @@ import { ref, computed } from 'vue'
 import { Plus, Smartphone, MoreVertical, PlayCircle, Edit, X } from 'lucide-vue-next'
 import SearchInput from '~/components/ui/SearchInput.vue'
 import Pagination from '~/components/ui/Pagination.vue'
+import Button from '~/components/ui/Button.vue'
+
+interface App {
+  id: number
+  name: string
+  merchantId: string
+  code: string
+  type: string
+  status: string
+  traffic: string
+}
 
 const showModal = ref(false)
 const searchQuery = ref('')
@@ -12,6 +23,7 @@ const itemsPerPage = 8
 // Edit mode state
 const isEditing = ref(false)
 const editingId = ref<number | null>(null)
+const isSubmitting = ref(false)
 
 const newApp = ref({
   merchant: '',
@@ -24,7 +36,7 @@ const newApp = ref({
 const merchants = ['Kofi Electronics', 'Ama Provisions', 'Tech Solutions', 'Accra Mall Pharmacy', 'Volta Grains']
 const availableCodes = ['123', '456', '789', '999', '000']
 
-const apps = ref([
+const apps = ref<App[]>([
   { id: 1, name: 'Kofi Electronics', merchantId: 'MER-001', code: '*920#', type: 'Primary', status: 'Active', traffic: '12.5k' },
   { id: 2, name: 'Ama Provisions', merchantId: 'MER-002', code: '*920*1#', type: 'Secondary', status: 'Active', traffic: '3.2k' },
   { id: 3, name: 'Tech Solutions', merchantId: 'MER-003', code: '*920*50#', type: 'Secondary', status: 'Paused', traffic: '0' },
@@ -57,7 +69,7 @@ const openAllocateModal = () => {
   showModal.value = true
 }
 
-const openEditModal = (app: any) => {
+const openEditModal = (app: App) => {
   isEditing.value = true
   editingId.value = app.id
   
@@ -79,8 +91,11 @@ const openEditModal = (app: any) => {
   showModal.value = true
 }
 
-const handleAllocate = () => {
+const handleAllocate = async () => {
   if (!newApp.value.merchant || !newApp.value.merchantId) return
+
+  isSubmitting.value = true
+  await new Promise(resolve => setTimeout(resolve, 800))
 
   let allocatedCode = ''
   
@@ -120,6 +135,7 @@ const handleAllocate = () => {
   }
 
   showModal.value = false
+  isSubmitting.value = false
 }
 </script>
 
@@ -248,14 +264,15 @@ const handleAllocate = () => {
           >
             Cancel
           </button>
-          <button 
+          <Button 
             @click="handleAllocate"
-            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold shadow-sm transition-colors flex items-center"
+            variant="primary"
+            :loading="isSubmitting"
           >
             <Plus v-if="!isEditing" class="w-4 h-4 mr-2" />
             <Edit v-else class="w-4 h-4 mr-2" />
             {{ isEditing ? 'Save Changes' : 'Allocate Code' }}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -277,9 +294,6 @@ const handleAllocate = () => {
             <tr v-for="app in paginatedApps" :key="app.id" class="hover:bg-gray-50/50 transition-colors group">
               <td class="px-6 py-4">
                 <div class="flex items-center">
-                  <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 mr-3">
-                    <Smartphone class="w-5 h-5" />
-                  </div>
                   <div>
                     <p class="font-bold text-gray-800">{{ app.name }}</p>
                     <p class="text-xs text-gray-500">ID: {{ app.id }}</p>

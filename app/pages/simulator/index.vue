@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { Phone, Delete, Activity } from 'lucide-vue-next'
+import Button from '~/components/ui/Button.vue'
 
 const screenContent = ref('')
 const isRunning = ref(false)
@@ -23,20 +24,24 @@ const handleDelete = () => {
   screenContent.value = screenContent.value.slice(0, -1)
 }
 
-const handleCall = () => {
+const isSending = ref(false)
+
+const handleCall = async () => {
   if (screenContent.value) {
     isRunning.value = true
+    isSending.value = true
     sessionLog.value.push({ type: 'sent', message: screenContent.value, time: new Date().toLocaleTimeString() })
     
     // Simulate USSD Response
-    setTimeout(() => {
-      sessionLog.value.push({ 
-        type: 'received', 
-        message: 'Welcome to USSD Simulator\n1. Check Balance\n2. Buy Airtime\n3. Exit', 
-        time: new Date().toLocaleTimeString() 
-      })
-      screenContent.value = ''
-    }, 1000)
+    await new Promise(resolve => setTimeout(resolve, 800))
+    
+    sessionLog.value.push({ 
+      type: 'received', 
+      message: 'Welcome to USSD Simulator\n1. Check Balance\n2. Buy Airtime\n3. Exit', 
+      time: new Date().toLocaleTimeString() 
+    })
+    screenContent.value = ''
+    isSending.value = false
   }
 }
 
@@ -90,8 +95,23 @@ const handleEndSession = () => {
                   class="flex-1 border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500"
                   placeholder="Reply..."
                 >
-                <button @click="handleCall" class="bg-blue-600 text-white px-4 py-1.5 rounded text-sm font-bold">Send</button>
-                <button @click="handleEndSession" class="bg-gray-200 text-gray-700 px-3 py-1.5 rounded text-sm font-bold">Cancel</button>
+                <Button 
+                  @click="handleCall" 
+                  variant="primary" 
+                  size="sm"
+                  :loading="isSending"
+                  class="rounded"
+                >
+                  Send
+                </Button>
+                <Button 
+                  @click="handleEndSession" 
+                  variant="secondary" 
+                  size="sm"
+                  class="rounded"
+                >
+                  Cancel
+                </Button>
               </div>
             </div>
           </div>

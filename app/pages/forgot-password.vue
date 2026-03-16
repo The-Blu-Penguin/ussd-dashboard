@@ -1,13 +1,19 @@
-<script setup>
-import { Rocket } from 'lucide-vue-next'
+<script setup lang="ts">
+import { ref } from 'vue'
+import Button from '~/components/ui/Button.vue'
 
 definePageMeta({
   layout: 'auth'
 })
 
-const handleForgotPassword = () => {
-  // Logic to handle password reset
+const loading = ref(false)
+
+const handleForgotPassword = async () => {
+  loading.value = true
+  // Simulate API call
+  await new Promise(resolve => setTimeout(resolve, 1500))
   console.log('Forgot password submit')
+  loading.value = false
 }
 </script>
 
@@ -43,11 +49,17 @@ const handleForgotPassword = () => {
           >
         </div>
 
-        <button class="bg-[#0085db] hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-full w-full focus:outline-none focus:shadow-outline transition duration-300 shadow-md mb-4" type="submit">
+        <Button 
+          type="submit" 
+          variant="primary" 
+          block 
+          class="rounded-full py-3 shadow-md mb-4"
+          :loading="loading"
+        >
           Forgot Password
-        </button>
+        </Button>
 
-        <NuxtLink to="/login" class="block w-full bg-[#ecf5fb] hover:bg-blue-100 text-[#0085db] font-bold py-3 px-4 rounded-full focus:outline-none focus:shadow-outline transition duration-300">
+        <NuxtLink to="/login" class="block w-full text-center bg-[#ecf5fb] hover:bg-blue-100 text-[#0085db] font-bold py-3 px-4 rounded-full focus:outline-none focus:shadow-outline transition duration-300">
           Back To Login
         </NuxtLink>
       </form>
