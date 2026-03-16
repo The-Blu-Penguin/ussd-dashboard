@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { Plus, Smartphone, MoreVertical, PlayCircle, Edit, X } from 'lucide-vue-next'
+import { Plus, Smartphone, PlayCircle, X, Pencil } from 'lucide-vue-next'
 import SearchInput from '~/components/ui/SearchInput.vue'
 import Pagination from '~/components/ui/Pagination.vue'
 import Button from '~/components/ui/Button.vue'
@@ -113,14 +113,19 @@ const handleAllocate = async () => {
 
   if (isEditing.value && editingId.value) {
     const index = apps.value.findIndex(a => a.id === editingId.value)
-    if (index !== -1) {
-      apps.value[index] = {
-        ...apps.value[index],
+    const existingApp = apps.value[index]
+    
+    if (index !== -1 && existingApp) {
+      const updatedApp: App = {
+        id: existingApp.id,
         name: newApp.value.merchant,
         merchantId: newApp.value.merchantId,
         code: allocatedCode,
-        type: newApp.value.level
+        type: newApp.value.level,
+        status: existingApp.status,
+        traffic: existingApp.traffic
       }
+      apps.value[index] = updatedApp
     }
   } else {
     apps.value.push({
@@ -174,7 +179,8 @@ const handleAllocate = async () => {
             <label class="block text-xs font-bold text-gray-500 mb-1">Select Merchant</label>
             <select 
               v-model="newApp.merchant"
-              class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+              class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+              :disabled="isEditing"
             >
               <option value="" disabled>Choose a merchant...</option>
               <option v-for="m in merchants" :key="m" :value="m">{{ m }}</option>
@@ -187,8 +193,9 @@ const handleAllocate = async () => {
             <input 
               v-model="newApp.merchantId"
               type="text" 
-              class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-mono"
+              class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-mono disabled:opacity-60 disabled:cursor-not-allowed"
               placeholder="e.g. MER-001"
+              :disabled="isEditing"
             />
           </div>
 
@@ -270,7 +277,7 @@ const handleAllocate = async () => {
             :loading="isSubmitting"
           >
             <Plus v-if="!isEditing" class="w-4 h-4 mr-2" />
-            <Edit v-else class="w-4 h-4 mr-2" />
+            <Pencil v-else class="w-4 h-4 mr-2" />
             {{ isEditing ? 'Save Changes' : 'Allocate Code' }}
           </Button>
         </div>
@@ -330,10 +337,7 @@ const handleAllocate = async () => {
                     class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" 
                     title="Edit"
                   >
-                    <Edit class="w-4 h-4" />
-                  </button>
-                  <button class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                    <MoreVertical class="w-4 h-4" />
+                    <Pencil class="w-4 h-4" />
                   </button>
                 </div>
               </td>
