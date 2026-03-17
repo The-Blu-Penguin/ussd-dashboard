@@ -134,7 +134,7 @@ const handleAllocate = () => {
         <SearchInput v-model="searchQuery" placeholder="Search codes..." />
         <button 
           @click="openAllocateModal"
-          class="flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm h-10 w-48"
+          class="flex items-center justify-center space-x-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm h-10 w-auto whitespace-nowrap"
         >
           <Plus class="w-4 h-4" />
           <span>Allocate New Code</span>
