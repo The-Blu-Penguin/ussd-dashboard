@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import Button from '~/components/ui/Button.vue'
 
 definePageMeta({
   layout: 'auth'
@@ -10,17 +11,35 @@ const { login } = useAuth()
 const email = ref('')
 const password = ref('')
 const error = ref('')
+const loading = ref(false)
 
 const validateEmail = (val: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)
 
-const handleLogin = () => {
+const handleLogin = async () => {
   error.value = ''
+  loading.value = true
 
-  if (!email.value) { error.value = 'Email is required'; return }
-  if (!validateEmail(email.value)) { error.value = 'Please enter a valid email address'; return }
-  if (!password.value) { error.value = 'Password is required'; return }
+  if (!email.value) { 
+    error.value = 'Email is required'
+    loading.value = false
+    return 
+  }
+  if (!validateEmail(email.value)) { 
+    error.value = 'Please enter a valid email address'
+    loading.value = false
+    return 
+  }
+  if (!password.value) { 
+    error.value = 'Password is required'
+    loading.value = false
+    return 
+  }
+
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 1000))
 
   login(email.value, password.value)
+  loading.value = false
   navigateTo('/')
 }
 
@@ -166,9 +185,15 @@ onMounted(() => {
           </NuxtLink>
         </div>
 
-        <button class="bg-[#0085db] hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-full w-full focus:outline-none focus:shadow-outline transition duration-300 shadow-md" type="submit">
+        <Button 
+          type="submit" 
+          variant="primary" 
+          block 
+          class="rounded-full py-3 shadow-md"
+          :loading="loading"
+        >
           Sign In
-        </button>
+        </Button>
       </form>
     </div>
   </div>

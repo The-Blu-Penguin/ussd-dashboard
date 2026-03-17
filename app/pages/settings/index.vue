@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Camera, Lock, UserPlus, Trash2, Mail, Shield } from 'lucide-vue-next'
+import Button from '~/components/ui/Button.vue'
 
 const profileImage = ref('https://i.pravatar.cc/150?img=11')
 const passwordForm = ref({
@@ -8,6 +9,9 @@ const passwordForm = ref({
   newPassword: '',
   confirmPassword: ''
 })
+
+const isUpdatingPassword = ref(false)
+const isAddingUser = ref(false)
 
 const newUser = ref({
   name: '',
@@ -36,7 +40,11 @@ const handleImageUpload = (event: Event) => {
   }
 }
 
-const handlePasswordChange = () => {
+const handlePasswordChange = async () => {
+  isUpdatingPassword.value = true
+  // Simulate API call
+  await new Promise(resolve => setTimeout(resolve, 1000))
+  
   // Logic to change password
   console.log('Password change requested', passwordForm.value)
   // Reset form
@@ -45,10 +53,14 @@ const handlePasswordChange = () => {
     newPassword: '',
     confirmPassword: ''
   }
+  isUpdatingPassword.value = false
 }
 
-const handleAddUser = () => {
+const handleAddUser = async () => {
   if (!newUser.value.name || !newUser.value.email || !newUser.value.password) return
+  
+  isAddingUser.value = true
+  await new Promise(resolve => setTimeout(resolve, 800))
   
   users.value.push({
     id: Date.now(),
@@ -59,6 +71,7 @@ const handleAddUser = () => {
   })
   
   newUser.value = { name: '', email: '', password: '', role: 'Viewer' }
+  isAddingUser.value = false
 }
 
 const removeUser = (id: number) => {
@@ -138,9 +151,14 @@ const removeUser = (id: number) => {
           </div>
           
           <div class="flex justify-end">
-            <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 shadow-sm text-sm" type="submit">
+            <Button 
+              type="submit" 
+              variant="primary"
+              :loading="isUpdatingPassword"
+              class="shadow-sm"
+            >
               Update Password
-            </button>
+            </Button>
           </div>
         </form>
       </div>
@@ -193,13 +211,15 @@ const removeUser = (id: number) => {
                 <option>Viewer</option>
               </select>
             </div>
-            <button 
+            <Button 
               @click="handleAddUser"
-              class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold transition-colors flex items-center justify-center h-[38px]"
+              variant="primary"
+              :loading="isAddingUser"
+              class="h-[38px]"
             >
               <UserPlus class="w-4 h-4 mr-2" />
               Add User
-            </button>
+            </Button>
           </div>
         </div>
 

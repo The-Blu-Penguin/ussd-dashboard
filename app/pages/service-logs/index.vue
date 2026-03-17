@@ -7,6 +7,7 @@ import SearchInput from '~/components/ui/SearchInput.vue'
 import Pagination from '~/components/ui/Pagination.vue'
 import FilterButton from '~/components/ui/FilterButton.vue'
 import LogDetailsModal from '~/components/logs/LogDetailsModal.vue'
+import Skeleton from '~/components/ui/Skeleton.vue'
 import { 
   ScrollText, Download, AlertTriangle, CheckCircle, XCircle, Info,
   Server, Activity, Pause, Play, Trash2
@@ -23,6 +24,7 @@ const selectedLog = ref(null)
 const isCollapsed = useState('sidebarCollapsed', () => false)
 const isLive = ref(true)
 const timeFilter = ref('Live')
+const isLoading = ref(true)
 
 const filteredLogs = computed(() => {
   const q = searchQuery.value.toLowerCase()
@@ -49,6 +51,11 @@ const addMockLog = () => {
 }
 
 onMounted(() => {
+  // Simulate initial loading
+  setTimeout(() => {
+    isLoading.value = false
+  }, 1200)
+
   if (import.meta.client) {
     intervalId = setInterval(addMockLog, 2000)
   }
@@ -176,44 +183,57 @@ const handlePageChange = (page: number) => { currentPage.value = page }
             <span class="w-20 shrink-0 text-right">Duration</span>
          </div>
 
-         <div v-if="filteredLogs.length === 0" class="text-gray-500 text-center py-10 italic">No logs available</div>
-         <div v-for="log in paginatedLogs" :key="log.id" class="flex items-center space-x-4 px-6 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer group" @click="viewLog(log)">
-            <!-- Timestamp -->
-            <div class="w-36 shrink-0">
-               <div class="text-sm font-medium text-gray-900">{{ log.timestamp.split(' ')[1] }}</div>
-               <div class="text-xs text-gray-400">{{ log.timestamp.split(' ')[0] }}</div>
+         <template v-if="isLoading">
+            <div v-for="i in 8" :key="i" class="flex items-center space-x-4 px-6 py-3 border-b border-gray-50">
+               <div class="w-36 shrink-0"><Skeleton width="100px" height="14px" /></div>
+               <div class="w-24 shrink-0"><Skeleton width="60px" height="14px" /></div>
+               <div class="w-24 shrink-0"><Skeleton width="50px" height="20px" class="rounded-full" /></div>
+               <div class="w-16 shrink-0"><Skeleton width="30px" height="20px" class="rounded" /></div>
+               <div class="flex-1"><Skeleton width="80%" height="14px" /></div>
+               <div class="w-20 shrink-0 flex justify-end"><Skeleton width="40px" height="14px" /></div>
             </div>
-            
-            <!-- Service -->
-            <div class="w-24 shrink-0">
-               <span class="text-sm font-bold" :class="log.service === 'USSD' ? 'text-blue-600' : 'text-purple-600'">{{ log.service }}</span>
-            </div>
+         </template>
 
-            <!-- Level -->
-            <div class="w-24 shrink-0">
-               <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border" :class="getLevelColor(log.level)">
-                  <component :is="getLevelIcon(log.level)" class="w-3 h-3 mr-1.5" />
-                  {{ log.level }}
-               </span>
-            </div>
+         <template v-else>
+           <div v-if="filteredLogs.length === 0" class="text-gray-500 text-center py-10 italic">No logs available</div>
+           <div v-for="log in paginatedLogs" :key="log.id" class="flex items-center space-x-4 px-6 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer group" @click="viewLog(log)">
+              <!-- Timestamp -->
+              <div class="w-36 shrink-0">
+                 <div class="text-sm font-medium text-gray-900">{{ log.timestamp.split(' ')[1] }}</div>
+                 <div class="text-xs text-gray-400">{{ log.timestamp.split(' ')[0] }}</div>
+              </div>
+              
+              <!-- Service -->
+              <div class="w-24 shrink-0">
+                 <span class="text-sm font-bold" :class="log.service === 'USSD' ? 'text-blue-600' : 'text-purple-600'">{{ log.service }}</span>
+              </div>
 
-            <!-- Status -->
-            <div class="w-16 shrink-0">
-               <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-bold" :class="getStatusCodeColor(log.statusCode)">
-                  {{ log.statusCode }}
-               </span>
-            </div>
+              <!-- Level -->
+              <div class="w-24 shrink-0">
+                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border" :class="getLevelColor(log.level)">
+                    <component :is="getLevelIcon(log.level)" class="w-3 h-3 mr-1.5" />
+                    {{ log.level }}
+                 </span>
+              </div>
 
-            <!-- Message -->
-            <div class="flex-1 min-w-0">
-               <p class="text-sm text-gray-600 truncate group-hover:text-gray-900 transition-colors">{{ log.message }}</p>
-            </div>
+              <!-- Status -->
+              <div class="w-16 shrink-0">
+                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-bold" :class="getStatusCodeColor(log.statusCode)">
+                    {{ log.statusCode }}
+                 </span>
+              </div>
 
-            <!-- Duration -->
-            <div class="w-20 shrink-0 text-right">
-               <span class="text-sm text-gray-500 font-mono">{{ log.duration }}</span>
-            </div>
-         </div>
+              <!-- Message -->
+              <div class="flex-1 min-w-0">
+                 <p class="text-sm text-gray-600 truncate group-hover:text-gray-900 transition-colors">{{ log.message }}</p>
+              </div>
+
+              <!-- Duration -->
+              <div class="w-20 shrink-0 text-right">
+                 <span class="text-sm text-gray-500 font-mono">{{ log.duration }}</span>
+              </div>
+           </div>
+         </template>
       </div>
     </div>
 
