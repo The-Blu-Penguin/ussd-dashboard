@@ -11,6 +11,7 @@ interface App {
   merchantId: string
   code: string
   type: string
+  menuFlow: string
   status: string
   traffic: string
 }
@@ -30,17 +31,25 @@ const newApp = ref({
   merchantId: '',
   level: 'Secondary',
   method: 'Automatic',
-  selectedCode: ''
+  selectedCode: '',
+  menuFlow: ''
 })
 
 const merchants = ['Kofi Electronics', 'Ama Provisions', 'Tech Solutions', 'Accra Mall Pharmacy', 'Volta Grains']
 const availableCodes = ['123', '456', '789', '999', '000']
+const menuFlows = [
+  'Main Menu Flow',
+  'Payment Flow',
+  'Inquiry Flow',
+  'Settings Flow',
+  'Custom Flow'
+]
 
 const apps = ref<App[]>([
-  { id: 1, name: 'Kofi Electronics', merchantId: 'MER-001', code: '*920#', type: 'Primary', status: 'Active', traffic: '12.5k' },
-  { id: 2, name: 'Ama Provisions', merchantId: 'MER-002', code: '*920*1#', type: 'Secondary', status: 'Active', traffic: '3.2k' },
-  { id: 3, name: 'Tech Solutions', merchantId: 'MER-003', code: '*920*50#', type: 'Secondary', status: 'Paused', traffic: '0' },
-  { id: 4, name: 'Accra Mall Pharmacy', merchantId: 'MER-004', code: '*920*Pay#', type: 'Secondary', status: 'Active', traffic: '45.1k' },
+  { id: 1, name: 'Kofi Electronics', merchantId: 'MER-001', code: '*920#', type: 'Primary', menuFlow: 'Main Menu Flow', status: 'Active', traffic: '12.5k' },
+  { id: 2, name: 'Ama Provisions', merchantId: 'MER-002', code: '*920*1#', type: 'Secondary', menuFlow: 'Payment Flow', status: 'Active', traffic: '3.2k' },
+  { id: 3, name: 'Tech Solutions', merchantId: 'MER-003', code: '*920*50#', type: 'Secondary', menuFlow: 'Inquiry Flow', status: 'Paused', traffic: '0' },
+  { id: 4, name: 'Accra Mall Pharmacy', merchantId: 'MER-004', code: '*920*Pay#', type: 'Secondary', menuFlow: 'Settings Flow', status: 'Active', traffic: '45.1k' },
 ])
 
 const filteredApps = computed(() => {
@@ -65,7 +74,7 @@ const handlePageChange = (page: number) => {
 const openAllocateModal = () => {
   isEditing.value = false
   editingId.value = null
-  newApp.value = { merchant: '', merchantId: '', level: 'Secondary', method: 'Automatic', selectedCode: '' }
+  newApp.value = { merchant: '', merchantId: '', level: 'Secondary', method: 'Automatic', selectedCode: '', menuFlow: '' }
   showModal.value = true
 }
 
@@ -85,7 +94,8 @@ const openEditModal = (app: App) => {
     merchantId: app.merchantId || '',
     level: app.type, 
     method: 'Manual',
-    selectedCode: codeSuffix 
+    selectedCode: codeSuffix,
+    menuFlow: app.menuFlow
   }
   
   showModal.value = true
@@ -122,6 +132,7 @@ const handleAllocate = async () => {
         merchantId: newApp.value.merchantId,
         code: allocatedCode,
         type: newApp.value.level,
+        menuFlow: newApp.value.menuFlow,
         status: existingApp.status,
         traffic: existingApp.traffic
       }
@@ -134,6 +145,7 @@ const handleAllocate = async () => {
       merchantId: newApp.value.merchantId,
       code: allocatedCode,
       type: newApp.value.level,
+      menuFlow: newApp.value.menuFlow,
       status: 'Active',
       traffic: '0'
     })
@@ -197,6 +209,18 @@ const handleAllocate = async () => {
               placeholder="e.g. MER-001"
               :disabled="isEditing"
             />
+          </div>
+
+          <!-- Menu Flow -->
+          <div>
+            <label class="block text-xs font-bold text-gray-500 mb-1">Menu Flow</label>
+            <select 
+              v-model="newApp.menuFlow"
+              class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+            >
+              <option value="" disabled>Select a menu flow...</option>
+              <option v-for="flow in menuFlows" :key="flow" :value="flow">{{ flow }}</option>
+            </select>
           </div>
 
           <!-- Level & Method -->
@@ -291,7 +315,8 @@ const handleAllocate = async () => {
             <tr class="bg-gray-50 border-b border-gray-100 text-xs text-gray-500 uppercase tracking-wider">
               <th class="px-6 py-4 font-bold">Merchant Name</th>
               <th class="px-6 py-4 font-bold">Service Code</th>
-              <th class="px-6 py-4 font-bold">Type</th>
+              <th class="px-6 py-4 font-bold">Menu Flow</th>
+              <th class="px-6 py-4 font-bold">Level</th>
               <th class="px-6 py-4 font-bold">Traffic</th>
               <th class="px-6 py-4 font-bold">Status</th>
               <th class="px-6 py-4 text-right font-bold">Actions</th>
@@ -311,6 +336,9 @@ const handleAllocate = async () => {
                 <span class="inline-block px-3 py-1 bg-gray-100 text-gray-700 rounded-md font-mono text-sm font-bold border border-gray-200">
                   {{ app.code }}
                 </span>
+              </td>
+              <td class="px-6 py-4">
+                <span class="text-sm text-gray-600">{{ app.menuFlow }}</span>
               </td>
               <td class="px-6 py-4">
                 <span class="text-sm text-gray-600">{{ app.type }}</span>

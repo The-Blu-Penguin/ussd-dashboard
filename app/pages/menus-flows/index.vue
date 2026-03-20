@@ -1,13 +1,13 @@
 <script setup>
 import { ref } from 'vue'
 import { useState } from '#imports'
-import { Plus, ListTree, MoreVertical, Edit, Copy, Trash2, X, Network, FileJson } from 'lucide-vue-next'
+import { Plus, ListTree, MoreVertical, Trash2, X, Network, FileJson } from 'lucide-vue-next'
 
 const flows = ref([
-  { id: 1, name: 'Registration Flow', trigger: 'First Dial', modified: '2 hours ago', status: 'Active', nodes: 5 },
-  { id: 2, name: 'Balance Check', trigger: 'Option 1', modified: '1 day ago', status: 'Active', nodes: 3 },
-  { id: 3, name: 'Airtime Purchase', trigger: 'Option 2', modified: '3 days ago', status: 'Draft', nodes: 8 },
-  { id: 4, name: 'Support Menu', trigger: 'Option 9', modified: '1 week ago', status: 'Active', nodes: 4 },
+  { id: 1, name: 'Registration Flow', description: 'Handles new user onboarding', modified: '2 hours ago', status: 'Active', type: 'Main Menu' },
+  { id: 2, name: 'Balance Check', description: 'Check account balance', modified: '1 day ago', status: 'Active', type: 'Action Flow' },
+  { id: 3, name: 'Airtime Purchase', description: 'Airtime top-up for self and others', modified: '3 days ago', status: 'Draft', type: 'Payment Flow' },
+  { id: 4, name: 'Support Menu', description: 'Customer service options', modified: '1 week ago', status: 'Active', type: 'Sub Menu' },
 ])
 
 const showCreateModal = ref(false)
@@ -41,8 +41,8 @@ const closeCreateModal = () => {
           <thead class="bg-gray-50/50">
             <tr class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
               <th class="px-6 py-4">Flow Name</th>
-              <th class="px-6 py-4">Trigger</th>
-              <th class="px-6 py-4">Complexity</th>
+              <th class="px-6 py-4">Description</th>
+              <th class="px-6 py-4">Type</th>
               <th class="px-6 py-4">Status</th>
               <th class="px-6 py-4">Last Modified</th>
               <th class="px-6 py-4 text-right">Actions</th>
@@ -62,10 +62,10 @@ const closeCreateModal = () => {
                 </div>
               </td>
               <td class="px-6 py-4">
-                <span class="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">{{ flow.trigger }}</span>
+                <span class="text-sm text-gray-600">{{ flow.description }}</span>
               </td>
               <td class="px-6 py-4">
-                <span class="text-sm text-gray-600">{{ flow.nodes }} Nodes</span>
+                <span class="text-sm text-gray-600">{{ flow.type }}</span>
               </td>
               <td class="px-6 py-4">
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" 
@@ -75,13 +75,7 @@ const closeCreateModal = () => {
               </td>
               <td class="px-6 py-4 text-sm text-gray-500">{{ flow.modified }}</td>
               <td class="px-6 py-4 text-right">
-                <div class="flex items-center justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit">
-                    <Edit class="w-4 h-4" />
-                  </button>
-                  <button class="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors" title="Duplicate">
-                    <Copy class="w-4 h-4" />
-                  </button>
+                <div class="flex items-center justify-end space-x-2">
                   <button class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
                     <Trash2 class="w-4 h-4" />
                   </button>
