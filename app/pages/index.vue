@@ -118,18 +118,18 @@ const chartOptions = {
 
     <div v-else class="space-y-6 animate-in fade-in duration-500">
       <!-- Header -->
-    <div class="flex justify-between items-center">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
       <div>
         <h1 class="text-2xl font-bold text-gray-800">Dashboard Overview</h1>
         <p class="text-sm text-gray-500 mt-1">Welcome back, here's what's happening today.</p>
       </div>
-      <div class="flex space-x-3">
-         <select class="bg-white border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-4 py-2">
+      <div class="flex items-center space-x-3 w-full sm:w-auto">
+         <select class="flex-1 sm:flex-none bg-white border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-4 py-2">
             <option>Today</option>
             <option>This Week</option>
             <option>This Month</option>
          </select>
-         <button class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+         <button class="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
             Generate Report
          </button>
       </div>

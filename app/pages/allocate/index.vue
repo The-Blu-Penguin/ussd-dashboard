@@ -158,16 +158,16 @@ const handleAllocate = async () => {
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
       <div>
         <h1 class="text-2xl font-bold text-gray-800">Allocate</h1>
         <p class="text-sm text-gray-500 mt-1">Manage and allocate USSD service codes</p>
       </div>
-      <div class="flex items-center space-x-4">
-        <SearchInput v-model="searchQuery" placeholder="Search codes..." />
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
+        <SearchInput v-model="searchQuery" placeholder="Search codes..." class="w-full sm:w-auto" />
         <button 
           @click="openAllocateModal"
-          class="flex items-center justify-center space-x-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm h-10 w-auto whitespace-nowrap"
+          class="flex items-center justify-center space-x-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm h-10 w-full sm:w-auto whitespace-nowrap"
         >
           <Plus class="w-4 h-4" />
           <span>Allocate New Code</span>

@@ -18,7 +18,7 @@ const searchQuery = ref('')
 const currentPage = ref(1)
 const itemsPerPage = 10
 const showModal = ref(false)
-const selectedTxn = ref(null)
+const selectedTxn = ref<Record<string, any> | undefined>(undefined)
 const isCollapsed = useState('sidebarCollapsed', () => false)
 
 const filteredTransactions = computed(() => {
@@ -38,19 +38,19 @@ const paginatedTransactions = computed(() => {
 })
 
 const viewTxn = (txn: any) => { selectedTxn.value = txn; showModal.value = true }
-const closeModal = () => { showModal.value = false; selectedTxn.value = null }
+const closeModal = () => { showModal.value = false; selectedTxn.value = undefined }
 const handlePageChange = (page: number) => { currentPage.value = page }
 </script>
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
       <div>
         <h1 class="text-2xl font-bold text-gray-800">Transaction Logs</h1>
         <p class="text-sm text-gray-500 mt-1">Real-time record of all USSD transactions</p>
       </div>
-      <div class="flex items-center space-x-3">
-        <button class="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg text-sm font-medium transition-colors shadow-sm">
+      <div class="flex items-center space-x-3 w-full sm:w-auto">
+        <button class="flex-1 sm:flex-none flex justify-center items-center space-x-2 px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg text-sm font-medium transition-colors shadow-sm">
           <Download class="w-4 h-4" />
           <span>Export CSV</span>
         </button>

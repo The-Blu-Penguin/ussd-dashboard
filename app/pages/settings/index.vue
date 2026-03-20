@@ -172,8 +172,8 @@ const removeUser = (id: number) => {
         <!-- Add User Form -->
         <div class="bg-gray-50 rounded-xl p-5 mb-8 border border-gray-100">
           <h3 class="text-sm font-bold text-gray-700 mb-4">Invite New User</h3>
-          <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
-            <div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+            <div class="sm:col-span-2 lg:col-span-1">
               <label class="block text-xs font-bold text-gray-500 mb-1">Full Name</label>
               <input 
                 v-model="newUser.name"
@@ -182,7 +182,7 @@ const removeUser = (id: number) => {
                 placeholder="John Doe"
               />
             </div>
-            <div>
+            <div class="sm:col-span-2 lg:col-span-1">
               <label class="block text-xs font-bold text-gray-500 mb-1">Email Address</label>
               <input 
                 v-model="newUser.email"
@@ -191,7 +191,7 @@ const removeUser = (id: number) => {
                 placeholder="john@example.com"
               />
             </div>
-            <div>
+            <div class="sm:col-span-2 lg:col-span-1">
               <label class="block text-xs font-bold text-gray-500 mb-1">Password</label>
               <input 
                 v-model="newUser.password"
@@ -200,7 +200,7 @@ const removeUser = (id: number) => {
                 placeholder="•••••••"
               />
             </div>
-            <div>
+            <div class="sm:col-span-1 lg:col-span-1">
               <label class="block text-xs font-bold text-gray-500 mb-1">Role</label>
               <select 
                 v-model="newUser.role"
@@ -215,7 +215,7 @@ const removeUser = (id: number) => {
               @click="handleAddUser"
               variant="primary"
               :loading="isAddingUser"
-              class="h-[38px]"
+              class="h-[38px] w-full sm:w-auto sm:col-span-1 lg:col-span-1"
             >
               <UserPlus class="w-4 h-4 mr-2" />
               Add User

@@ -24,12 +24,12 @@ const closeCreateModal = () => {
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
       <div>
         <h1 class="text-2xl font-bold text-gray-800">Menus & Flows</h1>
         <p class="text-sm text-gray-500 mt-1">Design and manage your USSD logic flows</p>
       </div>
-      <button @click="openCreateModal" class="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
+      <button @click="openCreateModal" class="w-full sm:w-auto flex justify-center items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
         <Plus class="w-4 h-4" />
         <span>Create New Flow</span>
       </button>

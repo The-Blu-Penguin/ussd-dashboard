@@ -24,6 +24,7 @@ import {
 
 const route = useRoute()
 const isCollapsed = useState('sidebarCollapsed', () => false)
+const isMobileSidebarOpen = useState('mobileSidebarOpen', () => false)
 const { user, logout } = useAuth()
 const openMenus = ref<Record<string, boolean>>({})
 
@@ -99,12 +100,19 @@ const isActive = (item: MenuItem) => {
 }
 
 const isChildActive = (to: string) => route.path === to
+
+const closeMobileSidebar = () => {
+  isMobileSidebarOpen.value = false
+}
 </script>
 
 <template>
   <aside 
-    class="bg-white border-r border-gray-100 flex flex-col h-screen fixed left-0 top-0 z-50 transition-all duration-300 ease-in-out"
-    :class="isCollapsed ? 'w-20' : 'w-64'"
+    class="bg-white border-r border-gray-100 flex flex-col h-screen fixed left-0 top-0 z-50 transition-all duration-300 ease-in-out lg:translate-x-0"
+    :class="[
+      isCollapsed ? 'w-20' : 'w-64',
+      isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+    ]"
   >
     <!-- Logo -->
     <div class="h-16 flex items-center justify-between px-4 border-b border-gray-50 relative">
@@ -187,6 +195,7 @@ const isChildActive = (to: string) => route.path === to
                         :to="child.to"
                         class="flex items-center px-3 py-2 rounded-lg text-sm transition-colors duration-200"
                         :class="isChildActive(child.to) ? 'text-blue-600 bg-blue-50/50 font-medium' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'"
+                        @click="closeMobileSidebar"
                     >
                         <span>{{ child.name }}</span>
                     </NuxtLink>
@@ -202,6 +211,7 @@ const isChildActive = (to: string) => route.path === to
                  isCollapsed ? 'justify-center' : ''
                ]"
                :title="isCollapsed ? item.name : ''"
+               @click="closeMobileSidebar"
             >
               <component 
                 :is="item.icon" 
