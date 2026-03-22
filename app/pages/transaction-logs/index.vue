@@ -46,11 +46,11 @@ const handlePageChange = (page: number) => { currentPage.value = page }
   <div class="space-y-6">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
       <div>
-        <h1 class="text-2xl font-bold text-gray-800">Transaction Logs</h1>
-        <p class="text-sm text-gray-500 mt-1">Real-time record of all USSD transactions</p>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Transaction Logs</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Real-time record of all USSD transactions</p>
       </div>
       <div class="flex items-center space-x-3 w-full sm:w-auto">
-        <button class="flex-1 sm:flex-none flex justify-center items-center space-x-2 px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg text-sm font-medium transition-colors shadow-sm">
+        <button class="flex-1 sm:flex-none flex justify-center items-center space-x-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors shadow-sm">
           <Download class="w-4 h-4" />
           <span>Export CSV</span>
         </button>
@@ -59,55 +59,83 @@ const handlePageChange = (page: number) => { currentPage.value = page }
 
     <!-- Stats Overview -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-      <div class="bg-white p-6 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-gray-100">
-        <div class="flex items-center justify-between mb-4">
-          <div class="p-2 bg-blue-50 rounded-lg text-blue-600">
-            <FileText class="w-5 h-5" />
+      <div class="relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] border-0 hover:-translate-y-0.5 transition-transform duration-300">
+        <!-- Texture Pattern Overlay -->
+        <div class="absolute inset-0 opacity-10 mix-blend-overlay" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 16px 16px;"></div>
+        <div class="absolute -right-6 -top-6 w-32 h-32 rounded-full bg-white/20 blur-2xl"></div>
+        <div class="absolute -bottom-8 -left-8 w-40 h-40 rounded-full bg-black/10 blur-3xl"></div>
+
+        <div class="relative z-10">
+          <div class="flex items-center justify-between mb-4">
+            <div class="p-3 bg-blue-100/20 backdrop-blur-sm rounded-lg text-white border border-white/10 shadow-inner">
+              <FileText class="w-6 h-6" />
+            </div>
+            <span class="text-xs font-bold text-white bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 shadow-sm">+8%</span>
           </div>
-          <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">+8%</span>
+          <h3 class="text-3xl font-bold text-white mb-1 drop-shadow-sm">14,205</h3>
+          <p class="text-sm text-white/90 font-medium tracking-wide">Total Transactions</p>
         </div>
-        <h3 class="text-2xl font-bold text-gray-800">14,205</h3>
-        <p class="text-xs text-gray-500 font-medium uppercase tracking-wider mt-1">Total Transactions</p>
       </div>
 
-      <div class="bg-white p-6 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-gray-100">
-        <div class="flex items-center justify-between mb-4">
-          <div class="p-2 bg-green-50 rounded-lg text-green-600">
-            <CheckCircle class="w-5 h-5" />
+      <div class="relative overflow-hidden bg-gradient-to-br from-emerald-500 to-emerald-600 p-6 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] border-0 hover:-translate-y-0.5 transition-transform duration-300">
+        <!-- Texture Pattern Overlay -->
+        <div class="absolute inset-0 opacity-10 mix-blend-overlay" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 16px 16px;"></div>
+        <div class="absolute -right-6 -top-6 w-32 h-32 rounded-full bg-white/20 blur-2xl"></div>
+        <div class="absolute -bottom-8 -left-8 w-40 h-40 rounded-full bg-black/10 blur-3xl"></div>
+
+        <div class="relative z-10">
+          <div class="flex items-center justify-between mb-4">
+            <div class="p-3 bg-emerald-100/20 backdrop-blur-sm rounded-lg text-white border border-white/10 shadow-inner">
+              <CheckCircle class="w-6 h-6" />
+            </div>
+            <span class="text-xs font-bold px-2.5 py-1 text-white bg-white/20 backdrop-blur-md rounded-full border border-white/20 shadow-sm">98.2%</span>
           </div>
-          <span class="text-xs font-medium text-gray-500">98.2%</span>
+          <h3 class="text-3xl font-bold text-white mb-1 drop-shadow-sm">13,950</h3>
+          <p class="text-sm text-white/90 font-medium tracking-wide">Successful</p>
         </div>
-        <h3 class="text-2xl font-bold text-gray-800">13,950</h3>
-        <p class="text-xs text-gray-500 font-medium uppercase tracking-wider mt-1">Successful</p>
       </div>
 
-      <div class="bg-white p-6 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-gray-100">
-        <div class="flex items-center justify-between mb-4">
-          <div class="p-2 bg-red-50 rounded-lg text-red-600">
-            <XCircle class="w-5 h-5" />
+      <div class="relative overflow-hidden bg-gradient-to-br from-red-500 to-red-600 p-6 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] border-0 hover:-translate-y-0.5 transition-transform duration-300">
+        <!-- Texture Pattern Overlay -->
+        <div class="absolute inset-0 opacity-10 mix-blend-overlay" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 16px 16px;"></div>
+        <div class="absolute -right-6 -top-6 w-32 h-32 rounded-full bg-white/20 blur-2xl"></div>
+        <div class="absolute -bottom-8 -left-8 w-40 h-40 rounded-full bg-black/10 blur-3xl"></div>
+
+        <div class="relative z-10">
+          <div class="flex items-center justify-between mb-4">
+            <div class="p-3 bg-red-100/20 backdrop-blur-sm rounded-lg text-white border border-white/10 shadow-inner">
+              <XCircle class="w-6 h-6" />
+            </div>
+            <span class="text-xs font-bold text-white bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 shadow-sm">+0.5%</span>
           </div>
-          <span class="text-xs font-medium text-red-600">+0.5%</span>
+          <h3 class="text-3xl font-bold text-white mb-1 drop-shadow-sm">255</h3>
+          <p class="text-sm text-white/90 font-medium tracking-wide">Failed</p>
         </div>
-        <h3 class="text-2xl font-bold text-gray-800">255</h3>
-        <p class="text-xs text-gray-500 font-medium uppercase tracking-wider mt-1">Failed</p>
       </div>
 
-      <div class="bg-white p-6 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-gray-100">
-        <div class="flex items-center justify-between mb-4">
-          <div class="p-2 bg-purple-50 rounded-lg text-purple-600">
-            <ArrowUpRight class="w-5 h-5" />
+      <div class="relative overflow-hidden bg-gradient-to-br from-purple-500 to-purple-600 p-6 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] border-0 hover:-translate-y-0.5 transition-transform duration-300">
+        <!-- Texture Pattern Overlay -->
+        <div class="absolute inset-0 opacity-10 mix-blend-overlay" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 16px 16px;"></div>
+        <div class="absolute -right-6 -top-6 w-32 h-32 rounded-full bg-white/20 blur-2xl"></div>
+        <div class="absolute -bottom-8 -left-8 w-40 h-40 rounded-full bg-black/10 blur-3xl"></div>
+
+        <div class="relative z-10">
+          <div class="flex items-center justify-between mb-4">
+            <div class="p-3 bg-purple-100/20 backdrop-blur-sm rounded-lg text-white border border-white/10 shadow-inner">
+              <ArrowUpRight class="w-6 h-6" />
+            </div>
+            <span class="text-xs font-bold text-white bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 shadow-sm">+15%</span>
           </div>
-          <span class="text-xs font-medium text-purple-600">+15%</span>
+          <h3 class="text-3xl font-bold text-white mb-1 drop-shadow-sm">GHS 45.2k</h3>
+          <p class="text-sm text-white/90 font-medium tracking-wide">Total Volume</p>
         </div>
-        <h3 class="text-2xl font-bold text-gray-800">GHS 45.2k</h3>
-        <p class="text-xs text-gray-500 font-medium uppercase tracking-wider mt-1">Total Volume</p>
       </div>
     </div>
 
     <!-- Transactions Table -->
-    <div class="bg-white rounded-xl shadow-[0_2px_15px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_2px_15px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 overflow-hidden">
       <!-- Controls -->
-      <div class="p-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="p-5 border-b border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div class="relative w-full sm:w-96">
           <SearchInput v-model="searchQuery" placeholder="Search by ID, MSISDN, or Merchant..." />
         </div>
@@ -120,7 +148,7 @@ const handlePageChange = (page: number) => { currentPage.value = page }
       <div class="overflow-x-auto">
         <table class="w-full">
           <thead>
-            <tr class="bg-gray-50/50 border-b border-gray-100 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <tr class="bg-gray-50/50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               <th class="px-6 py-4">Transaction ID</th>
               <th class="px-6 py-4">Date & Time</th>
               <th class="px-6 py-4">Merchant</th>
@@ -131,28 +159,28 @@ const handlePageChange = (page: number) => { currentPage.value = page }
               <th class="px-6 py-4 text-right"></th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-50">
-            <tr v-for="txn in paginatedTransactions" :key="txn.id" class="hover:bg-blue-50/30 transition-colors group">
+          <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
+            <tr v-for="txn in paginatedTransactions" :key="txn.id" class="hover:bg-blue-50/30 dark:hover:bg-gray-700/50 transition-colors group">
               <td class="px-6 py-4">
-                <span class="text-sm font-medium text-gray-900 font-mono">{{ txn.id }}</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-gray-100 font-mono">{{ txn.id }}</span>
               </td>
               <td class="px-6 py-4">
-                <div class="text-sm text-gray-600">{{ txn.date.split(' ')[0] }}</div>
-                <div class="text-xs text-gray-400">{{ txn.date.split(' ')[1] }}</div>
+                <div class="text-sm text-gray-600 dark:text-gray-300">{{ txn.date.split(' ')[0] }}</div>
+                <div class="text-xs text-gray-400 dark:text-gray-500">{{ txn.date.split(' ')[1] }}</div>
               </td>
               <td class="px-6 py-4">
-                <div class="text-sm font-medium text-gray-900">{{ txn.merchant }}</div>
+                <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ txn.merchant }}</div>
               </td>
               <td class="px-6 py-4">
-                <span class="text-sm text-gray-600 font-mono">{{ txn.msisdn }}</span>
+                <span class="text-sm text-gray-600 dark:text-gray-300 font-mono">{{ txn.msisdn }}</span>
               </td>
               <td class="px-6 py-4">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
                   {{ txn.type }}
                 </span>
               </td>
               <td class="px-6 py-4">
-                <span class="text-sm font-bold text-gray-900">{{ txn.amount }}</span>
+                <span class="text-sm font-bold text-gray-900 dark:text-gray-100">{{ txn.amount }}</span>
               </td>
               <td class="px-6 py-4">
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border" :class="getStatusColor(txn.status)">
@@ -163,7 +191,7 @@ const handlePageChange = (page: number) => { currentPage.value = page }
               <td class="px-6 py-4 text-right">
                 <button 
                   @click="viewTxn(txn)"
-                  class="text-gray-400 hover:text-blue-600 p-1.5 rounded-md hover:bg-blue-50 transition-colors"
+                  class="text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 p-1.5 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
                   title="View Details"
                 >
                   <Eye class="w-4 h-4" />

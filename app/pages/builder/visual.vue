@@ -107,21 +107,21 @@ const onDrop = (event) => {
 <template>
   <div class="h-[calc(100vh-8rem)] flex flex-col">
     <!-- Builder Header -->
-    <div class="flex items-center justify-between mb-4">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-4 sm:gap-0">
       <div>
-        <h1 class="text-2xl font-bold text-gray-800">Menu Builder</h1>
-        <p class="text-sm text-gray-500">Design USSD flows visually</p>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Menu Builder</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Design USSD flows visually</p>
       </div>
-      <div class="flex space-x-3">
+      <div class="flex space-x-3 w-full sm:w-auto">
         <button 
           @click="showProperties = !showProperties"
-          class="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg text-sm font-medium transition-colors"
-          :class="{ 'bg-blue-50 border-blue-200 text-blue-700': showProperties }"
+          class="flex-1 sm:flex-none flex justify-center items-center space-x-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors"
+          :class="{ 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400': showProperties }"
         >
           <Settings class="w-4 h-4" />
           <span>Properties</span>
         </button>
-        <button class="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">
+        <button class="flex-1 sm:flex-none flex justify-center items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">
           <Save class="w-4 h-4" />
           <span>Save Flow</span>
         </button>
@@ -129,13 +129,13 @@ const onDrop = (event) => {
     </div>
 
     <!-- Workspace -->
-    <div class="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex">
+    <div class="flex-1 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col md:flex-row relative">
       <!-- Components Sidebar -->
-      <ComponentsSidebar />
+      <ComponentsSidebar class="w-full md:w-64 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 shrink-0" />
 
       <!-- Canvas -->
-      <div class="flex-1 h-full bg-gray-50/50 relative" @drop="onDrop" @dragover="onDragOver">
-        <VueFlow v-model="nodes" :edges="edges" fit-view-on-init class="h-full w-full">
+      <div class="flex-1 h-full min-h-[400px] bg-gray-50/50 dark:bg-gray-900/50 relative" @drop="onDrop" @dragover="onDragOver">
+        <VueFlow v-model="nodes" :edges="edges" fit-view-on-init class="h-full w-full vue-flow-dark">
           <Background pattern-color="#94a3b8" :gap="20" />
         </VueFlow>
       </div>
@@ -149,3 +149,10 @@ const onDrop = (event) => {
     </div>
   </div>
 </template>
+
+<style>
+/* Add support for VueFlow dark mode text colors inside nodes */
+.dark .vue-flow__node {
+  color: #1f2937; /* Keep nodes dark text even in dark mode for contrast with their bright backgrounds */
+}
+</style>

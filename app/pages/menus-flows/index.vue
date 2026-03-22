@@ -26,8 +26,8 @@ const closeCreateModal = () => {
   <div class="space-y-6">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
       <div>
-        <h1 class="text-2xl font-bold text-gray-800">Menus & Flows</h1>
-        <p class="text-sm text-gray-500 mt-1">Design and manage your USSD logic flows</p>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Menus & Flows</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Design and manage your USSD logic flows</p>
       </div>
       <button @click="openCreateModal" class="w-full sm:w-auto flex justify-center items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
         <Plus class="w-4 h-4" />
@@ -35,11 +35,11 @@ const closeCreateModal = () => {
       </button>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full">
-          <thead class="bg-gray-50/50">
-            <tr class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          <thead class="bg-gray-50/50 dark:bg-gray-900/50">
+            <tr class="text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               <th class="px-6 py-4">Flow Name</th>
               <th class="px-6 py-4">Description</th>
               <th class="px-6 py-4">Type</th>
@@ -48,35 +48,35 @@ const closeCreateModal = () => {
               <th class="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-50">
-            <tr v-for="flow in flows" :key="flow.id" class="hover:bg-gray-50 transition-colors group">
+          <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
+            <tr v-for="flow in flows" :key="flow.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
               <td class="px-6 py-4">
                 <div class="flex items-center">
-                  <div class="p-2 bg-blue-50 text-blue-600 rounded-lg mr-3">
+                  <div class="p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg mr-3">
                     <ListTree class="w-4 h-4" />
                   </div>
                   <div>
-                    <div class="text-sm font-medium text-gray-900">{{ flow.name }}</div>
-                    <div class="text-xs text-gray-400">ID: FL-{{ flow.id }}</div>
+                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ flow.name }}</div>
+                    <div class="text-xs text-gray-400 dark:text-gray-500">ID: FL-{{ flow.id }}</div>
                   </div>
                 </div>
               </td>
               <td class="px-6 py-4">
-                <span class="text-sm text-gray-600">{{ flow.description }}</span>
+                <span class="text-sm text-gray-600 dark:text-gray-300">{{ flow.description }}</span>
               </td>
               <td class="px-6 py-4">
-                <span class="text-sm text-gray-600">{{ flow.type }}</span>
+                <span class="text-sm text-gray-600 dark:text-gray-300">{{ flow.type }}</span>
               </td>
               <td class="px-6 py-4">
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" 
-                  :class="flow.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'">
+                  :class="flow.status === 'Active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'">
                   {{ flow.status }}
                 </span>
               </td>
-              <td class="px-6 py-4 text-sm text-gray-500">{{ flow.modified }}</td>
+              <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{{ flow.modified }}</td>
               <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end space-x-2">
-                  <button class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
+                  <button class="p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Delete">
                     <Trash2 class="w-4 h-4" />
                   </button>
                 </div>
@@ -95,34 +95,34 @@ const closeCreateModal = () => {
     >
       <div class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" @click="closeCreateModal"></div>
       
-      <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden transform transition-all">
+      <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden transform transition-all">
         <!-- Header -->
-        <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div class="bg-gray-50 dark:bg-gray-900/50 px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
           <div>
-            <h3 class="text-lg font-bold text-gray-800">Create New Flow</h3>
-            <p class="text-sm text-gray-500">Choose how you want to build your USSD flow</p>
+            <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">Create New Flow</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Choose how you want to build your USSD flow</p>
           </div>
-          <button @click="closeCreateModal" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1 rounded-full transition-colors">
+          <button @click="closeCreateModal" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 p-1 rounded-full transition-colors">
             <X class="w-5 h-5" />
           </button>
         </div>
 
         <!-- Options -->
         <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <NuxtLink to="/builder/visual" class="group block p-6 border-2 border-gray-100 rounded-xl hover:border-blue-500 hover:bg-blue-50/30 transition-all cursor-pointer">
-            <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+          <NuxtLink to="/builder/visual" class="group block p-6 border-2 border-gray-100 dark:border-gray-700 rounded-xl hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-all cursor-pointer">
+            <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
               <Network class="w-6 h-6" />
             </div>
-            <h4 class="text-lg font-bold text-gray-900 mb-2">Visual Builder</h4>
-            <p class="text-sm text-gray-500">Drag and drop components to design your flow visually. Best for beginners and rapid prototyping.</p>
+            <h4 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">Visual Builder</h4>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Drag and drop components to design your flow visually. Best for beginners and rapid prototyping.</p>
           </NuxtLink>
 
-          <NuxtLink to="/builder/json" class="group block p-6 border-2 border-gray-100 rounded-xl hover:border-purple-500 hover:bg-purple-50/30 transition-all cursor-pointer">
-            <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center mb-4 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+          <NuxtLink to="/builder/json" class="group block p-6 border-2 border-gray-100 dark:border-gray-700 rounded-xl hover:border-purple-500 dark:hover:border-purple-500 hover:bg-purple-50/30 dark:hover:bg-purple-900/10 transition-all cursor-pointer">
+            <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 rounded-lg flex items-center justify-center mb-4 group-hover:bg-purple-600 group-hover:text-white transition-colors">
               <FileJson class="w-6 h-6" />
             </div>
-            <h4 class="text-lg font-bold text-gray-900 mb-2">JSON Builder</h4>
-            <p class="text-sm text-gray-500">Edit the flow configuration directly in JSON. Best for developers and advanced configurations.</p>
+            <h4 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">JSON Builder</h4>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Edit the flow configuration directly in JSON. Best for developers and advanced configurations.</p>
           </NuxtLink>
         </div>
       </div>

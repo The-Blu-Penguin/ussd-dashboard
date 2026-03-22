@@ -102,13 +102,13 @@ const getNetworkBadge = (network: string) => {
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
       <div>
-        <h1 class="text-2xl font-bold text-gray-800">Merchants</h1>
-        <p class="text-sm text-gray-500 mt-1">Manage and monitor B2B merchant base</p>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Merchants</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage and monitor B2B merchant base</p>
       </div>
-      <div class="flex items-center space-x-3">
-        <button class="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg text-sm font-medium transition-colors shadow-sm">
+      <div class="flex items-center space-x-3 w-full sm:w-auto">
+        <button class="flex-1 sm:flex-none flex justify-center items-center space-x-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors shadow-sm">
           <Download class="w-4 h-4" />
           <span>Export CSV</span>
         </button>
@@ -117,55 +117,83 @@ const getNetworkBadge = (network: string) => {
 
     <!-- Stats Overview -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-      <div class="bg-white p-6 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-gray-100">
-        <div class="flex items-center justify-between mb-4">
-          <div class="p-2 bg-blue-50 rounded-lg text-blue-600">
-            <Users class="w-5 h-5" />
+      <div class="relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] border-0 hover:-translate-y-0.5 transition-transform duration-300">
+        <!-- Texture Pattern Overlay -->
+        <div class="absolute inset-0 opacity-10 mix-blend-overlay" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 16px 16px;"></div>
+        <div class="absolute -right-6 -top-6 w-32 h-32 rounded-full bg-white/20 blur-2xl"></div>
+        <div class="absolute -bottom-8 -left-8 w-40 h-40 rounded-full bg-black/10 blur-3xl"></div>
+
+        <div class="relative z-10">
+          <div class="flex items-center justify-between mb-4">
+            <div class="p-3 bg-blue-100/20 backdrop-blur-sm rounded-lg text-white border border-white/10 shadow-inner">
+              <Users class="w-6 h-6" />
+            </div>
+            <span class="text-xs font-bold text-white bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 shadow-sm">+12%</span>
           </div>
-          <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">+12%</span>
+          <h3 class="text-3xl font-bold text-white mb-1 drop-shadow-sm">2,450</h3>
+          <p class="text-sm text-white/90 font-medium tracking-wide">Total Merchants</p>
         </div>
-        <h3 class="text-2xl font-bold text-gray-800">2,450</h3>
-        <p class="text-xs text-gray-500 font-medium uppercase tracking-wider mt-1">Total Merchants</p>
       </div>
 
-      <div class="bg-white p-6 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-gray-100">
-        <div class="flex items-center justify-between mb-4">
-          <div class="p-2 bg-green-50 rounded-lg text-green-600">
-            <CheckCircle class="w-5 h-5" />
+      <div class="relative overflow-hidden bg-gradient-to-br from-emerald-500 to-emerald-600 p-6 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] border-0 hover:-translate-y-0.5 transition-transform duration-300">
+        <!-- Texture Pattern Overlay -->
+        <div class="absolute inset-0 opacity-10 mix-blend-overlay" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 16px 16px;"></div>
+        <div class="absolute -right-6 -top-6 w-32 h-32 rounded-full bg-white/20 blur-2xl"></div>
+        <div class="absolute -bottom-8 -left-8 w-40 h-40 rounded-full bg-black/10 blur-3xl"></div>
+
+        <div class="relative z-10">
+          <div class="flex items-center justify-between mb-4">
+            <div class="p-3 bg-emerald-100/20 backdrop-blur-sm rounded-lg text-white border border-white/10 shadow-inner">
+              <CheckCircle class="w-6 h-6" />
+            </div>
+            <span class="text-xs font-bold px-2.5 py-1 text-white bg-white/20 backdrop-blur-md rounded-full border border-white/20 shadow-sm">95%</span>
           </div>
-          <span class="text-xs font-medium text-gray-500">95%</span>
+          <h3 class="text-3xl font-bold text-white mb-1 drop-shadow-sm">2,320</h3>
+          <p class="text-sm text-white/90 font-medium tracking-wide">Active Merchants</p>
         </div>
-        <h3 class="text-2xl font-bold text-gray-800">2,320</h3>
-        <p class="text-xs text-gray-500 font-medium uppercase tracking-wider mt-1">Active Merchants</p>
       </div>
 
-      <div class="bg-white p-6 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-gray-100">
-        <div class="flex items-center justify-between mb-4">
-          <div class="p-2 bg-red-50 rounded-lg text-red-600">
-            <Ban class="w-5 h-5" />
+      <div class="relative overflow-hidden bg-gradient-to-br from-red-500 to-red-600 p-6 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] border-0 hover:-translate-y-0.5 transition-transform duration-300">
+        <!-- Texture Pattern Overlay -->
+        <div class="absolute inset-0 opacity-10 mix-blend-overlay" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 16px 16px;"></div>
+        <div class="absolute -right-6 -top-6 w-32 h-32 rounded-full bg-white/20 blur-2xl"></div>
+        <div class="absolute -bottom-8 -left-8 w-40 h-40 rounded-full bg-black/10 blur-3xl"></div>
+
+        <div class="relative z-10">
+          <div class="flex items-center justify-between mb-4">
+            <div class="p-3 bg-red-100/20 backdrop-blur-sm rounded-lg text-white border border-white/10 shadow-inner">
+              <Ban class="w-6 h-6" />
+            </div>
+            <span class="text-xs font-bold text-white bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 shadow-sm">+1</span>
           </div>
-          <span class="text-xs font-medium text-red-600">+1</span>
+          <h3 class="text-3xl font-bold text-white mb-1 drop-shadow-sm">12</h3>
+          <p class="text-sm text-white/90 font-medium tracking-wide">Blocked/Suspended</p>
         </div>
-        <h3 class="text-2xl font-bold text-gray-800">12</h3>
-        <p class="text-xs text-gray-500 font-medium uppercase tracking-wider mt-1">Blocked/Suspended</p>
       </div>
 
-      <div class="bg-white p-6 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-gray-100">
-        <div class="flex items-center justify-between mb-4">
-          <div class="p-2 bg-purple-50 rounded-lg text-purple-600">
-            <UserX class="w-5 h-5" />
+      <div class="relative overflow-hidden bg-gradient-to-br from-purple-500 to-purple-600 p-6 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] border-0 hover:-translate-y-0.5 transition-transform duration-300">
+        <!-- Texture Pattern Overlay -->
+        <div class="absolute inset-0 opacity-10 mix-blend-overlay" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 16px 16px;"></div>
+        <div class="absolute -right-6 -top-6 w-32 h-32 rounded-full bg-white/20 blur-2xl"></div>
+        <div class="absolute -bottom-8 -left-8 w-40 h-40 rounded-full bg-black/10 blur-3xl"></div>
+
+        <div class="relative z-10">
+          <div class="flex items-center justify-between mb-4">
+            <div class="p-3 bg-purple-100/20 backdrop-blur-sm rounded-lg text-white border border-white/10 shadow-inner">
+              <UserX class="w-6 h-6" />
+            </div>
+            <span class="text-xs font-bold text-white bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 shadow-sm">+2</span>
           </div>
-          <span class="text-xs font-medium text-purple-600">+2</span>
+          <h3 class="text-3xl font-bold text-white mb-1 drop-shadow-sm">45</h3>
+          <p class="text-sm text-white/90 font-medium tracking-wide">Unallocated</p>
         </div>
-        <h3 class="text-2xl font-bold text-gray-800">45</h3>
-        <p class="text-xs text-gray-500 font-medium uppercase tracking-wider mt-1">Unallocated</p>
       </div>
     </div>
 
     <!-- Subscribers Table -->
-    <div class="bg-white rounded-xl shadow-[0_2px_15px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_2px_15px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 overflow-hidden">
       <!-- Controls -->
-      <div class="p-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="p-5 border-b border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div class="relative w-full sm:w-96">
           <SearchInput v-model="searchQuery" placeholder="Search by name, MSISDN, or ID..." />
         </div>
@@ -178,7 +206,7 @@ const getNetworkBadge = (network: string) => {
       <div class="overflow-x-auto">
         <table class="w-full">
           <thead>
-            <tr class="bg-gray-50/50 border-b border-gray-100 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <tr class="bg-gray-50/50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               <th class="px-6 py-4">Merchant</th>
               <th class="px-6 py-4">USSD Code</th>
               <th class="px-6 py-4">Level</th>
@@ -188,30 +216,30 @@ const getNetworkBadge = (network: string) => {
               <th class="px-6 py-4 text-right"></th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-50">
-            <tr v-for="sub in subscribers" :key="sub.id" class="hover:bg-blue-50/30 transition-colors group">
+          <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
+            <tr v-for="sub in subscribers" :key="sub.id" class="hover:bg-blue-50/30 dark:hover:bg-gray-700/50 transition-colors group">
               <td class="px-6 py-4">
                 <div class="flex items-center">
-                  <div class="h-9 w-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 text-xs font-bold mr-3">
+                  <div class="h-9 w-9 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 text-xs font-bold mr-3">
                     {{ sub.name.split(' ').map(n => n[0]).join('') }}
                   </div>
                   <div>
-                    <div class="text-sm font-medium text-gray-900">{{ sub.name }}</div>
+                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ sub.name }}</div>
                   </div>
                 </div>
               </td>
               <td class="px-6 py-4">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100 font-mono">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-800 font-mono">
                   {{ sub.ussdCode }}
                 </span>
               </td>
               <td class="px-6 py-4">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
                   {{ sub.level }}
                 </span>
               </td>
               <td class="px-6 py-4">
-                <span class="text-sm text-gray-600">{{ sub.type }}</span>
+                <span class="text-sm text-gray-600 dark:text-gray-300">{{ sub.type }}</span>
               </td>
               <td class="px-6 py-4">
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border" :class="getStatusColor(sub.status)">
@@ -223,13 +251,13 @@ const getNetworkBadge = (network: string) => {
                   {{ sub.status }}
                 </span>
               </td>
-              <td class="px-6 py-4 text-sm text-gray-500">
+              <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                 {{ sub.lastActive }}
               </td>
               <td class="px-6 py-4 text-right relative">
                 <button 
                   @click="toggleMenu(sub.id)"
-                  class="text-gray-400 hover:text-gray-600 p-1 rounded-md hover:bg-gray-100 transition-colors"
+                  class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
                   <MoreVertical class="w-4 h-4" />
                 </button>
@@ -237,16 +265,16 @@ const getNetworkBadge = (network: string) => {
                 <!-- Dropdown Menu -->
                 <div 
                   v-if="activeMenuId === sub.id" 
-                  class="absolute right-0 top-8 w-40 bg-white rounded-lg shadow-lg border border-gray-100 z-10 py-1"
+                  class="absolute right-0 top-8 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-100 dark:border-gray-700 z-10 py-1"
                 >
                   <button 
                     @click="viewMerchant(sub)"
-                    class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                    class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 flex items-center"
                   >
-                    <Eye class="w-4 h-4 mr-2 text-gray-400" />
+                    <Eye class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500" />
                     View Details
                   </button>
-                  <button class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center">
+                  <button class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 flex items-center">
                     <Trash2 class="w-4 h-4 mr-2" />
                     Unsubscribe
                   </button>
@@ -270,11 +298,11 @@ const getNetworkBadge = (network: string) => {
       v-if="showModal" 
       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
     >
-      <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
         <!-- Modal Header -->
-        <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h3 class="text-lg font-bold text-gray-800">Merchant Details</h3>
-          <button @click="closeModal" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1 rounded-full transition-colors">
+        <div class="bg-gray-50 dark:bg-gray-900/50 px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+          <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">Merchant Details</h3>
+          <button @click="closeModal" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 p-1 rounded-full transition-colors">
             <X class="w-5 h-5" />
           </button>
         </div>
@@ -283,12 +311,12 @@ const getNetworkBadge = (network: string) => {
         <div class="p-6 space-y-6 overflow-y-auto" v-if="selectedMerchant">
           <div class="flex items-center justify-between">
             <div class="flex items-center">
-              <div class="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-lg font-bold mr-4">
+              <div class="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400 text-lg font-bold mr-4">
                 {{ selectedMerchant.name.split(' ').map(n => n[0]).join('') }}
               </div>
               <div>
-                <p class="text-lg font-bold text-gray-900">{{ selectedMerchant.name }}</p>
-                <p class="text-sm text-gray-500 font-mono">{{ selectedMerchant.msisdn }}</p>
+                <p class="text-lg font-bold text-gray-900 dark:text-gray-100">{{ selectedMerchant.name }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 font-mono">{{ selectedMerchant.msisdn }}</p>
               </div>
             </div>
              <span 
@@ -300,43 +328,43 @@ const getNetworkBadge = (network: string) => {
           </div>
 
           <div class="grid grid-cols-2 gap-4">
-             <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
-              <p class="text-xs text-gray-500 mb-1">USSD Code</p>
-              <p class="font-mono text-sm font-medium text-blue-600">{{ selectedMerchant.ussdCode }}</p>
+             <div class="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700">
+              <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">USSD Code</p>
+              <p class="font-mono text-sm font-medium text-blue-600 dark:text-blue-400">{{ selectedMerchant.ussdCode }}</p>
             </div>
-             <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
-              <p class="text-xs text-gray-500 mb-1">Level</p>
-              <p class="text-sm font-medium text-gray-800">{{ selectedMerchant.level }}</p>
+             <div class="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700">
+              <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Level</p>
+              <p class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ selectedMerchant.level }}</p>
             </div>
-             <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
-              <p class="text-xs text-gray-500 mb-1">Type</p>
-              <p class="text-sm font-medium text-gray-800">{{ selectedMerchant.type }}</p>
+             <div class="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700">
+              <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Type</p>
+              <p class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ selectedMerchant.type }}</p>
             </div>
-             <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
-              <p class="text-xs text-gray-500 mb-1">Last Active</p>
-              <p class="text-sm font-medium text-gray-800">{{ selectedMerchant.lastActive }}</p>
+             <div class="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700">
+              <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Last Active</p>
+              <p class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ selectedMerchant.lastActive }}</p>
             </div>
-             <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
-              <p class="text-xs text-gray-500 mb-1">Reference</p>
+             <div class="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700">
+              <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Reference</p>
               <span 
                 class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border"
-                :class="selectedMerchant.reference ? 'bg-blue-50 text-blue-700 border-blue-100' : 'bg-gray-50 text-gray-600 border-gray-200'"
+                :class="selectedMerchant.reference ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-100 dark:border-blue-800' : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600'"
               >
                 {{ selectedMerchant.reference ? 'True' : 'False' }}
               </span>
             </div>
-             <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
-              <p class="text-xs text-gray-500 mb-1">Traffic</p>
-              <p class="text-sm font-bold text-gray-900">{{ selectedMerchant.traffic }}</p>
+             <div class="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700">
+              <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Traffic</p>
+              <p class="text-sm font-bold text-gray-900 dark:text-gray-100">{{ selectedMerchant.traffic }}</p>
             </div>
           </div>
 
           <div v-if="selectedMerchant.type === 'Menu' && selectedMerchant.menu">
-             <h4 class="text-xs text-gray-500 uppercase tracking-wider font-bold mb-3">USSD Menu</h4>
-             <div class="bg-white border border-gray-200 rounded-xl p-4">
+             <h4 class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-bold mb-3">USSD Menu</h4>
+             <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
                <ul class="space-y-2">
-                 <li v-for="(item, index) in selectedMerchant.menu" :key="index" class="flex items-center text-sm text-gray-700">
-                   <span class="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500 mr-3">{{ index + 1 }}</span>
+                 <li v-for="(item, index) in selectedMerchant.menu" :key="index" class="flex items-center text-sm text-gray-700 dark:text-gray-300">
+                   <span class="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-xs font-bold text-gray-500 dark:text-gray-400 mr-3">{{ index + 1 }}</span>
                    {{ item }}
                  </li>
                </ul>
@@ -344,26 +372,26 @@ const getNetworkBadge = (network: string) => {
           </div>
 
           <div>
-             <h4 class="text-xs text-gray-500 uppercase tracking-wider font-bold mb-3">Additional Info</h4>
-             <div class="bg-white border border-gray-200 rounded-xl divide-y divide-gray-100">
+             <h4 class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-bold mb-3">Additional Info</h4>
+             <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl divide-y divide-gray-100 dark:divide-gray-700">
                <div class="px-4 py-3 flex justify-between items-center">
-                 <span class="text-sm text-gray-600">Region</span>
+                 <span class="text-sm text-gray-600 dark:text-gray-400">Region</span>
                  <div class="flex items-center">
-                   <Globe class="w-3.5 h-3.5 mr-1.5 text-gray-400" />
-                   <span class="text-sm font-medium text-gray-900">{{ selectedMerchant.region }}</span>
+                   <Globe class="w-3.5 h-3.5 mr-1.5 text-gray-400 dark:text-gray-500" />
+                   <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ selectedMerchant.region || 'N/A' }}</span>
                  </div>
                </div>
                <div class="px-4 py-3 flex justify-between items-center">
-                 <span class="text-sm text-gray-600">Merchant ID</span>
-                 <span class="text-sm font-medium text-gray-900 font-mono">{{ selectedMerchant.id }}</span>
+                 <span class="text-sm text-gray-600 dark:text-gray-400">Merchant ID</span>
+                 <span class="text-sm font-medium text-gray-900 dark:text-gray-100 font-mono">{{ selectedMerchant.id }}</span>
                </div>
              </div>
           </div>
         </div>
 
         <!-- Modal Footer -->
-        <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end space-x-3">
-          <button @click="closeModal" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">Close</button>
+        <div class="bg-gray-50 dark:bg-gray-900/50 px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3">
+          <button @click="closeModal" class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Close</button>
           <button class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center">
             <Trash2 class="w-4 h-4 mr-2" />
             Unsubscribe

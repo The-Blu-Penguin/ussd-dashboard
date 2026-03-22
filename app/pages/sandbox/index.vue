@@ -32,20 +32,20 @@ const clearConsole = () => {
 <template>
   <div class="space-y-6">
     <div class="flex items-center justify-between">
-      <h1 class="text-2xl font-bold text-gray-800">USSD Sandbox</h1>
-      <p class="text-sm text-gray-500">Test and debug your USSD logic in isolation</p>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">USSD Sandbox</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400">Test and debug your USSD logic in isolation</p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-180px)]">
       <!-- Code Editor -->
-      <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm flex flex-col overflow-hidden border border-gray-100">
-        <div class="bg-gray-50 border-b border-gray-100 p-3 flex items-center justify-between">
-          <div class="flex items-center space-x-2 text-sm text-gray-600 font-medium">
-            <Code class="w-4 h-4 text-blue-500" />
+      <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm flex flex-col overflow-hidden border border-gray-100 dark:border-gray-700">
+        <div class="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700 p-3 flex items-center justify-between">
+          <div class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300 font-medium">
+            <Code class="w-4 h-4 text-blue-500 dark:text-blue-400" />
             <span>logic.json</span>
           </div>
           <div class="flex items-center space-x-2">
-             <button class="p-1.5 hover:bg-gray-200 rounded-md text-gray-500 transition-colors" title="Save">
+             <button class="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md text-gray-500 dark:text-gray-400 transition-colors" title="Save">
                <Save class="w-4 h-4" />
              </button>
           </div>
@@ -53,7 +53,7 @@ const clearConsole = () => {
         <div class="flex-1 relative">
           <textarea 
             v-model="code"
-            class="w-full h-full p-4 font-mono text-sm text-gray-800 bg-white resize-none focus:outline-none"
+            class="w-full h-full p-4 font-mono text-sm text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-800 resize-none focus:outline-none"
             spellcheck="false"
           ></textarea>
         </div>
