@@ -2,6 +2,7 @@
 import { Menu, Search, Moon, Sun, Bell, ChevronDown } from 'lucide-vue-next'
 import { useState } from '#imports'
 import { useTheme } from '~/composables/useTheme'
+import { useAuth } from '~/composables/useAuth'
 
 const { user, logout } = useAuth()
 const { isDark, toggleTheme } = useTheme()

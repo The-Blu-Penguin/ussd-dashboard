@@ -1,23 +1,20 @@
+import { useAuthStore } from '~/stores/auth'
+
 export const useAuth = () => {
-  const user = useState('auth:user', () => ({
-    name: 'Mike Nielsen',
-    email: 'mike@admin.com',
-    role: 'Admin',
-    avatar: 'https://i.pravatar.cc/150?img=11',
-  }))
+  const authStore = useAuthStore()
 
-  const isLoggedIn = useState('auth:loggedIn', () => false)
-
-  const login = (email: string, _password: string) => {
-    // Replace with real API call when backend is ready
-    user.value = { name: 'Mike Nielsen', email, role: 'Admin', avatar: 'https://i.pravatar.cc/150?img=11' }
-    isLoggedIn.value = true
+  const login = (email: string, password: string) => {
+    authStore.login(email, password)
   }
 
   const logout = () => {
-    isLoggedIn.value = false
-    navigateTo('/login')
+    authStore.logout()
   }
 
-  return { user, isLoggedIn, login, logout }
+  return {
+    user: computed(() => authStore.user),
+    isLoggedIn: computed(() => authStore.isLoggedIn),
+    login,
+    logout,
+  }
 }
