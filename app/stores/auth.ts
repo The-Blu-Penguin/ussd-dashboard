@@ -1,34 +1,125 @@
 import { defineStore } from 'pinia'
+import type { User, ApiResponse, LoginResponseData } from '~/types/api'
 
-interface User {
-  name: string
-  email: string
-  role: string
-  avatar: string
+interface AuthState {
+  user: User | null
+  isLoggedIn: boolean
+  accessToken: string | null
+  isLoading: boolean
 }
 
 export const useAuthStore = defineStore('auth', {
-  state: () => ({
-    user: null as User | null,
-    isLoggedIn: false as boolean,
+  state: (): AuthState => ({
+    user: null,
+    isLoggedIn: false,
+    accessToken: null,
+    isLoading: false,
   }),
   actions: {
-    login(email: string, _password: string) {
-      this.user = {
-        name: 'Mike Nielsen',
-        email,
-        role: 'Admin',
-        avatar: 'https://i.pravatar.cc/150?img=11',
+    async login(email: string, password: string) {
+      this.isLoading = true
+      try {
+        const config = useRuntimeConfig()
+        const baseUrl = config.public.apiBaseUrl as string
+
+        console.log(`[Auth Store] Attempting login for ${email} at ${baseUrl}/auth/login`)
+
+        const response = await $fetch<ApiResponse<LoginResponseData>>(`${baseUrl}/auth/login`, {
+          method: 'POST',
+          body: { email, password },
+        })
+
+        console.log(`[Auth Store] Login response:`, response)
+
+        if (response.success && response.data) {
+          this.user = response.data.user
+          this.accessToken = response.data.accessToken
+          this.isLoggedIn = true
+
+          if (import.meta.client) {
+            localStorage.setItem('accessToken', response.data.accessToken)
+          }
+
+          return { success: true, message: response.message }
+        } else {
+          console.warn(`[Auth Store] Login returned false success flag`, response)
+          return { success: false, message: response.message }
+        }
+      } catch (error: any) {
+        console.error(`[Auth Store] Login error:`, error)
+        let message = 'Login failed. Please try again.'
+
+        if (error.response) {
+          const status = error.response.status
+          switch (status) {
+            case 401:
+              message = 'Invalid email or password.'
+              break
+            case 403:
+              message = 'Access forbidden. Please contact administrator.'
+              break
+            case 422:
+              message = error.response._data?.message || 'Validation error. Please check your inputs.'
+              break
+            case 500:
+              message = 'Server error. Please try again later.'
+              break
+            case 502:
+            case 503:
+              message = 'Service temporarily unavailable. Please try again later.'
+              break
+            default:
+              message = error.response._data?.message || error.message || 'Login failed. Please try again.'
+          }
+        } else if (error.message) {
+          message = 'Unable to connect. Please check your internet connection.'
+        }
+
+        return {
+          success: false,
+          message,
+        }
+      } finally {
+        this.isLoading = false
       }
-      this.isLoggedIn = true
     },
-    logout() {
-      this.isLoggedIn = false
-      navigateTo('/login')
+    async logout() {
+      try {
+        const config = useRuntimeConfig()
+        const baseUrl = config.public.apiBaseUrl as string
+
+        await $fetch(`${baseUrl}/auth/logout`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+          },
+        })
+      } catch (error) {
+        // Continue with logout even if API call fails
+      } finally {
+        this.user = null
+        this.accessToken = null
+        this.isLoggedIn = false
+
+        if (import.meta.client) {
+          localStorage.removeItem('accessToken')
+        }
+
+        navigateTo('/login')
+      }
     },
     setUser(user: User) {
       this.user = user
       this.isLoggedIn = true
+    },
+    initAuth() {
+      if (import.meta.client) {
+        const token = localStorage.getItem('accessToken')
+        if (token) {
+          this.accessToken = token
+          this.isLoggedIn = true
+        }
+      }
     },
   },
 })

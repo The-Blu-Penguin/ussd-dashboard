@@ -19,28 +19,31 @@ const handleLogin = async () => {
   error.value = ''
   loading.value = true
 
-  if (!email.value) { 
+  if (!email.value) {
     error.value = 'Email is required'
     loading.value = false
-    return 
+    return
   }
-  if (!validateEmail(email.value)) { 
+  if (!validateEmail(email.value)) {
     error.value = 'Please enter a valid email address'
     loading.value = false
-    return 
+    return
   }
-  if (!password.value) { 
+  if (!password.value) {
     error.value = 'Password is required'
     loading.value = false
-    return 
+    return
   }
 
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 1000))
+  const result = await login(email.value, password.value)
 
-  login(email.value, password.value)
+  if (result.success) {
+    navigateTo('/')
+  } else {
+    error.value = result.message || 'Login failed'
+  }
+
   loading.value = false
-  navigateTo('/')
 }
 
 const floatingChars = ref<{
@@ -57,161 +60,158 @@ const ussdChars = ['*', '8', '2', '0', '#']
 const moveAway = (index: number, event: MouseEvent) => {
   const char = floatingChars.value[index]
   if (!char) return
-  
-  // Get viewport dimensions
+
   const vw = window.innerWidth
   const vh = window.innerHeight
-  
-  // Convert percentage position to pixels
+
   const currentX = (char.left / 100) * vw
   const currentY = (char.top / 100) * vh
-  
-  // Mouse position
+
   const mouseX = event.clientX
   const mouseY = event.clientY
-  
-  // Calculate distance
+
   const dx = currentX - mouseX
   const dy = currentY - mouseY
   const distance = Math.sqrt(dx * dx + dy * dy)
-  
-  // Repel radius (increase for stronger effect)
+
   const radius = 200
-  
+
   if (distance < radius) {
-    // Calculate repel angle
     const angle = Math.atan2(dy, dx)
-    
-    // Move significantly away (e.g., 100px)
+
     const moveDistance = 100
     const moveX = Math.cos(angle) * moveDistance
     const moveY = Math.sin(angle) * moveDistance
-    
-    // Update position back to percentage
+
     const newLeft = ((currentX + moveX) / vw) * 100
     const newTop = ((currentY + moveY) / vh) * 100
-    
+
     char.left = Math.max(0, Math.min(100, newLeft))
     char.top = Math.max(0, Math.min(100, newTop))
   }
 }
 
 onMounted(() => {
-  // Generate random floating characters
-  for (let i = 0; i < 15; i++) {
-    const randomChar = ussdChars[Math.floor(Math.random() * ussdChars.length)] || '*'
+  for (let i = 0; i < 20; i++) {
     floatingChars.value.push({
-      char: randomChar,
+      char: ussdChars[Math.floor(Math.random() * ussdChars.length)] ?? '*',
       left: Math.random() * 100,
       top: Math.random() * 100,
-      size: Math.random() * 60 + 40, // 40px to 100px (Even Bigger)
-      duration: Math.random() * 20 + 10, // Slower float
+      size: Math.random() * 20 + 10,
+      duration: Math.random() * 10 + 5,
       delay: Math.random() * 5,
-      opacity: Math.random() * 0.3 + 0.1
+      opacity: Math.random() * 0.3 + 0.1,
     })
   }
 })
 </script>
 
 <template>
-  <div class="min-h-screen w-full flex items-center justify-center bg-[#ecf5fb] relative overflow-hidden font-sans p-4">
-    <div class="absolute top-0 right-0 w-96 h-96 bg-[#3dd5f3] rounded-full blur-[100px] opacity-20 -mr-20 -mt-20 transform rotate-45 pointer-events-none" />
-    <div class="absolute bottom-0 left-0 w-80 h-80 bg-[#ffa48d] rounded-full blur-[100px] opacity-30 -ml-20 -mb-20 pointer-events-none" />
-
-    <!-- Floating USSD Characters -->
-    <div class="absolute inset-0 pointer-events-none overflow-hidden hidden sm:block">
-      <div v-for="(item, index) in floatingChars" :key="index"
-           class="absolute font-mono font-bold text-blue-500 animate-float transition-all duration-500 ease-out pointer-events-auto"
-           @mousemove="moveAway(index, $event)"
-           :style="{
-             left: `${item.left}%`,
-             top: `${item.top}%`,
-             fontSize: `${item.size}px`,
-             animationDuration: `${item.duration}s`,
-             animationDelay: `${item.delay}s`,
-             opacity: item.opacity
-           }">
-        {{ item.char }}
-      </div>
+  <div class="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 relative overflow-hidden p-4">
+    <!-- Floating USSD characters -->
+    <div
+      v-for="(char, index) in floatingChars"
+      :key="index"
+      class="absolute text-blue-400 select-none pointer-events-none animate-float"
+      :style="{
+        left: `${char.left}%`,
+        top: `${char.top}%`,
+        fontSize: `${char.size}px`,
+        opacity: char.opacity,
+        animationDuration: `${char.duration}s`,
+        animationDelay: `${char.delay}s`,
+      }"
+      @mouseenter="moveAway(index, $event)"
+    >
+      {{ char.char }}
     </div>
 
-    <!-- Login Card -->
-    <div class="relative w-full max-w-md bg-white rounded-3xl shadow-[0_20px_50px_rgba(8,_112,_184,_0.1)] p-8 sm:p-12 z-20 border border-white/50 backdrop-blur-lg">
-      <div class="flex flex-col items-center mb-8">
-        <div class="w-16 h-16 bg-[#e0f2fe] rounded-2xl flex items-center justify-center mb-4 shadow-inner">
-          <img src="/images.png" alt="Logo" class="w-10 h-10 object-contain" />
+    <div class="w-full max-w-md relative z-10">
+      <!-- Logo & Title -->
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 shadow-xl mb-4">
+          <span class="text-2xl font-bold text-white">V</span>
         </div>
-        <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">Welcome Back</h2>
-        <p class="text-gray-500 mt-2 text-sm font-medium">Sign in to your dashboard</p>
+        <h1 class="text-3xl font-bold text-white mb-2">Welcome Back</h1>
+        <p class="text-blue-200">Sign in to your VIBES account</p>
       </div>
 
-      <form @submit.prevent="handleLogin">
-        <div class="mb-4">
-          <label class="block text-gray-700 text-xs font-bold mb-2" for="email">
-            Email
-          </label>
-          <input
-            id="email"
-            v-model="email"
-            class="appearance-none border border-gray-200 rounded-lg w-full py-2.5 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-            type="text"
-            placeholder="info@wrappixel.com"
+      <!-- Login Card -->
+      <div class="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-8">
+        <form @submit.prevent="handleLogin" class="space-y-6">
+          <!-- Email -->
+          <div>
+            <label for="email" class="block text-sm font-medium text-blue-100 mb-2">Email Address</label>
+            <input
+              id="email"
+              v-model="email"
+              type="email"
+              autocomplete="email"
+              class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-blue-200/50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
+              placeholder="admin@vibes.com"
+            />
+          </div>
+
+          <!-- Password -->
+          <div>
+            <label for="password" class="block text-sm font-medium text-blue-100 mb-2">Password</label>
+            <input
+              id="password"
+              v-model="password"
+              type="password"
+              autocomplete="current-password"
+              class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-blue-200/50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
+              placeholder="Enter your password"
+            />
+          </div>
+
+          <!-- Error Message -->
+          <div v-if="error" class="p-3 rounded-lg bg-red-500/20 border border-red-400/30 text-red-200 text-sm">
+            {{ error }}
+          </div>
+
+          <!-- Submit Button -->
+          <Button
+            type="submit"
+            variant="secondary"
+            size="lg"
+            class="w-full"
+            :loading="loading"
+            :disabled="loading"
           >
-        </div>
-        <div class="mb-6">
-          <label class="block text-gray-700 text-xs font-bold mb-2" for="password">
-            Password
-          </label>
-          <input
-            id="password"
-            v-model="password"
-            class="appearance-none border border-gray-200 rounded-lg w-full py-2.5 px-3 text-gray-700 mb-1 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-            type="password"
-            placeholder="•••••••"
-          >
-        </div>
+            {{ loading ? 'Signing in...' : 'Sign In' }}
+          </Button>
+        </form>
 
-        <div v-if="error" class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 text-xs rounded">
-          {{ error }}
+        <!-- Footer Links -->
+        <div class="mt-6 text-center">
+          <a href="#" class="text-sm text-blue-200 hover:text-white transition-colors">
+            Forgot your password?
+          </a>
         </div>
+      </div>
 
-        <div class="flex items-center justify-between mb-8">
-          <label class="flex items-center cursor-pointer">
-            <input type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-            <span class="ml-2 text-xs text-gray-500">Remember this Device</span>
-          </label>
-          <NuxtLink to="/forgot-password" class="inline-block align-baseline font-medium text-xs text-blue-500 hover:text-blue-800">
-            Forgot Password ?
-          </NuxtLink>
-        </div>
-
-        <Button 
-          type="submit" 
-          variant="primary" 
-          block 
-          class="rounded-full py-3 shadow-md"
-          :loading="loading"
-        >
-          Sign In
-        </Button>
-      </form>
+      <!-- Demo Credentials -->
+      <div class="mt-6 p-4 bg-white/5 rounded-xl border border-white/10">
+        <p class="text-center text-sm text-blue-200">
+          <span class="font-semibold">Demo:</span> admin@vibes.com / any password
+        </p>
+      </div>
     </div>
   </div>
 </template>
 
-<style>
-/* Additional custom styles if needed */
-body {
-  font-family: 'Inter', sans-serif;
-}
-
+<style scoped>
 @keyframes float {
-  0% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-20px) rotate(180deg); }
-  100% { transform: translateY(0) rotate(360deg); }
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(5deg);
+  }
 }
 
 .animate-float {
-  animation: float infinite ease-in-out;
+  animation: float 3s ease-in-out infinite;
 }
 </style>

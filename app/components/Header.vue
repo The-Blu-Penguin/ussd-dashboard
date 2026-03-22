@@ -56,11 +56,11 @@ const toggleMobileSidebar = () => {
       <div class="flex items-center pl-2 sm:pl-4 border-l border-gray-100 dark:border-gray-800 ml-2 sm:ml-4 cursor-pointer group">
         <div class="flex items-center space-x-2 sm:space-x-3">
           <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 overflow-hidden ring-2 ring-transparent group-hover:ring-blue-200 dark:group-hover:ring-blue-800 transition-all shrink-0">
-            <img :src="user.avatar" :alt="user.name" class="w-full h-full object-cover" />
+            <img v-if="user?.avatar" :src="user.avatar" :alt="user.fullName" class="w-full h-full object-cover" />
           </div>
           <div class="hidden md:block text-left">
-            <p class="text-sm font-semibold text-gray-700 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400">{{ user.name }}</p>
-            <p class="text-xs text-gray-400 dark:text-gray-500">{{ user.role }}</p>
+            <p class="text-sm font-semibold text-gray-700 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400">{{ user?.fullName || 'User' }}</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500">{{ user?.role || 'N/A' }}</p>
           </div>
           <ChevronDown class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 hidden sm:block" />
         </div>
