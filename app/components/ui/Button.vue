@@ -65,13 +65,19 @@ const sizeClasses = computed(() => {
       sizeClasses,
       { 'w-full': block }
     ]"
+    class="relative"
   >
-    <span v-if="loading" class="mr-2 flex items-center justify-center">
+    <!-- Use absolute positioning for the loader to prevent layout shift -->
+    <div v-if="loading" class="absolute inset-0 flex items-center justify-center">
       <Preloader 
         :size="size === 'lg' ? 'sm' : 'xs'" 
         :color="['outline', 'ghost', 'secondary'].includes(variant) ? 'blue' : 'white'" 
       />
+    </div>
+    
+    <!-- Hide the text while loading, but keep it in the DOM so the button retains its natural width/height -->
+    <span :class="{ 'opacity-0': loading }" class="flex items-center justify-center w-full h-full">
+      <slot />
     </span>
-    <slot />
   </button>
 </template>
