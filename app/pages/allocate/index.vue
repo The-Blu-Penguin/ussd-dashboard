@@ -55,7 +55,7 @@ const menuFlows = [
 const apps = computed<App[]>(() => {
   return directoryStore.directories.map(dir => ({
     id: dir.id,
-    name: dir.createdBy?.fullName || 'Unknown',
+    name: dir.merchantName || dir.createdBy?.fullName || 'Unknown',
     merchantId: dir.merchantCode || '-',
     code: dir.ussdCode,
     type: dir.level,
@@ -328,7 +328,7 @@ const handleAllocate = async () => {
                 <div class="flex items-center">
                   <div>
                     <p class="font-bold text-gray-800 dark:text-gray-100">{{ app.name }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">ID: {{ app.id.substring(0, 8) }}...</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">ID: {{ app.merchantId }}</p>
                   </div>
                 </div>
               </td>

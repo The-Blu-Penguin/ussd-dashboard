@@ -91,6 +91,24 @@ export interface Directory {
   updatedAt: string
   childrenCount: number
   createdBy: DirectoryCreator
+  merchantName?: string // Client-side added property
+}
+
+export interface MerchantDetails {
+  uuid: string
+  merchantCode: string
+  merchantName: string
+}
+
+export interface MerchantResponseData {
+  merchant: MerchantDetails
+  accessToken: string
+}
+
+export interface MerchantApiResponse {
+  status: string
+  message: string
+  data: MerchantResponseData
 }
 
 export interface ApiResponse<T = any> {

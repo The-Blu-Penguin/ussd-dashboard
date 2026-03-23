@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { useAuthStore } from './auth'
-import type { Directory, ApiResponse } from '~/types/api'
+import type { Directory, ApiResponse, MerchantApiResponse } from '~/types/api'
 
 interface DirectoryState {
   directories: Directory[]
@@ -33,6 +33,29 @@ export const useDirectoryStore = defineStore('directory', {
 
         if (response.success && response.data) {
           this.directories = response.data
+          
+          // Fetch merchant names for each directory asynchronously
+          this.directories.forEach(async (dir, index) => {
+            if (dir.merchantCode) {
+              try {
+                const merchantResponse = await $fetch<MerchantApiResponse>(`${baseUrl}/merchants/${dir.merchantCode}`, {
+                  method: 'GET',
+                  headers: {
+                    Authorization: `Bearer ${authStore.accessToken}`,
+                  },
+                })
+                
+                if (merchantResponse.status === 'success' && merchantResponse.data?.merchant?.merchantName) {
+                  if (this.directories[index]) {
+                    this.directories[index].merchantName = merchantResponse.data.merchant.merchantName
+                  }
+                }
+              } catch (e) {
+                console.error(`Failed to fetch merchant details for code: ${dir.merchantCode}`, e)
+              }
+            }
+          })
+          
           return { success: true, message: response.message }
         } else {
           this.error = response.message || 'Failed to fetch directories'
