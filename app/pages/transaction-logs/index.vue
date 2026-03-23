@@ -67,7 +67,7 @@ const handlePageChange = (page: number) => { currentPage.value = page }
 
         <div class="relative z-10">
           <div class="flex items-center justify-between mb-4">
-            <div class="p-3 bg-blue-100/20 backdrop-blur-sm rounded-lg text-white border border-white/10 shadow-inner">
+            <div class="p-3 bg-vibes-100/20 backdrop-blur-sm rounded-lg text-white border border-white/10 shadow-inner">
               <FileText class="w-6 h-6" />
             </div>
             <span class="text-xs font-bold text-white bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 shadow-sm">+8%</span>
@@ -160,7 +160,7 @@ const handlePageChange = (page: number) => { currentPage.value = page }
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
-            <tr v-for="txn in paginatedTransactions" :key="txn.id" class="hover:bg-blue-50/30 dark:hover:bg-gray-700/50 transition-colors group">
+            <tr v-for="txn in paginatedTransactions" :key="txn.id" class="hover:bg-vibes-50/30 dark:hover:bg-gray-700/50 transition-colors group">
               <td class="px-6 py-4">
                 <span class="text-sm font-medium text-gray-900 dark:text-gray-100 font-mono">{{ txn.id }}</span>
               </td>
@@ -191,7 +191,7 @@ const handlePageChange = (page: number) => { currentPage.value = page }
               <td class="px-6 py-4 text-right">
                 <button 
                   @click="viewTxn(txn)"
-                  class="text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 p-1.5 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
+                  class="text-gray-400 dark:text-gray-500 hover:text-vibes-600 dark:hover:text-vibes-400 p-1.5 rounded-md hover:bg-vibes-50 dark:hover:bg-vibes-900/30 transition-colors"
                   title="View Details"
                 >
                   <Eye class="w-4 h-4" />

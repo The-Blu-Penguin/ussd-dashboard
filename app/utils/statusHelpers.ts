@@ -12,7 +12,7 @@ import {
 
 export const getLevelColor = (level: string): string => {
   switch (level) {
-    case 'Info': return 'bg-blue-100 text-blue-800 border-blue-200'
+    case 'Info': return 'bg-vibes-100 text-blue-800 border-blue-200'
     case 'Warning': return 'bg-amber-100 text-amber-800 border-amber-200'
     case 'Error': return 'bg-red-100 text-red-800 border-red-200'
     case 'Critical': return 'bg-purple-100 text-purple-800 border-purple-200'
@@ -34,7 +34,7 @@ export const getLevelIcon = (level: string) => {
 
 export const getStatusCodeColor = (code: number): string => {
   if (code >= 200 && code < 300) return 'text-green-600 bg-green-50'
-  if (code >= 300 && code < 400) return 'text-blue-600 bg-blue-50'
+  if (code >= 300 && code < 400) return 'text-vibes-600 bg-vibes-50'
   if (code >= 400 && code < 500) return 'text-amber-600 bg-amber-50'
   if (code >= 500) return 'text-red-600 bg-red-50'
   return 'text-gray-600 bg-gray-50'

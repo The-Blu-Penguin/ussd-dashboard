@@ -49,14 +49,14 @@ const updateNodeLabel = (val) => {
           type="text" 
           :value="selectedNode.label"
           @input="updateNodeLabel($event.target.value)"
-          class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+          class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:border-vibes-500 transition-colors"
         />
       </div>
 
       <!-- Component Type Display -->
       <div>
         <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Type</label>
-        <div class="px-3 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-lg text-sm font-medium border border-blue-100 dark:border-blue-800 inline-block">
+        <div class="px-3 py-2 bg-vibes-50 dark:bg-vibes-900/30 text-vibes-700 dark:text-vibes-400 rounded-lg text-sm font-medium border border-blue-100 dark:border-blue-800 inline-block">
           {{ selectedNode.data?.componentType || 'UNKNOWN' }}
         </div>
       </div>
@@ -70,7 +70,7 @@ const updateNodeLabel = (val) => {
           <textarea 
             v-model="selectedNode.data.prompt"
             rows="3"
-            class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+            class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:border-vibes-500 transition-colors resize-none"
             placeholder="Enter prompt text shown to user..."
           ></textarea>
         </div>
@@ -80,7 +80,7 @@ const updateNodeLabel = (val) => {
           <input 
             type="text" 
             v-model="selectedNode.data.variable"
-            class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:border-vibes-500 transition-colors"
             placeholder="e.g. amount"
           />
         </div>
@@ -92,7 +92,7 @@ const updateNodeLabel = (val) => {
           <input 
             type="text" 
             v-model="selectedNode.data.actionName"
-            class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:border-vibes-500 transition-colors"
             placeholder="e.g. processPayment"
           />
         </div>
@@ -101,7 +101,7 @@ const updateNodeLabel = (val) => {
           <input 
             type="text" 
             v-model="selectedNode.data.endpoint"
-            class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:border-vibes-500 transition-colors"
             placeholder="https://api..."
           />
         </div>
@@ -113,7 +113,7 @@ const updateNodeLabel = (val) => {
           <textarea 
             v-model="selectedNode.data.prompt"
             rows="3"
-            class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+            class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:border-vibes-500 transition-colors resize-none"
             placeholder="Message to show before terminating session..."
           ></textarea>
         </div>

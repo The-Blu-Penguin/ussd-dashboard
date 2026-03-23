@@ -12,6 +12,7 @@ const email = ref('')
 const password = ref('')
 const error = ref('')
 const loading = ref(false)
+const showSuccessModal = ref(false)
 
 const validateEmail = (val: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)
 
@@ -38,12 +39,14 @@ const handleLogin = async () => {
   const result = await login(email.value, password.value)
 
   if (result.success) {
-    navigateTo('/')
+    showSuccessModal.value = true
+    setTimeout(() => {
+      navigateTo('/')
+    }, 1500)
   } else {
     error.value = result.message || 'Login failed'
+    loading.value = false
   }
-
-  loading.value = false
 }
 
 const floatingChars = ref<{
@@ -97,7 +100,7 @@ onMounted(() => {
       char: ussdChars[Math.floor(Math.random() * ussdChars.length)] ?? '*',
       left: Math.random() * 100,
       top: Math.random() * 100,
-      size: Math.random() * 20 + 10,
+      size: Math.random() * 60 + 40, // Increased size: minimum 40px, up to 100px
       duration: Math.random() * 10 + 5,
       delay: Math.random() * 5,
       opacity: Math.random() * 0.3 + 0.1,
@@ -107,12 +110,25 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 relative overflow-hidden p-4">
+  <div class="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-vibes-900 via-vibes-800 to-indigo-900 relative overflow-hidden p-4">
+    <!-- Success Notification -->
+    <div 
+      class="fixed top-0 left-0 right-0 z-50 flex justify-center transition-all duration-500 ease-in-out"
+      :class="showSuccessModal ? 'translate-y-4 opacity-100' : '-translate-y-full opacity-0'"
+    >
+      <div class="bg-green-500 text-white px-6 py-3 rounded-full shadow-2xl font-semibold flex items-center space-x-2 border border-green-400">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+        </svg>
+        <span>Login Successful!</span>
+      </div>
+    </div>
+
     <!-- Floating USSD characters -->
     <div
       v-for="(char, index) in floatingChars"
       :key="index"
-      class="absolute text-blue-400 select-none pointer-events-none animate-float"
+      class="absolute text-vibes-400 select-none pointer-events-none animate-float"
       :style="{
         left: `${char.left}%`,
         top: `${char.top}%`,
@@ -128,12 +144,12 @@ onMounted(() => {
 
     <div class="w-full max-w-md relative z-10">
       <!-- Logo & Title -->
-      <div class="text-center mb-8">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 shadow-xl mb-4">
-          <span class="text-2xl font-bold text-white">V</span>
+      <div class="text-center mb-8 flex flex-col items-center">
+        <div class="mb-6 bg-white p-3 rounded-2xl shadow-xl w-32 h-32 flex items-center justify-center">
+          <img src="/images.png" alt="Blupay Logo" class="w-full h-auto object-contain" />
         </div>
         <h1 class="text-3xl font-bold text-white mb-2">Welcome Back</h1>
-        <p class="text-blue-200">Sign in to your VIBES account</p>
+        <p class="text-vibes-200">Sign in to your account</p>
       </div>
 
       <!-- Login Card -->
@@ -147,7 +163,7 @@ onMounted(() => {
               v-model="email"
               type="email"
               autocomplete="email"
-              class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-blue-200/50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
+              class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-vibes-200/50 focus:outline-none focus:ring-2 focus:ring-vibes-400 focus:border-transparent transition-all"
               placeholder="admin@vibes.com"
             />
           </div>
@@ -160,7 +176,7 @@ onMounted(() => {
               v-model="password"
               type="password"
               autocomplete="current-password"
-              class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-blue-200/50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
+              class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-vibes-200/50 focus:outline-none focus:ring-2 focus:ring-vibes-400 focus:border-transparent transition-all"
               placeholder="Enter your password"
             />
           </div>
@@ -185,17 +201,10 @@ onMounted(() => {
 
         <!-- Footer Links -->
         <div class="mt-6 text-center">
-          <a href="#" class="text-sm text-blue-200 hover:text-white transition-colors">
+          <a href="#" class="text-sm text-vibes-200 hover:text-white transition-colors">
             Forgot your password?
           </a>
         </div>
-      </div>
-
-      <!-- Demo Credentials -->
-      <div class="mt-6 p-4 bg-white/5 rounded-xl border border-white/10">
-        <p class="text-center text-sm text-blue-200">
-          <span class="font-semibold">Demo:</span> admin@vibes.com / any password
-        </p>
       </div>
     </div>
   </div>

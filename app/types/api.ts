@@ -25,6 +25,7 @@ export interface User {
   fullName: string
   email: string
   role: 'ADMIN' | 'USER' | 'MERCHANT'
+  avatarUrl?: string
   permissions: UserPermissions
   isActive: boolean
   lastLogin: string
@@ -66,6 +67,30 @@ export interface CreateMenuConfigRequest {
   hasReference: boolean
   description: string
   menuConfig: Record<string, any>
+}
+
+export interface DirectoryCreator {
+  id: string
+  email: string
+  fullName: string
+}
+
+export interface Directory {
+  id: string
+  merchantCode: string
+  assignedCode: string
+  ussdCode: string
+  menuConfig: Record<string, any>
+  menuConfigFlowId: string
+  parentDirectoryId: string | null
+  parentUssdCode: string | null
+  path: string
+  level: string
+  status: string
+  createdAt: string
+  updatedAt: string
+  childrenCount: number
+  createdBy: DirectoryCreator
 }
 
 export interface ApiResponse<T = any> {

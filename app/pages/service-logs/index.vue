@@ -98,7 +98,7 @@ const handlePageChange = (page: number) => { currentPage.value = page }
 
         <div class="relative z-10">
           <div class="flex items-center justify-between mb-4">
-            <div class="p-3 bg-blue-100/20 backdrop-blur-sm rounded-lg text-white border border-white/10 shadow-inner">
+            <div class="p-3 bg-vibes-100/20 backdrop-blur-sm rounded-lg text-white border border-white/10 shadow-inner">
               <Server class="w-6 h-6" />
             </div>
             <span class="text-xs font-bold text-white bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 shadow-sm">Last 24h</span>
@@ -188,7 +188,7 @@ const handlePageChange = (page: number) => { currentPage.value = page }
         </div>
         
         <div class="flex items-center space-x-3 overflow-x-auto pb-2 sm:pb-0">
-           <select v-model="timeFilter" class="text-sm border-gray-200 dark:border-gray-700 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-800 py-1.5 px-3 text-gray-600 dark:text-gray-300">
+           <select v-model="timeFilter" class="text-sm border-gray-200 dark:border-gray-700 rounded-lg focus:ring-vibes-500 focus:border-vibes-500 bg-white dark:bg-gray-800 py-1.5 px-3 text-gray-600 dark:text-gray-300">
              <option>Live</option>
              <option>Last 15m</option>
              <option>Last 1h</option>
@@ -234,7 +234,7 @@ const handlePageChange = (page: number) => { currentPage.value = page }
                 
                 <!-- Service -->
                 <div class="w-24 shrink-0">
-                   <span class="text-sm font-bold" :class="log.service === 'USSD' ? 'text-blue-600 dark:text-blue-400' : 'text-purple-600 dark:text-purple-400'">{{ log.service }}</span>
+                   <span class="text-sm font-bold" :class="log.service === 'USSD' ? 'text-vibes-600 dark:text-vibes-400' : 'text-purple-600 dark:text-purple-400'">{{ log.service }}</span>
                 </div>
 
                 <!-- Level -->

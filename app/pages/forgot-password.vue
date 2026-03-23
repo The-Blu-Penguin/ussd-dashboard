@@ -44,7 +44,7 @@ const handleForgotPassword = async () => {
           </label>
           <input
             id="email"
-            class="appearance-none border border-gray-200 rounded-lg w-full py-2.5 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            class="appearance-none border border-gray-200 rounded-lg w-full py-2.5 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:border-transparent transition"
             type="email"
           >
         </div>
@@ -59,7 +59,7 @@ const handleForgotPassword = async () => {
           Forgot Password
         </Button>
 
-        <NuxtLink to="/login" class="block w-full text-center bg-[#ecf5fb] hover:bg-blue-100 text-[#0085db] font-bold py-3 px-4 rounded-full focus:outline-none focus:shadow-outline transition duration-300">
+        <NuxtLink to="/login" class="block w-full text-center bg-[#ecf5fb] hover:bg-vibes-100 text-[#0085db] font-bold py-3 px-4 rounded-full focus:outline-none focus:shadow-outline transition duration-300">
           Back To Login
         </NuxtLink>
       </form>

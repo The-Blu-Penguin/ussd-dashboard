@@ -23,7 +23,7 @@ onMounted(() => {
 })
 
 const stats = [
-  { title: 'Total Merchants', value: '2,450', change: '+12%', trend: 'up', icon: Users, color: 'text-blue-100 bg-blue-500/20', cardClass: 'bg-gradient-to-br from-blue-500 to-blue-600' },
+  { title: 'Total Merchants', value: '2,450', change: '+12%', trend: 'up', icon: Users, color: 'text-blue-100 bg-vibes-500/20', cardClass: 'bg-gradient-to-br from-blue-500 to-blue-600' },
   { title: 'Active Sessions', value: '145', change: '+24', trend: 'up', icon: Smartphone, color: 'text-purple-100 bg-purple-500/20', cardClass: 'bg-gradient-to-br from-purple-500 to-purple-600' },
   { title: 'Today\'s Volume', value: 'GHS 45,231', change: '+8.2%', trend: 'up', icon: CreditCard, color: 'text-emerald-100 bg-emerald-500/20', cardClass: 'bg-gradient-to-br from-emerald-500 to-emerald-600' },
   { title: 'Success Rate', value: '98.5%', change: '-0.5%', trend: 'down', icon: Activity, color: 'text-orange-100 bg-orange-500/20', cardClass: 'bg-gradient-to-br from-orange-500 to-orange-600' },
@@ -125,12 +125,12 @@ const chartOptions = {
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Welcome back, here's what's happening today.</p>
       </div>
       <div class="flex items-center space-x-3 w-full sm:w-auto">
-         <select class="flex-1 sm:flex-none bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-4 py-2">
+         <select class="flex-1 sm:flex-none bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm rounded-lg focus:ring-vibes-500 focus:border-vibes-500 block px-4 py-2">
             <option>Today</option>
             <option>This Week</option>
             <option>This Month</option>
          </select>
-         <button class="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+         <button class="flex-1 sm:flex-none bg-vibes-600 hover:bg-vibes-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
             Generate Report
          </button>
       </div>
@@ -222,7 +222,7 @@ const chartOptions = {
                <span class="font-bold text-gray-900 dark:text-gray-100">10%</span>
              </div>
              <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2.5">
-               <div class="bg-blue-600 h-2.5 rounded-full" style="width: 10%"></div>
+               <div class="bg-vibes-600 h-2.5 rounded-full" style="width: 10%"></div>
              </div>
            </div>
         </div>
@@ -245,7 +245,7 @@ const chartOptions = {
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_2px_15px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 overflow-hidden">
        <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
           <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">Recent Transactions</h3>
-          <button class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">View All</button>
+          <button class="text-sm text-vibes-600 dark:text-vibes-400 hover:text-vibes-700 dark:hover:text-vibes-300 font-medium">View All</button>
        </div>
        <div class="overflow-x-auto">
           <table class="w-full">

@@ -30,7 +30,7 @@ const toggleMobileSidebar = () => {
         </div>
         <input 
           type="text" 
-          class="block w-full pl-10 pr-3 py-2 border-none rounded-full leading-5 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:bg-white dark:focus:bg-gray-900 focus:ring-1 focus:ring-blue-500 sm:text-sm transition-colors" 
+          class="block w-full pl-10 pr-3 py-2 border-none rounded-full leading-5 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:bg-white dark:focus:bg-gray-900 focus:ring-1 focus:ring-vibes-500 sm:text-sm transition-colors" 
           placeholder="Try to searching ..."
         >
       </div>
@@ -55,11 +55,11 @@ const toggleMobileSidebar = () => {
       <!-- User Profile -->
       <div class="flex items-center pl-2 sm:pl-4 border-l border-gray-100 dark:border-gray-800 ml-2 sm:ml-4 cursor-pointer group">
         <div class="flex items-center space-x-2 sm:space-x-3">
-          <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 overflow-hidden ring-2 ring-transparent group-hover:ring-blue-200 dark:group-hover:ring-blue-800 transition-all shrink-0">
+          <div class="w-8 h-8 rounded-full bg-vibes-100 dark:bg-vibes-900/50 overflow-hidden ring-2 ring-transparent group-hover:ring-blue-200 dark:group-hover:ring-blue-800 transition-all shrink-0">
             <img v-if="user?.avatar" :src="user.avatar" :alt="user.fullName" class="w-full h-full object-cover" />
           </div>
           <div class="hidden md:block text-left">
-            <p class="text-sm font-semibold text-gray-700 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400">{{ user?.fullName || 'User' }}</p>
+            <p class="text-sm font-semibold text-gray-700 dark:text-gray-200 group-hover:text-vibes-600 dark:group-hover:text-vibes-400">{{ user?.fullName || 'User' }}</p>
             <p class="text-xs text-gray-400 dark:text-gray-500">{{ user?.role || 'N/A' }}</p>
           </div>
           <ChevronDown class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 hidden sm:block" />

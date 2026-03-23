@@ -35,13 +35,13 @@ const baseClasses = 'inline-flex items-center justify-center font-medium transit
 
 const variantClasses = computed(() => {
   switch (props.variant) {
-    case 'primary': return 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500'
+    case 'primary': return 'bg-vibes-600 text-white hover:bg-vibes-700 focus:ring-vibes-500'
     case 'secondary': return 'bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500'
     case 'danger': return 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500'
     case 'success': return 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500'
-    case 'outline': return 'border border-gray-300 bg-transparent text-gray-700 hover:bg-gray-50 focus:ring-blue-500'
+    case 'outline': return 'border border-gray-300 bg-transparent text-gray-700 hover:bg-gray-50 focus:ring-vibes-500'
     case 'ghost': return 'bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-    default: return 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500'
+    default: return 'bg-vibes-600 text-white hover:bg-vibes-700 focus:ring-vibes-500'
   }
 })
 

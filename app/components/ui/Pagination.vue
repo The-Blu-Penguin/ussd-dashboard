@@ -38,7 +38,7 @@ const handlePageChange = (page: number) => {
         :key="page"
         @click="handlePageChange(page)"
         class="px-3 py-1 text-xs font-medium rounded-md shadow-sm transition-colors"
-        :class="currentPage === page ? 'text-white bg-blue-600 border border-blue-600' : 'text-gray-500 bg-white border border-gray-200 hover:bg-gray-50'"
+        :class="currentPage === page ? 'text-white bg-vibes-600 border border-vibes-600' : 'text-gray-500 bg-white border border-gray-200 hover:bg-gray-50'"
       >
         {{ page }}
       </button>

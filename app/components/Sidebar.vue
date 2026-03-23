@@ -117,7 +117,7 @@ const closeMobileSidebar = () => {
     <!-- Logo -->
     <div class="h-16 flex items-center justify-between px-4 border-b border-gray-50 dark:border-gray-800 relative">
       <div class="flex items-center overflow-hidden whitespace-nowrap">
-        <img src="/images.png" alt="Logo" class="w-15 h-15 min-w-[32px] transition-all object-contain" :class="isCollapsed ? 'mx-auto' : 'mr-3'" />
+        <img src="/images.png" alt="Logo" class="w-14 h-14 min-w-[32px] transition-all object-contain" :class="isCollapsed ? 'mx-auto' : 'mr-3'" />
         <span 
           class="text-xl font-bold text-gray-800 dark:text-gray-100 transition-opacity duration-200"
           :class="isCollapsed ? 'opacity-0 w-0' : 'opacity-100'"
@@ -152,7 +152,7 @@ const closeMobileSidebar = () => {
                   @click="toggleMenu(item.name)"
                   class="w-full flex items-center px-3 py-2.5 rounded-lg transition-colors duration-200 group relative"
                   :class="[
-                    isActive(item) ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200',
+                    isActive(item) ? 'bg-vibes-50 dark:bg-vibes-900/30 text-vibes-600 dark:text-vibes-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200',
                     isCollapsed ? 'justify-center' : ''
                   ]"
                   :title="isCollapsed ? item.name : ''"
@@ -161,7 +161,7 @@ const closeMobileSidebar = () => {
                     :is="item.icon" 
                     class="w-5 h-5 transition-all duration-200 min-w-[20px]" 
                     :class="[
-                      isActive(item) ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300',
+                      isActive(item) ? 'text-vibes-600 dark:text-vibes-400' : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300',
                       isCollapsed ? 'mr-0' : 'mr-3'
                     ]" 
                   />
@@ -181,7 +181,7 @@ const closeMobileSidebar = () => {
                     ]"
                   />
                   
-                  <div v-if="isActive(item)" class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-600 dark:bg-blue-500 rounded-r-full"></div>
+                  <div v-if="isActive(item)" class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-vibes-600 dark:bg-vibes-500 rounded-r-full"></div>
                 </button>
 
                 <!-- Submenu -->
@@ -194,7 +194,7 @@ const closeMobileSidebar = () => {
                         :key="childIdx"
                         :to="child.to"
                         class="flex items-center px-3 py-2 rounded-lg text-sm transition-colors duration-200"
-                        :class="isChildActive(child.to) ? 'text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/20 font-medium' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'"
+                        :class="isChildActive(child.to) ? 'text-vibes-600 dark:text-vibes-400 bg-vibes-50/50 dark:bg-vibes-900/20 font-medium' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'"
                         @click="closeMobileSidebar"
                     >
                         <span>{{ child.name }}</span>
@@ -207,7 +207,7 @@ const closeMobileSidebar = () => {
                :to="item.to"
                class="flex items-center px-3 py-2.5 rounded-lg transition-colors duration-200 group relative"
                :class="[
-                 isActive(item) ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200',
+                 isActive(item) ? 'bg-vibes-50 dark:bg-vibes-900/30 text-vibes-600 dark:text-vibes-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200',
                  isCollapsed ? 'justify-center' : ''
                ]"
                :title="isCollapsed ? item.name : ''"
@@ -217,7 +217,7 @@ const closeMobileSidebar = () => {
                 :is="item.icon" 
                 class="w-5 h-5 transition-all duration-200 min-w-[20px]" 
                 :class="[
-                  isActive(item) ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300',
+                  isActive(item) ? 'text-vibes-600 dark:text-vibes-400' : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300',
                   isCollapsed ? 'mr-0' : 'mr-3'
                 ]" 
               />
@@ -229,7 +229,7 @@ const closeMobileSidebar = () => {
                 {{ item.name }}
               </span>
               
-              <div v-if="isActive(item)" class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-600 dark:bg-blue-500 rounded-r-full"></div>
+              <div v-if="isActive(item)" class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-vibes-600 dark:bg-vibes-500 rounded-r-full"></div>
             </NuxtLink>
           </li>
         </ul>
@@ -239,22 +239,23 @@ const closeMobileSidebar = () => {
     <!-- User Profile Footer -->
     <div class="p-4 border-t border-gray-50 dark:border-gray-800 overflow-hidden">
       <div 
-        class="bg-blue-50 dark:bg-gray-800 rounded-xl flex items-center transition-colors duration-200 group cursor-pointer hover:bg-blue-100 dark:hover:bg-gray-700"
+        class="bg-vibes-50 dark:bg-gray-800 rounded-xl flex items-center transition-colors duration-200 group cursor-pointer hover:bg-vibes-100 dark:hover:bg-gray-700"
         :class="isCollapsed ? 'p-2 justify-center' : 'p-3 justify-between'"
       >
         <div class="flex items-center overflow-hidden">
           <div class="w-8 h-8 min-w-[32px] rounded-full bg-blue-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden" :class="isCollapsed ? '' : 'mr-3'">
-             <img :src="user.avatar" :alt="user.name" class="w-full h-full object-cover" />
+             <img v-if="user?.avatarUrl" :src="user.avatarUrl" :alt="user?.fullName || 'User'" class="w-full h-full object-cover" />
+             <span v-else class="text-xs font-bold text-vibes-700 dark:text-vibes-300">{{ user?.fullName?.charAt(0) || 'U' }}</span>
           </div>
           <div 
             class="transition-all duration-200 whitespace-nowrap"
             :class="isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'"
           >
-            <h4 class="text-sm font-bold text-gray-800 dark:text-gray-200 group-hover:text-blue-700 dark:group-hover:text-blue-400">{{ user.name }}</h4>
-            <p class="text-xs text-gray-500 dark:text-gray-400">{{ user.role }}</p>
+            <h4 class="text-sm font-bold text-gray-800 dark:text-gray-200 group-hover:text-vibes-700 dark:group-hover:text-vibes-400">{{ user?.fullName || 'User' }}</h4>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ user?.role || 'Guest' }}</p>
           </div>
         </div>
-        <LogOut v-if="!isCollapsed" @click="logout" class="w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 ml-2 cursor-pointer" />
+        <LogOut v-if="!isCollapsed" @click="logout" class="w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-vibes-600 dark:group-hover:text-vibes-400 ml-2 cursor-pointer" />
       </div>
     </div>
   </aside>

@@ -52,7 +52,7 @@ const handlePageChange = (page) => {
 const getSignalColor = (signal) => {
   switch (signal) {
     case 'Strong': return 'text-green-500'
-    case 'Good': return 'text-blue-500'
+    case 'Good': return 'text-vibes-500'
     case 'Moderate': return 'text-yellow-500'
     case 'Weak': return 'text-red-500'
     default: return 'text-gray-400'
@@ -75,7 +75,7 @@ const getSignalColor = (signal) => {
         <button @click="refreshSessions" class="p-2 hover:bg-white dark:hover:bg-gray-700 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-600 dark:text-gray-300 transition-colors shadow-sm">
           <RefreshCw class="w-4 h-4" />
         </button>
-        <button class="flex-1 sm:flex-none flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
+        <button class="flex-1 sm:flex-none flex items-center justify-center space-x-2 px-4 py-2 bg-vibes-600 hover:bg-vibes-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
           <Download class="w-4 h-4" />
           <span>Export Report</span>
         </button>
@@ -92,7 +92,7 @@ const getSignalColor = (signal) => {
         
         <div class="relative z-10">
           <div class="flex items-start justify-between mb-4">
-            <div class="p-3 bg-blue-100/20 backdrop-blur-sm rounded-lg text-white border border-white/10 shadow-inner">
+            <div class="p-3 bg-vibes-100/20 backdrop-blur-sm rounded-lg text-white border border-white/10 shadow-inner">
               <Smartphone class="w-6 h-6" />
             </div>
             <span class="text-xs font-bold text-white bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 shadow-sm">+12%</span>
@@ -187,7 +187,7 @@ const getSignalColor = (signal) => {
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
-            <tr v-for="session in sessions" :key="session.id" class="hover:bg-blue-50/30 dark:hover:bg-gray-700/50 transition-colors group">
+            <tr v-for="session in sessions" :key="session.id" class="hover:bg-vibes-50/30 dark:hover:bg-gray-700/50 transition-colors group">
               <td class="px-6 py-4">
                 <div class="flex flex-col">
                   <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ session.id }}</span>
@@ -206,7 +206,7 @@ const getSignalColor = (signal) => {
                 </div>
               </td>
               <td class="px-6 py-4">
-                <span class="text-sm text-blue-700 dark:text-blue-400 font-mono font-bold bg-blue-50 dark:bg-blue-900/30 px-2.5 py-1 rounded-md border border-blue-100 dark:border-blue-800">{{ session.code }}</span>
+                <span class="text-sm text-vibes-700 dark:text-vibes-400 font-mono font-bold bg-vibes-50 dark:bg-vibes-900/30 px-2.5 py-1 rounded-md border border-blue-100 dark:border-blue-800">{{ session.code }}</span>
               </td>
               <td class="px-6 py-4">
                 <div class="flex flex-col">
@@ -226,7 +226,7 @@ const getSignalColor = (signal) => {
               <td class="px-6 py-4 text-right">
                 <button 
                   @click="viewSession(session)"
-                  class="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700 p-2 rounded-lg transition-all group-hover:text-blue-500 dark:group-hover:text-blue-400" 
+                  class="text-gray-400 hover:text-vibes-600 dark:hover:text-vibes-400 hover:bg-vibes-50 dark:hover:bg-gray-700 p-2 rounded-lg transition-all group-hover:text-vibes-500 dark:group-hover:text-vibes-400" 
                   title="View Details"
                 >
                   <Eye class="w-4 h-4" />
@@ -280,7 +280,7 @@ const getSignalColor = (signal) => {
             </div>
              <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-100 dark:border-gray-600">
               <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Service Code</p>
-              <p class="font-mono text-sm font-medium text-blue-600 dark:text-blue-400">{{ selectedSession.code }}</p>
+              <p class="font-mono text-sm font-medium text-vibes-600 dark:text-vibes-400">{{ selectedSession.code }}</p>
             </div>
              <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-100 dark:border-gray-600">
               <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Start Time</p>

@@ -88,7 +88,7 @@ const formatDate = (dateString: string) => {
         <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Menus & Flows</h1>
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Design and manage your USSD logic flows</p>
       </div>
-      <button @click="openCreateModal" class="w-full sm:w-auto flex justify-center items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
+      <button @click="openCreateModal" class="w-full sm:w-auto flex justify-center items-center space-x-2 px-4 py-2 bg-vibes-600 hover:bg-vibes-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
         <Plus class="w-4 h-4" />
         <span>Create New Flow</span>
       </button>
@@ -120,7 +120,7 @@ const formatDate = (dateString: string) => {
             <tr v-else v-for="flow in menuConfigsStore.configs" :key="flow.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
               <td class="px-6 py-4">
                 <div class="flex items-center">
-                  <div class="p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg mr-3">
+                  <div class="p-2 bg-vibes-50 dark:bg-vibes-900/30 text-vibes-600 dark:text-vibes-400 rounded-lg mr-3">
                     <ListTree class="w-4 h-4" />
                   </div>
                   <div>
@@ -145,7 +145,7 @@ const formatDate = (dateString: string) => {
                 <div class="flex items-center justify-end space-x-2">
                   <button 
                     @click="handleEditConfig(flow)"
-                    class="p-1.5 text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors" 
+                    class="p-1.5 text-gray-400 dark:text-gray-500 hover:text-vibes-600 dark:hover:text-vibes-400 hover:bg-vibes-50 dark:hover:bg-vibes-900/30 rounded-lg transition-colors" 
                     title="Edit"
                   >
                     <Edit2 class="w-4 h-4" />
@@ -188,8 +188,8 @@ const formatDate = (dateString: string) => {
 
         <!-- Options -->
         <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <NuxtLink to="/builder/visual" class="group block p-6 border-2 border-gray-100 dark:border-gray-700 rounded-xl hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-all cursor-pointer">
-            <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+          <NuxtLink to="/builder/visual" class="group block p-6 border-2 border-gray-100 dark:border-gray-700 rounded-xl hover:border-vibes-500 dark:hover:border-vibes-500 hover:bg-vibes-50/30 dark:hover:bg-vibes-900/10 transition-all cursor-pointer">
+            <div class="w-12 h-12 bg-vibes-100 dark:bg-vibes-900/50 text-vibes-600 dark:text-vibes-400 rounded-lg flex items-center justify-center mb-4 group-hover:bg-vibes-600 group-hover:text-white transition-colors">
               <Network class="w-6 h-6" />
             </div>
             <h4 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">Visual Builder</h4>

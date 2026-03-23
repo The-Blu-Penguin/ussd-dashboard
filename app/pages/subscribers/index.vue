@@ -94,7 +94,7 @@ const getNetworkBadge = (network: string) => {
   switch (network) {
     case 'MTN': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
     case 'Telecel': return 'bg-red-50 text-red-700 border-red-100'
-    case 'AT': return 'bg-blue-50 text-blue-700 border-blue-100'
+    case 'AT': return 'bg-vibes-50 text-vibes-700 border-blue-100'
     default: return 'bg-gray-50 text-gray-600 border-gray-200'
   }
 }
@@ -125,7 +125,7 @@ const getNetworkBadge = (network: string) => {
 
         <div class="relative z-10">
           <div class="flex items-center justify-between mb-4">
-            <div class="p-3 bg-blue-100/20 backdrop-blur-sm rounded-lg text-white border border-white/10 shadow-inner">
+            <div class="p-3 bg-vibes-100/20 backdrop-blur-sm rounded-lg text-white border border-white/10 shadow-inner">
               <Users class="w-6 h-6" />
             </div>
             <span class="text-xs font-bold text-white bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 shadow-sm">+12%</span>
@@ -217,7 +217,7 @@ const getNetworkBadge = (network: string) => {
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
-            <tr v-for="sub in subscribers" :key="sub.id" class="hover:bg-blue-50/30 dark:hover:bg-gray-700/50 transition-colors group">
+            <tr v-for="sub in subscribers" :key="sub.id" class="hover:bg-vibes-50/30 dark:hover:bg-gray-700/50 transition-colors group">
               <td class="px-6 py-4">
                 <div class="flex items-center">
                   <div class="h-9 w-9 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 text-xs font-bold mr-3">
@@ -229,7 +229,7 @@ const getNetworkBadge = (network: string) => {
                 </div>
               </td>
               <td class="px-6 py-4">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-800 font-mono">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-vibes-50 dark:bg-vibes-900/30 text-vibes-700 dark:text-vibes-400 border border-blue-100 dark:border-blue-800 font-mono">
                   {{ sub.ussdCode }}
                 </span>
               </td>
@@ -311,7 +311,7 @@ const getNetworkBadge = (network: string) => {
         <div class="p-6 space-y-6 overflow-y-auto" v-if="selectedMerchant">
           <div class="flex items-center justify-between">
             <div class="flex items-center">
-              <div class="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400 text-lg font-bold mr-4">
+              <div class="h-12 w-12 rounded-full bg-vibes-100 dark:bg-vibes-900/50 flex items-center justify-center text-vibes-600 dark:text-vibes-400 text-lg font-bold mr-4">
                 {{ selectedMerchant.name.split(' ').map(n => n[0]).join('') }}
               </div>
               <div>
@@ -330,7 +330,7 @@ const getNetworkBadge = (network: string) => {
           <div class="grid grid-cols-2 gap-4">
              <div class="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700">
               <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">USSD Code</p>
-              <p class="font-mono text-sm font-medium text-blue-600 dark:text-blue-400">{{ selectedMerchant.ussdCode }}</p>
+              <p class="font-mono text-sm font-medium text-vibes-600 dark:text-vibes-400">{{ selectedMerchant.ussdCode }}</p>
             </div>
              <div class="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700">
               <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Level</p>
@@ -348,7 +348,7 @@ const getNetworkBadge = (network: string) => {
               <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Reference</p>
               <span 
                 class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border"
-                :class="selectedMerchant.reference ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-100 dark:border-blue-800' : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600'"
+                :class="selectedMerchant.reference ? 'bg-vibes-50 dark:bg-vibes-900/30 text-vibes-700 dark:text-vibes-400 border-blue-100 dark:border-blue-800' : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600'"
               >
                 {{ selectedMerchant.reference ? 'True' : 'False' }}
               </span>

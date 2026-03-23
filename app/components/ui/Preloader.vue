@@ -34,13 +34,13 @@ const sizeClasses = computed(() => {
 
 const colorClasses = computed(() => {
   switch (props.color) {
-    case 'blue': return 'border-blue-600 border-t-transparent'
+    case 'blue': return 'border-vibes-600 border-t-transparent'
     case 'white': return 'border-white border-t-transparent'
     case 'gray': return 'border-gray-600 border-t-transparent'
     case 'red': return 'border-red-600 border-t-transparent'
     case 'green': return 'border-green-600 border-t-transparent'
     case 'purple': return 'border-purple-600 border-t-transparent'
-    default: return 'border-blue-600 border-t-transparent'
+    default: return 'border-vibes-600 border-t-transparent'
   }
 })
 </script>

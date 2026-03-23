@@ -41,7 +41,7 @@ const clearConsole = () => {
       <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm flex flex-col overflow-hidden border border-gray-100 dark:border-gray-700">
         <div class="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700 p-3 flex items-center justify-between">
           <div class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300 font-medium">
-            <Code class="w-4 h-4 text-blue-500 dark:text-blue-400" />
+            <Code class="w-4 h-4 text-vibes-500 dark:text-vibes-400" />
             <span>logic.json</span>
           </div>
           <div class="flex items-center space-x-2">
@@ -93,7 +93,7 @@ const clearConsole = () => {
             :class="{
               'border-gray-600 text-gray-400': log.type === 'system',
               'border-green-500 text-green-400': log.type === 'success',
-              'border-blue-500 text-blue-300': log.type === 'output',
+              'border-vibes-500 text-vibes-300': log.type === 'output',
               'border-red-500 text-red-400': log.type === 'error'
             }"
           >

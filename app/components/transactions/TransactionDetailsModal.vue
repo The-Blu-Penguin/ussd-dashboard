@@ -85,7 +85,7 @@ const getStatusIcon = (status) => {
           </div>
            <div class="p-3 border border-gray-100 rounded-lg">
             <p class="text-xs text-gray-500 mb-1">Merchant</p>
-            <p class="text-sm font-medium text-blue-600">{{ txn.merchant }}</p>
+            <p class="text-sm font-medium text-vibes-600">{{ txn.merchant }}</p>
           </div>
         </div>
 

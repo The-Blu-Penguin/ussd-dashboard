@@ -36,14 +36,14 @@ const onDragStart = (event, type, disabled) => {
         :class="[
           comp.disabled 
             ? 'opacity-50 cursor-not-allowed bg-gray-50 dark:bg-gray-900/50' 
-            : 'cursor-grab hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md'
+            : 'cursor-grab hover:border-blue-400 dark:hover:border-vibes-500 hover:shadow-md'
         ]"
         :draggable="!comp.disabled"
         @dragstart="onDragStart($event, comp.type, comp.disabled)"
       >
         <div :class="`w-8 h-8 rounded-md flex items-center justify-center mr-3 ${
           comp.disabled ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500' :
-          comp.color === 'blue' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' :
+          comp.color === 'blue' ? 'bg-vibes-50 dark:bg-vibes-900/30 text-vibes-600 dark:text-vibes-400' :
           comp.color === 'slate' ? 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400' :
           comp.color === 'purple' ? 'bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' :
           comp.color === 'emerald' ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' :

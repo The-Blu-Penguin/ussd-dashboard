@@ -26,7 +26,7 @@ const handleError = () => clearError({ redirect: '/' })
 
       <button 
         @click="handleError"
-        class="flex items-center justify-center space-x-2 w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-blue-600/20"
+        class="flex items-center justify-center space-x-2 w-full px-6 py-3 bg-vibes-600 hover:bg-vibes-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-blue-600/20"
       >
         <ArrowLeft class="w-4 h-4" />
         <span>Return to Dashboard</span>

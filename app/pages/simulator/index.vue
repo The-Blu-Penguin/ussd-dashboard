@@ -92,7 +92,7 @@ const handleEndSession = () => {
                 <input 
                   v-model="screenContent" 
                   type="text" 
-                  class="flex-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
+                  class="flex-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-vibes-500 dark:focus:border-blue-400"
                   placeholder="Reply..."
                 >
                 <Button 
@@ -170,7 +170,7 @@ const handleEndSession = () => {
       <!-- Session Info -->
       <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
         <h2 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center">
-          <Activity class="w-5 h-5 mr-2 text-blue-500 dark:text-blue-400" />
+          <Activity class="w-5 h-5 mr-2 text-vibes-500 dark:text-vibes-400" />
           Session Logs
         </h2>
         <div class="max-h-[300px] overflow-y-auto custom-scrollbar space-y-3 pr-2">
@@ -180,7 +180,7 @@ const handleEndSession = () => {
           <div v-for="(log, idx) in sessionLog" :key="idx" 
                class="p-3 rounded-lg text-sm border-l-4"
                :class="{
-                 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 dark:border-blue-400': log.type === 'sent',
+                 'bg-vibes-50 dark:bg-vibes-900/20 border-vibes-500 dark:border-blue-400': log.type === 'sent',
                  'bg-green-50 dark:bg-green-900/20 border-green-500 dark:border-green-400': log.type === 'received',
                  'bg-gray-50 dark:bg-gray-900/50 border-gray-400 dark:border-gray-600': log.type === 'system'
                }"
@@ -188,7 +188,7 @@ const handleEndSession = () => {
             <div class="flex justify-between mb-1">
               <span class="font-bold text-xs uppercase" 
                     :class="{
-                      'text-blue-700 dark:text-blue-400': log.type === 'sent',
+                      'text-vibes-700 dark:text-vibes-400': log.type === 'sent',
                       'text-green-700 dark:text-green-400': log.type === 'received',
                       'text-gray-600 dark:text-gray-400': log.type === 'system'
                     }"
@@ -204,17 +204,17 @@ const handleEndSession = () => {
       <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
         <h2 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Quick Test Codes</h2>
         <div class="space-y-2">
-          <button @click="screenContent = '*123#'" class="w-full text-left px-4 py-3 bg-gray-50 dark:bg-gray-700/50 hover:bg-blue-50 dark:hover:bg-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex justify-between group">
+          <button @click="screenContent = '*123#'" class="w-full text-left px-4 py-3 bg-gray-50 dark:bg-gray-700/50 hover:bg-vibes-50 dark:hover:bg-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-vibes-600 dark:hover:text-vibes-400 transition-colors flex justify-between group">
             <span>Check Balance</span>
-            <span class="font-mono text-gray-400 dark:text-gray-500 group-hover:text-blue-400 dark:group-hover:text-blue-300">*123#</span>
+            <span class="font-mono text-gray-400 dark:text-gray-500 group-hover:text-vibes-400 dark:group-hover:text-vibes-300">*123#</span>
           </button>
-          <button @click="screenContent = '*141#'" class="w-full text-left px-4 py-3 bg-gray-50 dark:bg-gray-700/50 hover:bg-blue-50 dark:hover:bg-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex justify-between group">
+          <button @click="screenContent = '*141#'" class="w-full text-left px-4 py-3 bg-gray-50 dark:bg-gray-700/50 hover:bg-vibes-50 dark:hover:bg-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-vibes-600 dark:hover:text-vibes-400 transition-colors flex justify-between group">
             <span>Buy Bundle</span>
-            <span class="font-mono text-gray-400 dark:text-gray-500 group-hover:text-blue-400 dark:group-hover:text-blue-300">*141#</span>
+            <span class="font-mono text-gray-400 dark:text-gray-500 group-hover:text-vibes-400 dark:group-hover:text-vibes-300">*141#</span>
           </button>
-          <button @click="screenContent = '*999#'" class="w-full text-left px-4 py-3 bg-gray-50 dark:bg-gray-700/50 hover:bg-blue-50 dark:hover:bg-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex justify-between group">
+          <button @click="screenContent = '*999#'" class="w-full text-left px-4 py-3 bg-gray-50 dark:bg-gray-700/50 hover:bg-vibes-50 dark:hover:bg-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-vibes-600 dark:hover:text-vibes-400 transition-colors flex justify-between group">
             <span>Customer Service</span>
-            <span class="font-mono text-gray-400 dark:text-gray-500 group-hover:text-blue-400 dark:group-hover:text-blue-300">*999#</span>
+            <span class="font-mono text-gray-400 dark:text-gray-500 group-hover:text-vibes-400 dark:group-hover:text-vibes-300">*999#</span>
           </button>
         </div>
       </div>

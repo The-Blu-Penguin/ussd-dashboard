@@ -171,7 +171,7 @@ const removeUser = async (id: string) => {
             <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-100 dark:border-gray-700 shadow-sm">
               <img :src="profileImage" alt="Profile" class="w-full h-full object-cover" />
             </div>
-            <label class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-blue-700 transition-colors shadow-md">
+            <label class="absolute bottom-0 right-0 bg-vibes-600 text-white p-2 rounded-full cursor-pointer hover:bg-vibes-700 transition-colors shadow-md">
               <Camera class="w-5 h-5" />
               <input type="file" class="hidden" accept="image/*" @change="handleImageUpload" />
             </label>
@@ -198,7 +198,7 @@ const removeUser = async (id: string) => {
               <input
                 id="current-password"
                 v-model="passwordForm.currentPassword"
-                class="appearance-none border border-gray-200 dark:border-gray-700 dark:bg-gray-900/50 rounded-lg w-full py-2.5 px-3 pr-10 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                class="appearance-none border border-gray-200 dark:border-gray-700 dark:bg-gray-900/50 rounded-lg w-full py-2.5 px-3 pr-10 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:border-transparent transition"
                 :type="showCurrentPassword ? 'text' : 'password'"
                 placeholder="•••••••"
               >
@@ -221,7 +221,7 @@ const removeUser = async (id: string) => {
               <input
                 id="new-password"
                 v-model="passwordForm.newPassword"
-                class="appearance-none border border-gray-200 dark:border-gray-700 dark:bg-gray-900/50 rounded-lg w-full py-2.5 px-3 pr-10 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                class="appearance-none border border-gray-200 dark:border-gray-700 dark:bg-gray-900/50 rounded-lg w-full py-2.5 px-3 pr-10 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:border-transparent transition"
                 :type="showNewPassword ? 'text' : 'password'"
                 placeholder="•••••••"
               >
@@ -244,7 +244,7 @@ const removeUser = async (id: string) => {
               <input
                 id="confirm-password"
                 v-model="passwordForm.confirmPassword"
-                class="appearance-none border border-gray-200 dark:border-gray-700 dark:bg-gray-900/50 rounded-lg w-full py-2.5 px-3 pr-10 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                class="appearance-none border border-gray-200 dark:border-gray-700 dark:bg-gray-900/50 rounded-lg w-full py-2.5 px-3 pr-10 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:border-transparent transition"
                 :type="showConfirmPassword ? 'text' : 'password'"
                 placeholder="•••••••"
               >
@@ -292,7 +292,7 @@ const removeUser = async (id: string) => {
               <input 
                 v-model="newUser.name"
                 type="text" 
-                class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-vibes-500 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                 placeholder="John Doe"
               />
             </div>
@@ -301,7 +301,7 @@ const removeUser = async (id: string) => {
               <input 
                 v-model="newUser.email"
                 type="email" 
-                class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-vibes-500 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                 placeholder="john@example.com"
               />
             </div>
@@ -310,7 +310,7 @@ const removeUser = async (id: string) => {
               <input 
                 v-model="newUser.password"
                 type="password" 
-                class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-vibes-500 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                 placeholder="•••••••"
               />
             </div>
@@ -318,7 +318,7 @@ const removeUser = async (id: string) => {
               <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Role</label>
               <select 
                 v-model="newUser.role"
-                class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-gray-100"
+                class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-vibes-500 text-gray-900 dark:text-gray-100"
               >
                 <option>Admin</option>
                 <option>Editor</option>
@@ -358,7 +358,7 @@ const removeUser = async (id: string) => {
               <tr v-else v-for="user in usersStore.users" :key="user.id" class="border-b border-gray-50 dark:border-gray-700/50 hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors group">
                 <td class="py-3 pl-2">
                   <div class="flex items-center">
-                    <div class="w-8 h-8 rounded-full mr-3 bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-xs">
+                    <div class="w-8 h-8 rounded-full mr-3 bg-vibes-100 dark:bg-vibes-900/50 flex items-center justify-center text-vibes-600 dark:text-vibes-400 font-bold text-xs">
                       {{ user.fullName.charAt(0) }}
                     </div>
                     <div>
@@ -368,7 +368,7 @@ const removeUser = async (id: string) => {
                   </div>
                 </td>
                 <td class="py-3">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-800">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-vibes-50 dark:bg-vibes-900/30 text-vibes-700 dark:text-vibes-400 border border-blue-100 dark:border-blue-800">
                     {{ user.role }}
                   </span>
                 </td>
@@ -387,7 +387,7 @@ const removeUser = async (id: string) => {
                     <button 
                       @click="openEditModal(user)" 
                       :disabled="usersStore.isLoading"
-                      class="text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 p-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors disabled:opacity-50"
+                      class="text-gray-400 dark:text-gray-500 hover:text-vibes-500 dark:hover:text-vibes-400 p-1 rounded hover:bg-vibes-50 dark:hover:bg-vibes-900/30 transition-colors disabled:opacity-50"
                       title="Edit User"
                     >
                       <Edit2 class="w-4 h-4" />
@@ -439,7 +439,7 @@ const removeUser = async (id: string) => {
             <input 
               v-model="editUserForm.fullName"
               type="text" 
-              class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-gray-100"
+              class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-vibes-500 text-gray-900 dark:text-gray-100"
               required
             />
           </div>
@@ -448,7 +448,7 @@ const removeUser = async (id: string) => {
             <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Role</label>
             <select 
               v-model="editUserForm.role"
-              class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-gray-100"
+              class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-vibes-500 text-gray-900 dark:text-gray-100"
             >
               <option value="ADMIN">ADMIN</option>
               <option value="MERCHANT">MERCHANT</option>
