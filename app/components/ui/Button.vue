@@ -71,7 +71,7 @@ const sizeClasses = computed(() => {
     <div v-if="loading" class="absolute inset-0 flex items-center justify-center">
       <Preloader 
         :size="size === 'lg' ? 'sm' : 'xs'" 
-        :color="['outline', 'ghost', 'secondary'].includes(variant) ? 'blue' : 'white'" 
+        :color="['outline', 'ghost', 'secondary'].includes(props.variant) ? 'blue' : 'white'" 
       />
     </div>
     
