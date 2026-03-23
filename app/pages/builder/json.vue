@@ -1,22 +1,24 @@
 <script setup>
 import { ref } from 'vue'
 import { Save, Code, FileJson } from 'lucide-vue-next'
+import { useMenuConfigsStore } from '~/stores/menuConfigs'
+import Button from '~/components/ui/Button.vue'
+
+const menuConfigsStore = useMenuConfigsStore()
+const saveMessage = ref('')
+const saveError = ref(false)
 
 const jsonContent = ref(JSON.stringify({
+  "name": "standard menuConfig",
+  "type": "STANDARD_REFERENCED",
+  "description": "standard menu config flow with reference prompt",
   "menuConfig": {
-    "configId": "config_v1",
-    "version": 1,
-    "metadata": {
-      "name": "MENU CONFIG",
-      "description": "BLU PAY USSD MENU FLOW",
-      "merchantCode": "BLUPAY1000"
-    },
     "entry": "enter_amount",
     "steps": [
       {
         "id": "enter_amount",
+        "next": "enter_description",
         "type": "INPUT",
-        "prompt": "Welcome to {{merchantName}}\\nEnter amount:",
         "input": {
           "variable": "amount",
           "validation": {
@@ -25,26 +27,26 @@ const jsonContent = ref(JSON.stringify({
             "errorMessage": "Invalid amount. Enter numbers only"
           }
         },
-        "next": "process_payment"
+        "prompt": "Welcome to {{merchantName}}\\nEnter amount:"
       },
       {
         "id": "enter_description",
+        "next": "process_payment",
         "type": "INPUT",
-        "prompt": "Enter reference:",
         "input": {
           "variable": "description",
           "validation": {
             "type": "ALPHANUMERIC"
           }
         },
-        "next": "process_payment"
+        "prompt": "Enter reference:"
       },
       {
         "id": "process_payment",
         "type": "ACTION",
-        "actionName": "processPaymentToMerchant",
+        "onFailure": "payment_failed",
         "onSuccess": "payment_success",
-        "onFailure": "payment_failed"
+        "actionName": "processPaymentToMerchant"
       },
       {
         "id": "payment_success",
@@ -56,9 +58,57 @@ const jsonContent = ref(JSON.stringify({
         "type": "END",
         "prompt": "Transfer failed. Please try again later."
       }
-    ]
+    ],
+    "version": 1,
+    "configId": "config_v1",
+    "metadata": {
+      "name": "MENU CONFIG",
+      "description": "BLU PAY USSD MENU FLOW"
+    }
   }
 }, null, 2))
+
+const formatJson = () => {
+  try {
+    const parsed = JSON.parse(jsonContent.value)
+    jsonContent.value = JSON.stringify(parsed, null, 2)
+    saveMessage.value = 'JSON formatted successfully'
+    saveError.value = false
+  } catch (e) {
+    saveMessage.value = 'Invalid JSON structure'
+    saveError.value = true
+  }
+  
+  setTimeout(() => { saveMessage.value = '' }, 3000)
+}
+
+const saveConfig = async () => {
+  try {
+    const parsed = JSON.parse(jsonContent.value)
+    
+    // Extract root level properties or fall back to defaults/metadata
+    const metadata = parsed.menuConfig?.metadata || {}
+    
+    const requestData = {
+      name: parsed.name || metadata.name || "New Menu Config",
+      type: parsed.type || "STANDARD_NOT_REFERENCED",
+      hasReference: parsed.hasReference !== undefined ? parsed.hasReference : false,
+      description: parsed.description || metadata.description || "USSD Menu Flow",
+      menuConfig: parsed.menuConfig || parsed
+    }
+    
+    const result = await menuConfigsStore.saveConfig(requestData)
+    
+    saveMessage.value = result.message
+    saveError.value = !result.success
+    
+  } catch (e) {
+    saveMessage.value = 'Invalid JSON structure. Please fix errors before saving.'
+    saveError.value = true
+  }
+  
+  setTimeout(() => { saveMessage.value = '' }, 3000)
+}
 </script>
 
 <template>
@@ -66,18 +116,26 @@ const jsonContent = ref(JSON.stringify({
     <!-- Header -->
     <div class="flex items-center justify-between mb-4">
       <div>
-        <h1 class="text-2xl font-bold text-gray-800">JSON Builder</h1>
-        <p class="text-sm text-gray-500">Edit USSD flow configuration directly</p>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">JSON Builder</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Edit USSD flow configuration directly</p>
       </div>
-      <div class="flex space-x-3">
-        <button class="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg text-sm font-medium transition-colors">
+      <div class="flex items-center space-x-3">
+        <span v-if="saveMessage" class="text-sm font-medium mr-2" :class="saveError ? 'text-red-500' : 'text-green-500'">
+          {{ saveMessage }}
+        </span>
+        <button @click="formatJson" class="flex items-center space-x-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors">
           <FileJson class="w-4 h-4" />
           <span>Format</span>
         </button>
-        <button class="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">
-          <Save class="w-4 h-4" />
+        <Button 
+          @click="saveConfig"
+          variant="primary"
+          :loading="menuConfigsStore.isSaving"
+          class="flex items-center space-x-2"
+        >
+          <Save v-if="!menuConfigsStore.isSaving" class="w-4 h-4 mr-2" />
           <span>Save Config</span>
-        </button>
+        </Button>
       </div>
     </div>
 

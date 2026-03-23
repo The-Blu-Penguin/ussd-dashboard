@@ -1,14 +1,15 @@
-<script setup>
-import { ref } from 'vue'
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { useState } from '#imports'
 import { Plus, ListTree, MoreVertical, Trash2, X, Network, FileJson } from 'lucide-vue-next'
+import { useMenuConfigsStore } from '~/stores/menuConfigs'
+import { formatDistanceToNow } from 'date-fns'
 
-const flows = ref([
-  { id: 1, name: 'Registration Flow', description: 'Handles new user onboarding', modified: '2 hours ago', status: 'Active', type: 'Main Menu' },
-  { id: 2, name: 'Balance Check', description: 'Check account balance', modified: '1 day ago', status: 'Active', type: 'Action Flow' },
-  { id: 3, name: 'Airtime Purchase', description: 'Airtime top-up for self and others', modified: '3 days ago', status: 'Draft', type: 'Payment Flow' },
-  { id: 4, name: 'Support Menu', description: 'Customer service options', modified: '1 week ago', status: 'Active', type: 'Sub Menu' },
-])
+const menuConfigsStore = useMenuConfigsStore()
+
+onMounted(() => {
+  menuConfigsStore.fetchConfigs()
+})
 
 const showCreateModal = ref(false)
 const isCollapsed = useState('sidebarCollapsed', () => false)
@@ -19,6 +20,14 @@ const openCreateModal = () => {
 
 const closeCreateModal = () => {
   showCreateModal.value = false
+}
+
+const formatDate = (dateString: string) => {
+  try {
+    return formatDistanceToNow(new Date(dateString), { addSuffix: true })
+  } catch (e) {
+    return dateString
+  }
 }
 </script>
 
@@ -49,7 +58,16 @@ const closeCreateModal = () => {
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
-            <tr v-for="flow in flows" :key="flow.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
+            <tr v-if="menuConfigsStore.isLoading">
+              <td colspan="6" class="px-6 py-8 text-center text-gray-500">Loading menu configurations...</td>
+            </tr>
+            <tr v-else-if="menuConfigsStore.error">
+              <td colspan="6" class="px-6 py-8 text-center text-red-500">{{ menuConfigsStore.error }}</td>
+            </tr>
+            <tr v-else-if="menuConfigsStore.configs.length === 0">
+              <td colspan="6" class="px-6 py-8 text-center text-gray-500">No menu configurations found. Create one to get started.</td>
+            </tr>
+            <tr v-else v-for="flow in menuConfigsStore.configs" :key="flow.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
               <td class="px-6 py-4">
                 <div class="flex items-center">
                   <div class="p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg mr-3">
@@ -57,7 +75,7 @@ const closeCreateModal = () => {
                   </div>
                   <div>
                     <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ flow.name }}</div>
-                    <div class="text-xs text-gray-400 dark:text-gray-500">ID: FL-{{ flow.id }}</div>
+                    <div class="text-xs text-gray-400 dark:text-gray-500">ID: {{ flow.id.substring(0, 8) }}...</div>
                   </div>
                 </div>
               </td>
@@ -68,12 +86,11 @@ const closeCreateModal = () => {
                 <span class="text-sm text-gray-600 dark:text-gray-300">{{ flow.type }}</span>
               </td>
               <td class="px-6 py-4">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" 
-                  :class="flow.status === 'Active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'">
-                  {{ flow.status }}
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                  Active
                 </span>
               </td>
-              <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{{ flow.modified }}</td>
+              <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{{ formatDate(flow.updatedAt) }}</td>
               <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end space-x-2">
                   <button class="p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Delete">

@@ -42,6 +42,32 @@ export interface DeleteUserResponseData {
   message: string
 }
 
+export interface MenuConfigCreator {
+  id: string
+  email: string
+  fullName: string
+}
+
+export interface MenuConfigFlow {
+  id: string
+  name: string
+  type: string
+  hasReference: boolean
+  description: string
+  menuConfig: Record<string, any>
+  createdAt: string
+  updatedAt: string
+  createdBy: MenuConfigCreator
+}
+
+export interface CreateMenuConfigRequest {
+  name: string
+  type: string
+  hasReference: boolean
+  description: string
+  menuConfig: Record<string, any>
+}
+
 export interface ApiResponse<T = any> {
   success: boolean
   message: string

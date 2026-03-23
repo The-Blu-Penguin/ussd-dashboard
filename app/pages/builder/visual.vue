@@ -5,15 +5,35 @@ import { VueFlow, useVueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import ComponentsSidebar from '~/components/builder/ComponentsSidebar.vue'
 import PropertiesPanel from '~/components/builder/PropertiesPanel.vue'
+import { useMenuConfigsStore } from '~/stores/menuConfigs'
+import Button from '~/components/ui/Button.vue'
 
 // Import Vue Flow styles
 import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
 
+const menuConfigsStore = useMenuConfigsStore()
 const { onConnect, addEdges, addNodes, project, onNodeClick, onPaneClick } = useVueFlow()
 
 const showProperties = ref(false)
 const selectedNode = ref(null)
+const saveMessage = ref('')
+const saveError = ref(false)
+
+// Menu Flow Metadata
+const flowName = ref("Visual Menu Flow")
+const flowDescription = ref("Flow built with visual builder")
+const flowType = ref("STANDARD_NOT_REFERENCED")
+const flowHasReference = ref(false)
+
+// Watch for flow type changes to automatically update hasReference
+watch(flowType, (newType) => {
+  if (newType.includes('NOT_REFERENCED')) {
+    flowHasReference.value = false
+  } else if (newType.includes('REFERENCED')) {
+    flowHasReference.value = true
+  }
+})
 
 onNodeClick(({ node }) => {
   selectedNode.value = node
@@ -102,17 +122,63 @@ const onDrop = (event) => {
   
   addNodes([newNode])
 }
+
+const saveFlow = async () => {
+  const flowData = {
+    nodes: nodes.value,
+    edges: edges.value
+  }
+  
+  const requestData = {
+    name: flowName.value,
+    type: flowType.value,
+    hasReference: flowHasReference.value,
+    description: flowDescription.value,
+    menuConfig: flowData
+  }
+  
+  const result = await menuConfigsStore.saveConfig(requestData)
+  
+  saveMessage.value = result.message
+  saveError.value = !result.success
+  
+  setTimeout(() => { saveMessage.value = '' }, 3000)
+}
 </script>
 
 <template>
   <div class="h-[calc(100vh-8rem)] flex flex-col">
     <!-- Builder Header -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-4 sm:gap-0">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Menu Builder</h1>
-        <p class="text-sm text-gray-500 dark:text-gray-400">Design USSD flows visually</p>
+      <div class="flex-1 flex items-center space-x-4">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Menu Builder</h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Design USSD flows visually</p>
+        </div>
+        
+        <!-- Metadata Controls -->
+        <div class="hidden md:flex items-center space-x-3 ml-6 pl-6 border-l border-gray-200 dark:border-gray-700">
+          <input 
+            v-model="flowName" 
+            type="text" 
+            placeholder="Flow Name" 
+            class="px-3 py-1.5 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 dark:text-gray-200"
+          />
+          <select 
+            v-model="flowType"
+            class="px-3 py-1.5 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 dark:text-gray-200"
+          >
+            <option value="STANDARD_NOT_REFERENCED">Standard</option>
+            <option value="STANDARD_REFERENCED">Standard (Referenced)</option>
+            <option value="CUSTOM_NOT_REFERENCED">Custom</option>
+            <option value="CUSTOM_REFERENCED">Custom (Referenced)</option>
+          </select>
+        </div>
       </div>
-      <div class="flex space-x-3 w-full sm:w-auto">
+      <div class="flex items-center space-x-3 w-full sm:w-auto">
+        <span v-if="saveMessage" class="text-sm font-medium mr-2" :class="saveError ? 'text-red-500' : 'text-green-500'">
+          {{ saveMessage }}
+        </span>
         <button 
           @click="showProperties = !showProperties"
           class="flex-1 sm:flex-none flex justify-center items-center space-x-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors"
@@ -121,10 +187,15 @@ const onDrop = (event) => {
           <Settings class="w-4 h-4" />
           <span>Properties</span>
         </button>
-        <button class="flex-1 sm:flex-none flex justify-center items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">
-          <Save class="w-4 h-4" />
+        <Button 
+          @click="saveFlow"
+          variant="primary"
+          :loading="menuConfigsStore.isSaving"
+          class="flex-1 sm:flex-none flex justify-center items-center space-x-2"
+        >
+          <Save v-if="!menuConfigsStore.isSaving" class="w-4 h-4 mr-2" />
           <span>Save Flow</span>
-        </button>
+        </Button>
       </div>
     </div>
 
