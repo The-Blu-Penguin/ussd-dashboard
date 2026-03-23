@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import Button from '~/components/ui/Button.vue'
+import AuthNotification from '~/components/ui/AuthNotification.vue'
 
 definePageMeta({
   layout: 'auth'
@@ -112,17 +113,11 @@ onMounted(() => {
 <template>
   <div class="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-vibes-900 via-vibes-800 to-indigo-900 relative overflow-hidden p-4">
     <!-- Success Notification -->
-    <div 
-      class="fixed top-0 left-0 right-0 z-50 flex justify-center transition-all duration-500 ease-in-out"
-      :class="showSuccessModal ? 'translate-y-4 opacity-100' : '-translate-y-full opacity-0'"
-    >
-      <div class="bg-green-500 text-white px-6 py-3 rounded-full shadow-2xl font-semibold flex items-center space-x-2 border border-green-400">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-        </svg>
-        <span>Login Successful!</span>
-      </div>
-    </div>
+    <AuthNotification 
+      :show="showSuccessModal" 
+      message="Login Successful!" 
+      type="success" 
+    />
 
     <!-- Floating USSD characters -->
     <div

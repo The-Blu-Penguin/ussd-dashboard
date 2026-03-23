@@ -22,11 +22,22 @@ import {
   Network
 } from 'lucide-vue-next'
 
+import AuthNotification from '~/components/ui/AuthNotification.vue'
+
 const route = useRoute()
 const isCollapsed = useState('sidebarCollapsed', () => false)
 const isMobileSidebarOpen = useState('mobileSidebarOpen', () => false)
 const { user, logout } = useAuth()
 const openMenus = ref<Record<string, boolean>>({})
+
+const showLogoutNotification = ref(false)
+
+const handleLogout = async () => {
+  showLogoutNotification.value = true
+  setTimeout(() => {
+    logout()
+  }, 1000)
+}
 
 const toggleSidebar = () => {
   isCollapsed.value = !isCollapsed.value
@@ -107,6 +118,12 @@ const closeMobileSidebar = () => {
 </script>
 
 <template>
+  <AuthNotification 
+    :show="showLogoutNotification" 
+    message="Logging out..." 
+    type="info" 
+  />
+
   <aside 
     class="bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 flex flex-col h-screen fixed left-0 top-0 z-50 transition-all duration-300 ease-in-out lg:translate-x-0"
     :class="[
@@ -255,7 +272,7 @@ const closeMobileSidebar = () => {
             <p class="text-xs text-gray-500 dark:text-gray-400">{{ user?.role || 'Guest' }}</p>
           </div>
         </div>
-        <LogOut v-if="!isCollapsed" @click="logout" class="w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-vibes-600 dark:group-hover:text-vibes-400 ml-2 cursor-pointer" />
+        <LogOut v-if="!isCollapsed" @click="handleLogout" class="w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-vibes-600 dark:group-hover:text-vibes-400 ml-2 cursor-pointer" />
       </div>
     </div>
   </aside>
