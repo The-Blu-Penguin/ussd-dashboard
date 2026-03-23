@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { User, ApiResponse, LoginResponseData } from '~/types/api'
+import type { User, ApiResponse, LoginResponseData, ChangePasswordRequest } from '~/types/api'
 
 interface AuthState {
   user: User | null
@@ -119,6 +119,63 @@ export const useAuthStore = defineStore('auth', {
           this.accessToken = token
           this.isLoggedIn = true
         }
+      }
+    },
+    async changePassword(data: ChangePasswordRequest) {
+      this.isLoading = true
+      try {
+        if (!this.user?.id) {
+          return { success: false, message: 'User ID not found. Please log in again.' }
+        }
+
+        const config = useRuntimeConfig()
+        const baseUrl = config.public.apiBaseUrl as string
+
+        const response = await $fetch<ApiResponse>(`${baseUrl}/auth/${this.user.id}/change-password`, {
+          method: 'POST',
+          body: data,
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+          },
+        })
+
+        if (response.success) {
+          return { success: true, message: response.message || 'Password changed successfully' }
+        } else {
+          return { success: false, message: response.message || 'Failed to change password' }
+        }
+      } catch (error: any) {
+        let message = 'Failed to change password. Please try again.'
+
+        if (error.response) {
+          const status = error.response.status
+          switch (status) {
+            case 400:
+            case 422:
+              message = error.response._data?.message || 'Validation error. Please check your inputs.'
+              break
+            case 401:
+              message = 'Unauthorized. Please log in again.'
+              break
+            case 403:
+              message = 'Current password is incorrect.'
+              break
+            case 500:
+              message = 'Server error. Please try again later.'
+              break
+            default:
+              message = error.response._data?.message || error.message || 'Failed to change password.'
+          }
+        } else if (error.message) {
+          message = 'Unable to connect. Please check your internet connection.'
+        }
+
+        return {
+          success: false,
+          message,
+        }
+      } finally {
+        this.isLoading = false
       }
     },
   },

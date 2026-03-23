@@ -3,6 +3,17 @@ export interface LoginRequest {
   password: string
 }
 
+export interface ChangePasswordRequest {
+  currentPassword: string
+  newPassword: string
+}
+
+export interface UpdateUserRequest {
+  fullName?: string
+  role?: 'ADMIN' | 'USER' | 'MERCHANT'
+  avatarUrl?: string
+}
+
 export interface UserPermissions {
   additionalProp1?: Record<string, any>
   additionalProp2?: Record<string, any>
@@ -25,6 +36,10 @@ export interface LoginResponseData {
   tokenType: string
   expiresIn: number
   user: User
+}
+
+export interface DeleteUserResponseData {
+  message: string
 }
 
 export interface ApiResponse<T = any> {
