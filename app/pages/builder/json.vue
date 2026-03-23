@@ -13,61 +13,17 @@ const isEditing = ref(false)
 const configId = ref(null)
 
 const jsonContent = ref(JSON.stringify({
-  "name": "standard menuConfig",
-  "type": "STANDARD_REFERENCED",
-  "description": "standard menu config flow with reference prompt",
+  "name": "",
+  "type": "STANDARD_NOT_REFERENCED",
+  "description": "",
   "menuConfig": {
-    "entry": "enter_amount",
-    "steps": [
-      {
-        "id": "enter_amount",
-        "next": "enter_description",
-        "type": "INPUT",
-        "input": {
-          "variable": "amount",
-          "validation": {
-            "type": "AMOUNT",
-            "minValue": 0.01,
-            "errorMessage": "Invalid amount. Enter numbers only"
-          }
-        },
-        "prompt": "Welcome to {{merchantName}}\\nEnter amount:"
-      },
-      {
-        "id": "enter_description",
-        "next": "process_payment",
-        "type": "INPUT",
-        "input": {
-          "variable": "description",
-          "validation": {
-            "type": "ALPHANUMERIC"
-          }
-        },
-        "prompt": "Enter reference:"
-      },
-      {
-        "id": "process_payment",
-        "type": "ACTION",
-        "onFailure": "payment_failed",
-        "onSuccess": "payment_success",
-        "actionName": "processPaymentToMerchant"
-      },
-      {
-        "id": "payment_success",
-        "type": "END",
-        "prompt": "Request submitted successfully. You will receive a payment prompt shortly. If prompt delays, dial *170# to approve transaction. Ref: {{transactionReference}}."
-      },
-      {
-        "id": "payment_failed",
-        "type": "END",
-        "prompt": "Transfer failed. Please try again later."
-      }
-    ],
+    "entry": "",
+    "steps": [],
     "version": 1,
-    "configId": "config_v1",
+    "configId": "",
     "metadata": {
-      "name": "MENU CONFIG",
-      "description": "BLU PAY USSD MENU FLOW"
+      "name": "",
+      "description": ""
     }
   }
 }, null, 2))

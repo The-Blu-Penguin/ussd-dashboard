@@ -125,9 +125,8 @@ export const useMenuConfigsStore = defineStore('menuConfigs', {
           },
         })
 
-        // Even if the API returns a standard response, we check if it was successful
-        // Or if the API just returns 200 OK without a body
-        if (response?.success !== false) {
+        // Only consider it successful if the API explicitly returns success: true
+        if (response?.success === true) {
           // Remove from local state
           this.configs = this.configs.filter(config => config.id !== id)
           return { success: true, message: response?.message || 'Menu config deleted successfully' }
