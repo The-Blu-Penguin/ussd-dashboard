@@ -132,25 +132,34 @@ onMounted(async () => {
     configId.value = route.query.id
     isEditing.value = true
     
-    // Ensure we have the configs loaded
-    if (menuConfigsStore.configs.length === 0) {
-      await menuConfigsStore.fetchConfigs()
+    // Find the config to edit from existing store configs
+    let configToEdit = menuConfigsStore.configs.find(c => c.id === configId.value)
+    
+    // If not found in store, try fetching it directly from API
+    if (!configToEdit) {
+      const result = await menuConfigsStore.getConfigById(configId.value)
+      if (result.success && result.data) {
+        configToEdit = result.data
+      }
     }
     
-    // Find the config to edit
-    const configToEdit = menuConfigsStore.configs.find(c => c.id === configId.value)
-    if (configToEdit) {
-      // Set metadata
-      flowName.value = configToEdit.name
-      flowDescription.value = configToEdit.description
-      flowType.value = configToEdit.type
-      flowHasReference.value = configToEdit.hasReference
-      
-      // Load nodes and edges if available
-      if (configToEdit.menuConfig && configToEdit.menuConfig.nodes && configToEdit.menuConfig.edges) {
-        nodes.value = configToEdit.menuConfig.nodes
-        edges.value = configToEdit.menuConfig.edges
-      }
+    if (!configToEdit) {
+      console.error('Config not found with ID:', configId.value)
+      saveMessage.value = 'Configuration not found.'
+      saveError.value = true
+      return
+    }
+
+    // Set metadata
+    flowName.value = configToEdit.name
+    flowDescription.value = configToEdit.description
+    flowType.value = configToEdit.type
+    flowHasReference.value = configToEdit.hasReference
+    
+    // Load nodes and edges if available
+    if (configToEdit.menuConfig && configToEdit.menuConfig.nodes && configToEdit.menuConfig.edges) {
+      nodes.value = configToEdit.menuConfig.nodes
+      edges.value = configToEdit.menuConfig.edges
     }
   }
 })

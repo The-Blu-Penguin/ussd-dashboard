@@ -91,24 +91,33 @@ onMounted(async () => {
     configId.value = route.query.id
     isEditing.value = true
     
-    // Ensure we have the configs loaded
-    if (menuConfigsStore.configs.length === 0) {
-      await menuConfigsStore.fetchConfigs()
+    // Find the config to edit from existing store configs
+    let configToEdit = menuConfigsStore.configs.find(c => c.id === configId.value)
+    
+    // If not found in store, try fetching it directly from API
+    if (!configToEdit) {
+      const result = await menuConfigsStore.getConfigById(configId.value)
+      if (result.success && result.data) {
+        configToEdit = result.data
+      }
     }
     
-    // Find the config to edit
-    const configToEdit = menuConfigsStore.configs.find(c => c.id === configId.value)
-    if (configToEdit) {
-      // Reconstruct the JSON structure matching our expected payload
-      const jsonToLoad = {
-        name: configToEdit.name,
-        type: configToEdit.type,
-        hasReference: configToEdit.hasReference,
-        description: configToEdit.description,
-        menuConfig: configToEdit.menuConfig
-      }
-      jsonContent.value = JSON.stringify(jsonToLoad, null, 2)
+    if (!configToEdit) {
+      console.error('Config not found with ID:', configId.value)
+      saveMessage.value = 'Configuration not found.'
+      saveError.value = true
+      return
     }
+
+    // Reconstruct the JSON structure matching our expected payload
+    const jsonToLoad = {
+      name: configToEdit.name,
+      type: configToEdit.type,
+      hasReference: configToEdit.hasReference,
+      description: configToEdit.description,
+      menuConfig: configToEdit.menuConfig
+    }
+    jsonContent.value = JSON.stringify(jsonToLoad, null, 2)
   }
 })
 

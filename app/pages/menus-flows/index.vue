@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useState } from '#imports'
-import { Plus, ListTree, MoreVertical, Trash2, X, Network, FileJson, Edit2 } from 'lucide-vue-next'
+import { Plus, ListTree, MoreVertical, Trash2, X, Network, FileJson, Edit2, AlertTriangle } from 'lucide-vue-next'
 import { useMenuConfigsStore } from '~/stores/menuConfigs'
 import { formatDistanceToNow } from 'date-fns'
 import { useRouter } from '#imports'
+import Button from '~/components/ui/Button.vue'
 
 const menuConfigsStore = useMenuConfigsStore()
 const router = useRouter()
@@ -15,6 +16,12 @@ onMounted(() => {
 
 const showCreateModal = ref(false)
 const isCollapsed = useState('sidebarCollapsed', () => false)
+
+// Delete Modal State
+const showDeleteModal = ref(false)
+const configToDelete = ref<any>(null)
+const isDeleting = ref(false)
+const deleteError = ref('')
 
 const openCreateModal = () => {
   showCreateModal.value = true
@@ -36,13 +43,33 @@ const handleEditConfig = (flow: any) => {
   }
 }
 
-const handleDeleteConfig = async (id: string) => {
-  if (confirm('Are you sure you want to delete this menu configuration? This action cannot be undone.')) {
-    const result = await menuConfigsStore.deleteConfig(id)
-    if (!result.success) {
-      alert(result.message)
-    }
+const confirmDelete = (flow: any) => {
+  configToDelete.value = flow
+  showDeleteModal.value = true
+  deleteError.value = ''
+}
+
+const closeDeleteModal = () => {
+  showDeleteModal.value = false
+  configToDelete.value = null
+  deleteError.value = ''
+}
+
+const executeDelete = async () => {
+  if (!configToDelete.value) return
+  
+  isDeleting.value = true
+  deleteError.value = ''
+  
+  const result = await menuConfigsStore.deleteConfig(configToDelete.value.id)
+  
+  if (result.success) {
+    closeDeleteModal()
+  } else {
+    deleteError.value = result.message || 'Failed to delete configuration'
   }
+  
+  isDeleting.value = false
 }
 
 const formatDate = (dateString: string) => {
@@ -124,7 +151,7 @@ const formatDate = (dateString: string) => {
                     <Edit2 class="w-4 h-4" />
                   </button>
                   <button 
-                    @click="handleDeleteConfig(flow.id)"
+                    @click="confirmDelete(flow)"
                     :disabled="menuConfigsStore.isLoading"
                     class="p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors disabled:opacity-50" 
                     title="Delete"
@@ -179,5 +206,60 @@ const formatDate = (dateString: string) => {
         </div>
       </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div 
+      v-if="showDeleteModal" 
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+    >
+      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" @click="closeDeleteModal"></div>
+      
+      <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform transition-all border border-gray-100 dark:border-gray-700">
+        <!-- Header -->
+        <div class="bg-red-50 dark:bg-red-900/20 px-6 py-4 border-b border-red-100 dark:border-red-900/30 flex items-center justify-between">
+          <div class="flex items-center space-x-2 text-red-600 dark:text-red-400">
+            <AlertTriangle class="w-5 h-5" />
+            <h3 class="text-lg font-bold">Delete Configuration</h3>
+          </div>
+          <button @click="closeDeleteModal" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-white/50 dark:hover:bg-gray-700 p-1 rounded-full transition-colors">
+            <X class="w-5 h-5" />
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="p-6">
+          <p class="text-gray-600 dark:text-gray-300 mb-4">
+            Are you sure you want to delete the configuration <span class="font-bold text-gray-900 dark:text-white">"{{ configToDelete?.name }}"</span>?
+          </p>
+          <p class="text-sm text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/10 p-3 rounded-lg border border-red-100 dark:border-red-900/20">
+            This action cannot be undone. Any active USSD menus relying on this flow will stop working.
+          </p>
+          
+          <div v-if="deleteError" class="mt-4 text-sm text-red-500 text-center font-medium">
+            {{ deleteError }}
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-6 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3">
+          <button 
+            @click="closeDeleteModal" 
+            :disabled="isDeleting"
+            class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <Button 
+            @click="executeDelete" 
+            variant="danger"
+            :loading="isDeleting"
+            class="flex items-center space-x-2"
+          >
+            <span>Delete Flow</span>
+          </Button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>

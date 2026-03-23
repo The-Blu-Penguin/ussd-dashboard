@@ -48,6 +48,35 @@ export const useMenuConfigsStore = defineStore('menuConfigs', {
       }
     },
     
+    async getConfigById(id: string) {
+      this.isLoading = true
+      this.error = null
+      
+      try {
+        const config = useRuntimeConfig()
+        const baseUrl = config.public.apiBaseUrl as string
+        const authStore = useAuthStore()
+
+        const response = await $fetch<ApiResponse<MenuConfigFlow>>(`${baseUrl}/menuConfigFlow/${id}`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${authStore.accessToken}`,
+          },
+        })
+
+        if (response.success && response.data) {
+          return { success: true, message: response.message, data: response.data }
+        } else {
+          return { success: false, message: response.message || 'Failed to fetch menu config details' }
+        }
+      } catch (error: any) {
+        const message = error.response?._data?.message || error.message || 'Failed to fetch menu config details'
+        return { success: false, message }
+      } finally {
+        this.isLoading = false
+      }
+    },
+    
     async saveConfig(data: CreateMenuConfigRequest) {
       this.isSaving = true
       this.error = null
@@ -89,21 +118,29 @@ export const useMenuConfigsStore = defineStore('menuConfigs', {
         const baseUrl = config.public.apiBaseUrl as string
         const authStore = useAuthStore()
 
-        const response = await $fetch<ApiResponse>(`${baseUrl}/menuConfigFlow/${id}`, {
+        const response = await $fetch<ApiResponse<void>>(`${baseUrl}/menuConfigFlow/${id}`, {
           method: 'DELETE',
           headers: {
             Authorization: `Bearer ${authStore.accessToken}`,
           },
         })
 
-        if (response.success) {
+        // Even if the API returns a standard response, we check if it was successful
+        // Or if the API just returns 200 OK without a body
+        if (response?.success !== false) {
           // Remove from local state
           this.configs = this.configs.filter(config => config.id !== id)
-          return { success: true, message: response.message || 'Menu config deleted successfully' }
+          return { success: true, message: response?.message || 'Menu config deleted successfully' }
         } else {
-          return { success: false, message: response.message || 'Failed to delete menu config' }
+          return { success: false, message: response?.message || 'Failed to delete menu config' }
         }
       } catch (error: any) {
+        // If it's a 200 OK but failed to parse JSON (empty response body), treat it as success
+        if (error.response && error.response.status === 200) {
+          this.configs = this.configs.filter(config => config.id !== id)
+          return { success: true, message: 'Menu config deleted successfully' }
+        }
+        
         const message = error.response?._data?.message || error.message || 'Failed to delete menu config'
         return { success: false, message }
       } finally {
