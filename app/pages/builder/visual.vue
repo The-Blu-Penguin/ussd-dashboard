@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { Save, Settings } from 'lucide-vue-next'
 import { VueFlow, useVueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
@@ -7,11 +7,13 @@ import ComponentsSidebar from '~/components/builder/ComponentsSidebar.vue'
 import PropertiesPanel from '~/components/builder/PropertiesPanel.vue'
 import { useMenuConfigsStore } from '~/stores/menuConfigs'
 import Button from '~/components/ui/Button.vue'
+import { useRoute } from '#imports'
 
 // Import Vue Flow styles
 import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
 
+const route = useRoute()
 const menuConfigsStore = useMenuConfigsStore()
 const { onConnect, addEdges, addNodes, project, onNodeClick, onPaneClick } = useVueFlow()
 
@@ -19,6 +21,8 @@ const showProperties = ref(false)
 const selectedNode = ref(null)
 const saveMessage = ref('')
 const saveError = ref(false)
+const isEditing = ref(false)
+const configId = ref(null)
 
 // Menu Flow Metadata
 const flowName = ref("Visual Menu Flow")
@@ -123,6 +127,34 @@ const onDrop = (event) => {
   addNodes([newNode])
 }
 
+onMounted(async () => {
+  if (route.query.id) {
+    configId.value = route.query.id
+    isEditing.value = true
+    
+    // Ensure we have the configs loaded
+    if (menuConfigsStore.configs.length === 0) {
+      await menuConfigsStore.fetchConfigs()
+    }
+    
+    // Find the config to edit
+    const configToEdit = menuConfigsStore.configs.find(c => c.id === configId.value)
+    if (configToEdit) {
+      // Set metadata
+      flowName.value = configToEdit.name
+      flowDescription.value = configToEdit.description
+      flowType.value = configToEdit.type
+      flowHasReference.value = configToEdit.hasReference
+      
+      // Load nodes and edges if available
+      if (configToEdit.menuConfig && configToEdit.menuConfig.nodes && configToEdit.menuConfig.edges) {
+        nodes.value = configToEdit.menuConfig.nodes
+        edges.value = configToEdit.menuConfig.edges
+      }
+    }
+  }
+})
+
 const saveFlow = async () => {
   const flowData = {
     nodes: nodes.value,
@@ -137,7 +169,12 @@ const saveFlow = async () => {
     menuConfig: flowData
   }
   
-  const result = await menuConfigsStore.saveConfig(requestData)
+  let result;
+  if (isEditing.value && configId.value) {
+    result = await menuConfigsStore.updateConfig(configId.value, requestData)
+  } else {
+    result = await menuConfigsStore.saveConfig(requestData)
+  }
   
   saveMessage.value = result.message
   saveError.value = !result.success

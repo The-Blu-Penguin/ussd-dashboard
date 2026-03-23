@@ -78,6 +78,72 @@ export const useMenuConfigsStore = defineStore('menuConfigs', {
       } finally {
         this.isSaving = false
       }
+    },
+    
+    async deleteConfig(id: string) {
+      this.isLoading = true
+      this.error = null
+      
+      try {
+        const config = useRuntimeConfig()
+        const baseUrl = config.public.apiBaseUrl as string
+        const authStore = useAuthStore()
+
+        const response = await $fetch<ApiResponse>(`${baseUrl}/menuConfigFlow/${id}`, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${authStore.accessToken}`,
+          },
+        })
+
+        if (response.success) {
+          // Remove from local state
+          this.configs = this.configs.filter(config => config.id !== id)
+          return { success: true, message: response.message || 'Menu config deleted successfully' }
+        } else {
+          return { success: false, message: response.message || 'Failed to delete menu config' }
+        }
+      } catch (error: any) {
+        const message = error.response?._data?.message || error.message || 'Failed to delete menu config'
+        return { success: false, message }
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async updateConfig(id: string, data: Partial<CreateMenuConfigRequest>) {
+      this.isSaving = true
+      this.error = null
+      
+      try {
+        const config = useRuntimeConfig()
+        const baseUrl = config.public.apiBaseUrl as string
+        const authStore = useAuthStore()
+
+        const response = await $fetch<ApiResponse<MenuConfigFlow>>(`${baseUrl}/menuConfigFlow/${id}`, {
+          method: 'PATCH',
+          body: data,
+          headers: {
+            Authorization: `Bearer ${authStore.accessToken}`,
+          },
+        })
+
+        if (response.success && response.data) {
+          // Update the config in local state
+          const index = this.configs.findIndex(c => c.id === id)
+          if (index !== -1) {
+            this.configs[index] = response.data
+          }
+          return { success: true, message: response.message || 'Menu config updated successfully', data: response.data }
+        } else {
+          return { success: false, message: response.message || 'Failed to update menu config' }
+        }
+      } catch (error: any) {
+        const message = error.response?._data?.message || error.message || 'Failed to update menu config'
+        return { success: false, message }
+      } finally {
+        this.isSaving = false
+      }
     }
   }
 })

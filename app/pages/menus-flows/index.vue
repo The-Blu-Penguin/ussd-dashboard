@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useState } from '#imports'
-import { Plus, ListTree, MoreVertical, Trash2, X, Network, FileJson } from 'lucide-vue-next'
+import { Plus, ListTree, MoreVertical, Trash2, X, Network, FileJson, Edit2 } from 'lucide-vue-next'
 import { useMenuConfigsStore } from '~/stores/menuConfigs'
 import { formatDistanceToNow } from 'date-fns'
+import { useRouter } from '#imports'
 
 const menuConfigsStore = useMenuConfigsStore()
+const router = useRouter()
 
 onMounted(() => {
   menuConfigsStore.fetchConfigs()
@@ -20,6 +22,27 @@ const openCreateModal = () => {
 
 const closeCreateModal = () => {
   showCreateModal.value = false
+}
+
+const handleEditConfig = (flow: any) => {
+  // Determine which builder to use based on the menuConfig structure
+  // If it has nodes/edges it's from visual builder, otherwise json builder
+  const isVisual = flow.menuConfig?.nodes && flow.menuConfig?.edges
+  
+  if (isVisual) {
+    router.push({ path: '/builder/visual', query: { id: flow.id } })
+  } else {
+    router.push({ path: '/builder/json', query: { id: flow.id } })
+  }
+}
+
+const handleDeleteConfig = async (id: string) => {
+  if (confirm('Are you sure you want to delete this menu configuration? This action cannot be undone.')) {
+    const result = await menuConfigsStore.deleteConfig(id)
+    if (!result.success) {
+      alert(result.message)
+    }
+  }
 }
 
 const formatDate = (dateString: string) => {
@@ -93,7 +116,19 @@ const formatDate = (dateString: string) => {
               <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{{ formatDate(flow.updatedAt) }}</td>
               <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end space-x-2">
-                  <button class="p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Delete">
+                  <button 
+                    @click="handleEditConfig(flow)"
+                    class="p-1.5 text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors" 
+                    title="Edit"
+                  >
+                    <Edit2 class="w-4 h-4" />
+                  </button>
+                  <button 
+                    @click="handleDeleteConfig(flow.id)"
+                    :disabled="menuConfigsStore.isLoading"
+                    class="p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors disabled:opacity-50" 
+                    title="Delete"
+                  >
                     <Trash2 class="w-4 h-4" />
                   </button>
                 </div>

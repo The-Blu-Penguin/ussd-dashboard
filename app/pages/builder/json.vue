@@ -1,12 +1,16 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { Save, Code, FileJson } from 'lucide-vue-next'
 import { useMenuConfigsStore } from '~/stores/menuConfigs'
 import Button from '~/components/ui/Button.vue'
+import { useRoute } from '#imports'
 
+const route = useRoute()
 const menuConfigsStore = useMenuConfigsStore()
 const saveMessage = ref('')
 const saveError = ref(false)
+const isEditing = ref(false)
+const configId = ref(null)
 
 const jsonContent = ref(JSON.stringify({
   "name": "standard menuConfig",
@@ -82,6 +86,32 @@ const formatJson = () => {
   setTimeout(() => { saveMessage.value = '' }, 3000)
 }
 
+onMounted(async () => {
+  if (route.query.id) {
+    configId.value = route.query.id
+    isEditing.value = true
+    
+    // Ensure we have the configs loaded
+    if (menuConfigsStore.configs.length === 0) {
+      await menuConfigsStore.fetchConfigs()
+    }
+    
+    // Find the config to edit
+    const configToEdit = menuConfigsStore.configs.find(c => c.id === configId.value)
+    if (configToEdit) {
+      // Reconstruct the JSON structure matching our expected payload
+      const jsonToLoad = {
+        name: configToEdit.name,
+        type: configToEdit.type,
+        hasReference: configToEdit.hasReference,
+        description: configToEdit.description,
+        menuConfig: configToEdit.menuConfig
+      }
+      jsonContent.value = JSON.stringify(jsonToLoad, null, 2)
+    }
+  }
+})
+
 const saveConfig = async () => {
   try {
     const parsed = JSON.parse(jsonContent.value)
@@ -97,7 +127,12 @@ const saveConfig = async () => {
       menuConfig: parsed.menuConfig || parsed
     }
     
-    const result = await menuConfigsStore.saveConfig(requestData)
+    let result;
+    if (isEditing.value && configId.value) {
+      result = await menuConfigsStore.updateConfig(configId.value, requestData)
+    } else {
+      result = await menuConfigsStore.saveConfig(requestData)
+    }
     
     saveMessage.value = result.message
     saveError.value = !result.success
