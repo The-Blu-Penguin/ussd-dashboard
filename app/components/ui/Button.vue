@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import Preloader from './Preloader.vue'
+import Spinner from './Spinner.vue'
 
 const props = defineProps({
   variant: {
@@ -69,9 +69,9 @@ const sizeClasses = computed(() => {
   >
     <!-- Use absolute positioning for the loader to prevent layout shift -->
     <div v-if="loading" class="absolute inset-0 flex items-center justify-center">
-      <Preloader 
-        :size="size === 'lg' ? 'sm' : 'xs'" 
-        :color="['outline', 'ghost', 'secondary'].includes(props.variant) ? 'blue' : 'white'" 
+      <Spinner 
+        :size="size === 'lg' ? 'md' : 'sm'" 
+        :color="['outline', 'ghost', 'secondary'].includes(props.variant) ? 'primary' : 'white'" 
       />
     </div>
     

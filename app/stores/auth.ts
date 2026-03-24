@@ -9,12 +9,18 @@ interface AuthState {
 }
 
 export const useAuthStore = defineStore('auth', {
-  state: (): AuthState => ({
-    user: null,
-    isLoggedIn: false,
-    accessToken: null,
-    isLoading: false,
-  }),
+  state: (): AuthState => {
+    // We use Nuxt's useCookie to persist state across SSR and client refresh
+    const accessTokenCookie = useCookie<string | null>('accessToken')
+    const userCookie = useCookie<User | null>('user')
+    
+    return {
+      user: userCookie.value || null,
+      isLoggedIn: !!accessTokenCookie.value,
+      accessToken: accessTokenCookie.value || null,
+      isLoading: false,
+    }
+  },
   actions: {
     async login(email: string, password: string) {
       this.isLoading = true
@@ -36,8 +42,16 @@ export const useAuthStore = defineStore('auth', {
           this.accessToken = response.data.accessToken
           this.isLoggedIn = true
 
+          // Persist state in cookies so it's available on refresh across SSR and client
+          const accessTokenCookie = useCookie<string | null>('accessToken', { maxAge: 60 * 60 * 24 * 7 })
+          const userCookie = useCookie<User | null>('user', { maxAge: 60 * 60 * 24 * 7 })
+          
+          accessTokenCookie.value = response.data.accessToken
+          userCookie.value = response.data.user
+
           if (import.meta.client) {
             localStorage.setItem('accessToken', response.data.accessToken)
+            localStorage.setItem('user', JSON.stringify(response.data.user))
           }
 
           return { success: true, message: response.message }
@@ -101,8 +115,15 @@ export const useAuthStore = defineStore('auth', {
         this.accessToken = null
         this.isLoggedIn = false
 
+        // Clear cookies
+        const accessTokenCookie = useCookie<string | null>('accessToken')
+        const userCookie = useCookie<User | null>('user')
+        accessTokenCookie.value = null
+        userCookie.value = null
+
         if (import.meta.client) {
           localStorage.removeItem('accessToken')
+          localStorage.removeItem('user')
         }
 
         navigateTo('/login')
@@ -113,11 +134,28 @@ export const useAuthStore = defineStore('auth', {
       this.isLoggedIn = true
     },
     initAuth() {
+      // Fallback: load from localStorage on client-side if cookies weren't set properly
       if (import.meta.client) {
-        const token = localStorage.getItem('accessToken')
-        if (token) {
-          this.accessToken = token
-          this.isLoggedIn = true
+        if (!this.accessToken) {
+          const token = localStorage.getItem('accessToken')
+          if (token) {
+            this.accessToken = token
+            this.isLoggedIn = true
+            const accessTokenCookie = useCookie<string | null>('accessToken', { maxAge: 60 * 60 * 24 * 7 })
+            accessTokenCookie.value = token
+          }
+        }
+        if (!this.user) {
+          const userStr = localStorage.getItem('user')
+          if (userStr) {
+            try {
+              this.user = JSON.parse(userStr)
+              const userCookie = useCookie<User | null>('user', { maxAge: 60 * 60 * 24 * 7 })
+              userCookie.value = this.user
+            } catch (e) {
+              console.error('Failed to parse user from localStorage', e)
+            }
+          }
         }
       }
     },

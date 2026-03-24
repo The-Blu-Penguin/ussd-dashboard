@@ -4,6 +4,8 @@ import { Plus, Smartphone, PlayCircle, X, Pencil } from 'lucide-vue-next'
 import SearchInput from '~/components/ui/SearchInput.vue'
 import Pagination from '~/components/ui/Pagination.vue'
 import Button from '~/components/ui/Button.vue'
+import Shimmer from '~/components/ui/Shimmer.vue'
+import Spinner from '~/components/ui/Spinner.vue'
 import { useDirectoryStore } from '~/stores/directory'
 
 const directoryStore = useDirectoryStore()
@@ -42,7 +44,15 @@ const newApp = ref({
   menuFlow: ''
 })
 
-const merchants = ['Kofi Electronics', 'Ama Provisions', 'Tech Solutions', 'Accra Mall Pharmacy', 'Volta Grains']
+const merchants = computed(() => {
+  const uniqueMerchants = new Set<string>()
+  directoryStore.directories.forEach(dir => {
+    const name = dir.merchantName || dir.createdBy?.fullName
+    if (name && name !== 'Unknown') uniqueMerchants.add(name)
+  })
+  return Array.from(uniqueMerchants).sort()
+})
+
 const availableCodes = ['123', '456', '789', '999', '000']
 const menuFlows = [
   'Main Menu Flow',
@@ -314,9 +324,26 @@ const handleAllocate = async () => {
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
-            <tr v-if="directoryStore.isLoading">
-              <td colspan="7" class="px-6 py-8 text-center text-gray-500">Loading directories...</td>
-            </tr>
+            <template v-if="directoryStore.isLoading">
+              <tr v-for="i in 5" :key="'skeleton-'+i" class="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">
+                <td class="px-6 py-4">
+                  <div class="flex flex-col gap-2">
+                    <Shimmer width="70%" height="1.25rem" />
+                    <Shimmer width="40%" height="0.875rem" />
+                  </div>
+                </td>
+                <td class="px-6 py-4"><Shimmer width="6rem" height="1.75rem" /></td>
+                <td class="px-6 py-4"><Shimmer width="8rem" height="1.25rem" /></td>
+                <td class="px-6 py-4"><Shimmer width="5rem" height="1.25rem" /></td>
+                <td class="px-6 py-4"><Shimmer width="3rem" height="1.25rem" /></td>
+                <td class="px-6 py-4"><Shimmer width="5rem" height="1.5rem" circle class="!rounded-full" /></td>
+                <td class="px-6 py-4 text-right">
+                  <div class="flex justify-end">
+                    <Shimmer width="2rem" height="2rem" class="rounded-lg" />
+                  </div>
+                </td>
+              </tr>
+            </template>
             <tr v-else-if="directoryStore.error">
               <td colspan="7" class="px-6 py-8 text-center text-red-500">{{ directoryStore.error }}</td>
             </tr>
@@ -375,7 +402,7 @@ const handleAllocate = async () => {
       </div>
       
       <!-- Empty State -->
-      <div v-if="filteredApps.length === 0" class="p-12 text-center">
+      <div v-if="filteredApps.length === 0 && !directoryStore.isLoading && !directoryStore.error" class="p-12 text-center">
         <div class="w-16 h-16 bg-gray-50 dark:bg-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
           <Smartphone class="w-8 h-8 text-gray-400 dark:text-gray-500" />
         </div>

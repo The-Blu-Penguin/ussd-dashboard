@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { Camera, Lock, UserPlus, Trash2, Mail, Shield, Eye, EyeOff, Edit2, X } from 'lucide-vue-next'
 import Button from '~/components/ui/Button.vue'
+import Shimmer from '~/components/ui/Shimmer.vue'
 import { useAuthStore } from '~/stores/auth'
 import { useUsersStore } from '~/stores/users'
 import type { User } from '~/types/api'
@@ -349,9 +350,27 @@ const removeUser = async (id: string) => {
               </tr>
             </thead>
             <tbody class="text-sm">
-              <tr v-if="usersStore.isLoading" class="border-b border-gray-50 dark:border-gray-700/50">
-                <td colspan="4" class="py-6 text-center text-gray-500">Loading users...</td>
-              </tr>
+              <template v-if="usersStore.isLoading">
+                <tr v-for="i in 3" :key="'skeleton-'+i" class="border-b border-gray-50 dark:border-gray-700/50">
+                  <td class="py-3 pl-2">
+                    <div class="flex items-center">
+                      <Shimmer width="2rem" height="2rem" circle class="mr-3" />
+                      <div class="flex flex-col gap-1.5">
+                        <Shimmer width="6rem" height="1rem" />
+                        <Shimmer width="8rem" height="0.75rem" />
+                      </div>
+                    </div>
+                  </td>
+                  <td class="py-3"><Shimmer width="4rem" height="1.25rem" class="rounded-full" /></td>
+                  <td class="py-3"><Shimmer width="4rem" height="1rem" /></td>
+                  <td class="py-3 pr-2 text-right">
+                    <div class="flex items-center justify-end gap-2">
+                      <Shimmer width="1.5rem" height="1.5rem" class="rounded" />
+                      <Shimmer width="1.5rem" height="1.5rem" class="rounded" />
+                    </div>
+                  </td>
+                </tr>
+              </template>
               <tr v-else-if="usersStore.error" class="border-b border-gray-50 dark:border-gray-700/50">
                 <td colspan="4" class="py-6 text-center text-red-500">{{ usersStore.error }}</td>
               </tr>

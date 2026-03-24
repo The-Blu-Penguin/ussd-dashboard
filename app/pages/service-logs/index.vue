@@ -7,7 +7,7 @@ import SearchInput from '~/components/ui/SearchInput.vue'
 import Pagination from '~/components/ui/Pagination.vue'
 import FilterButton from '~/components/ui/FilterButton.vue'
 import LogDetailsModal from '~/components/logs/LogDetailsModal.vue'
-import Skeleton from '~/components/ui/Skeleton.vue'
+import Shimmer from '~/components/ui/Shimmer.vue'
 import { 
   ScrollText, Download, AlertTriangle, CheckCircle, XCircle, Info,
   Server, Activity, Pause, Play, Trash2
@@ -214,12 +214,12 @@ const handlePageChange = (page: number) => { currentPage.value = page }
 
            <template v-if="isLoading">
               <div v-for="i in 8" :key="i" class="flex items-center space-x-4 px-6 py-3 border-b border-gray-50 dark:border-gray-700/50">
-                 <div class="w-36 shrink-0"><Skeleton width="100px" height="14px" /></div>
-                 <div class="w-24 shrink-0"><Skeleton width="60px" height="14px" /></div>
-                 <div class="w-24 shrink-0"><Skeleton width="50px" height="20px" class="rounded-full" /></div>
-                 <div class="w-16 shrink-0"><Skeleton width="30px" height="20px" class="rounded" /></div>
-                 <div class="flex-1"><Skeleton width="80%" height="14px" /></div>
-                 <div class="w-20 shrink-0 flex justify-end"><Skeleton width="40px" height="14px" /></div>
+                 <div class="w-36 shrink-0"><Shimmer width="100px" height="14px" /></div>
+                 <div class="w-24 shrink-0"><Shimmer width="60px" height="14px" /></div>
+                 <div class="w-24 shrink-0"><Shimmer width="50px" height="20px" class="rounded-full" /></div>
+                 <div class="w-16 shrink-0"><Shimmer width="30px" height="20px" class="rounded" /></div>
+                 <div class="flex-1"><Shimmer width="80%" height="14px" /></div>
+                 <div class="w-20 shrink-0 flex justify-end"><Shimmer width="40px" height="14px" /></div>
               </div>
            </template>
 

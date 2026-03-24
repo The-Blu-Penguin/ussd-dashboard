@@ -6,6 +6,7 @@ import { useMenuConfigsStore } from '~/stores/menuConfigs'
 import { formatDistanceToNow } from 'date-fns'
 import { useRouter } from '#imports'
 import Button from '~/components/ui/Button.vue'
+import Shimmer from '~/components/ui/Shimmer.vue'
 
 const menuConfigsStore = useMenuConfigsStore()
 const router = useRouter()
@@ -108,9 +109,29 @@ const formatDate = (dateString: string) => {
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
-            <tr v-if="menuConfigsStore.isLoading">
-              <td colspan="6" class="px-6 py-8 text-center text-gray-500">Loading menu configurations...</td>
-            </tr>
+            <template v-if="menuConfigsStore.isLoading">
+              <tr v-for="i in 5" :key="'skeleton-'+i" class="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">
+                <td class="px-6 py-4">
+                  <div class="flex items-center">
+                    <Shimmer width="2rem" height="2rem" class="rounded-lg mr-3" />
+                    <div class="flex flex-col gap-2">
+                      <Shimmer width="8rem" height="1.25rem" />
+                      <Shimmer width="4rem" height="0.875rem" />
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4"><Shimmer width="12rem" height="1.25rem" /></td>
+                <td class="px-6 py-4"><Shimmer width="4rem" height="1.25rem" /></td>
+                <td class="px-6 py-4"><Shimmer width="4rem" height="1.5rem" circle class="!rounded-full" /></td>
+                <td class="px-6 py-4"><Shimmer width="6rem" height="1.25rem" /></td>
+                <td class="px-6 py-4 text-right">
+                  <div class="flex justify-end gap-2">
+                    <Shimmer width="2rem" height="2rem" class="rounded-lg" />
+                    <Shimmer width="2rem" height="2rem" class="rounded-lg" />
+                  </div>
+                </td>
+              </tr>
+            </template>
             <tr v-else-if="menuConfigsStore.error">
               <td colspan="6" class="px-6 py-8 text-center text-red-500">{{ menuConfigsStore.error }}</td>
             </tr>

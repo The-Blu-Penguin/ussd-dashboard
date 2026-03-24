@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import Preloader from '~/components/ui/Preloader.vue'
-import Skeleton from '~/components/ui/Skeleton.vue'
+import Shimmer from '~/components/ui/Shimmer.vue'
 import LineChart from '~/components/charts/LineChart.vue'
 import { 
   Users, 
@@ -141,11 +141,11 @@ const chartOptions = {
       <template v-if="isLoading">
         <div v-for="i in 4" :key="i" class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700">
           <div class="flex justify-between items-start mb-4">
-            <Skeleton width="48px" height="48px" class="rounded-lg" />
-            <Skeleton width="40px" height="20px" class="rounded-full" />
+            <Shimmer width="48px" height="48px" class="rounded-lg" />
+            <Shimmer width="40px" height="20px" class="rounded-full" />
           </div>
-          <Skeleton width="120px" height="32px" class="mb-2" />
-          <Skeleton width="80px" height="16px" />
+          <Shimmer width="120px" height="32px" class="mb-2" />
+          <Shimmer width="80px" height="16px" />
         </div>
       </template>
       <template v-else>
