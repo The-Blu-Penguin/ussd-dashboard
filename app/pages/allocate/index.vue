@@ -28,7 +28,7 @@ interface App {
 const showModal = ref(false)
 const searchQuery = ref('')
 const currentPage = ref(1)
-const itemsPerPage = 8
+const itemsPerPage = 10
 
 // Edit mode state
 const isEditing = ref(false)
@@ -325,7 +325,7 @@ const handleAllocate = async () => {
           </thead>
           <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
             <template v-if="directoryStore.isLoading">
-              <tr v-for="i in 5" :key="'skeleton-'+i" class="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">
+              <tr v-for="i in 10" :key="'skeleton-'+i" class="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">
                 <td class="px-6 py-4">
                   <div class="flex flex-col gap-2">
                     <Shimmer width="70%" height="1.25rem" />

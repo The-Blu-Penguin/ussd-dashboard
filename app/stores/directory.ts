@@ -32,10 +32,11 @@ export const useDirectoryStore = defineStore('directory', {
         })
 
         if (response.success && response.data) {
+          // Initialize directories
           this.directories = response.data
           
-          // Fetch merchant names for each directory asynchronously
-          this.directories.forEach(async (dir, index) => {
+          // Fetch merchant names for each directory concurrently
+          const merchantPromises = this.directories.map(async (dir, index) => {
             if (dir.merchantCode) {
               try {
                 const merchantResponse = await $fetch<MerchantApiResponse>(`${baseUrl}/merchants/${dir.merchantCode}`, {
@@ -55,6 +56,9 @@ export const useDirectoryStore = defineStore('directory', {
               }
             }
           })
+          
+          // Wait for all merchant details to load before setting isLoading to false
+          await Promise.all(merchantPromises)
           
           return { success: true, message: response.message }
         } else {
