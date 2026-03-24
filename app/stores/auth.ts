@@ -10,27 +10,32 @@ interface AuthState {
 
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => {
-    // Check local storage first on client, fallback to cookies, then null
-    let initialUser = null
-    let initialToken = null
+    // Priority 1: Check cookies (reliable for SSR)
+    const accessTokenCookie = useCookie<string | null>('accessToken')
+    const userCookie = useCookie<User | null>('user')
+    
+    let initialUser = userCookie.value || null
+    let initialToken = accessTokenCookie.value || null
 
+    // Priority 2: Fallback to localStorage immediately on client creation
     if (import.meta.client) {
       try {
-        const userStr = localStorage.getItem('user')
-        if (userStr) initialUser = JSON.parse(userStr)
-        initialToken = localStorage.getItem('accessToken')
+        if (!initialUser) {
+          const userStr = localStorage.getItem('user')
+          if (userStr) initialUser = JSON.parse(userStr)
+        }
+        if (!initialToken) {
+          initialToken = localStorage.getItem('accessToken') || null
+        }
       } catch (e) {
         console.error('Error parsing user from localStorage:', e)
       }
     }
-
-    const accessTokenCookie = useCookie<string | null>('accessToken')
-    const userCookie = useCookie<User | null>('user')
     
     return {
-      user: initialUser || userCookie.value || null,
-      isLoggedIn: !!(initialToken || accessTokenCookie.value),
-      accessToken: initialToken || accessTokenCookie.value || null,
+      user: initialUser,
+      isLoggedIn: !!initialToken,
+      accessToken: initialToken,
       isLoading: false,
     }
   },
@@ -146,7 +151,7 @@ export const useAuthStore = defineStore('auth', {
       this.user = user
       this.isLoggedIn = true
     },
-    initAuth() {
+    async initAuth() {
       // Priority 1: Check cookies first (most reliable for SSR and cross-tab)
       const accessTokenCookie = useCookie<string | null>('accessToken')
       const userCookie = useCookie<User | null>('user')
@@ -162,6 +167,9 @@ export const useAuthStore = defineStore('auth', {
 
       // Priority 2: Fallback to localStorage on client-side
       if (import.meta.client) {
+        // Wait a tiny bit to ensure localStorage is accessible in all browsers
+        await new Promise(resolve => setTimeout(resolve, 0))
+        
         if (!this.accessToken) {
           const token = localStorage.getItem('accessToken')
           if (token) {

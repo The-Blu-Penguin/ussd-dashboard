@@ -315,7 +315,7 @@ const handleAllocate = async () => {
           <thead>
             <tr class="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               <th class="px-6 py-4 font-bold">Merchant Name</th>
-              <th class="px-6 py-4 font-bold">Service Code</th>
+              <th class="px-6 py-4 font-bold">USSD Code</th>
               <th class="px-6 py-4 font-bold">Menu Flow</th>
               <th class="px-6 py-4 font-bold">Level</th>
               <th class="px-6 py-4 font-bold">Traffic</th>
@@ -363,7 +363,7 @@ const handleAllocate = async () => {
                 </div>
               </td>
               <td class="px-6 py-4">
-                <span class="inline-block px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md font-mono text-sm font-bold border border-gray-200 dark:border-gray-600">
+                <span class="inline-block px-3 py-1 bg-[#005586] text-white rounded-md font-mono text-sm font-bold border border-[#00446b]">
                   {{ app.code }}
                 </span>
               </td>
@@ -382,9 +382,9 @@ const handleAllocate = async () => {
               <td class="px-6 py-4">
                 <span 
                   class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border"
-                  :class="app.status === 'Active' ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-100 dark:border-green-800' : 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-800'"
+                  :class="app.status.toLowerCase() === 'active' ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800' : 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-800'"
                 >
-                  <span class="w-1.5 h-1.5 rounded-full mr-1.5" :class="app.status === 'Active' ? 'bg-green-500' : 'bg-amber-500'"></span>
+                  <span class="w-1.5 h-1.5 rounded-full mr-1.5" :class="app.status.toLowerCase() === 'active' ? 'bg-green-600 dark:bg-green-400' : 'bg-amber-500'"></span>
                   {{ app.status }}
                 </span>
               </td>
