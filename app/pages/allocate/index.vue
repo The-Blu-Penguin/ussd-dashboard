@@ -28,7 +28,7 @@ interface App {
 const showModal = ref(false)
 const searchQuery = ref('')
 const currentPage = ref(1)
-const itemsPerPage = 10
+const itemsPerPage = ref(10)
 
 // Edit mode state
 const isEditing = ref(false)
@@ -85,8 +85,8 @@ const filteredApps = computed(() => {
 })
 
 const paginatedApps = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
-  const end = start + itemsPerPage
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
   return filteredApps.value.slice(start, end)
 })
 
@@ -353,8 +353,11 @@ const handleAllocate = async () => {
             <tr v-else v-for="app in paginatedApps" :key="app.id" class="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors group">
               <td class="px-6 py-4">
                 <div class="flex items-center">
-                  <div>
-                    <p class="font-bold text-gray-800 dark:text-gray-100">{{ app.name }}</p>
+                  <div class="w-full">
+                    <p v-if="app.name === 'Unknown' && app.merchantId !== '-'" class="flex items-center gap-2">
+                      <Shimmer width="6rem" height="1rem" />
+                    </p>
+                    <p v-else class="font-bold text-gray-800 dark:text-gray-100">{{ app.name }}</p>
                     <p class="text-xs text-gray-500 dark:text-gray-400">ID: {{ app.merchantId }}</p>
                   </div>
                 </div>
@@ -423,6 +426,7 @@ const handleAllocate = async () => {
           :total-items="filteredApps.length" 
           :items-per-page="itemsPerPage"
           @page-change="handlePageChange"
+          @update:itemsPerPage="itemsPerPage = $event"
         />
       </div>
     </div>

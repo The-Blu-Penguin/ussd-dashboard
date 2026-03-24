@@ -17,7 +17,11 @@ export const useMenuConfigsStore = defineStore('menuConfigs', {
     error: null,
   }),
   actions: {
-    async fetchConfigs() {
+    async fetchConfigs(forceRefresh = false) {
+      if (this.configs.length > 0 && !forceRefresh) {
+        return { success: true, message: 'Configs already loaded' }
+      }
+
       this.isLoading = true
       this.error = null
       

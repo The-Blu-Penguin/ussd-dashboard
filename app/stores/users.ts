@@ -15,7 +15,11 @@ export const useUsersStore = defineStore('users', {
     error: null,
   }),
   actions: {
-    async fetchUsers() {
+    async fetchUsers(forceRefresh = false) {
+      if (this.users.length > 0 && !forceRefresh) {
+        return { success: true, message: 'Users already loaded' }
+      }
+
       this.isLoading = true
       this.error = null
       

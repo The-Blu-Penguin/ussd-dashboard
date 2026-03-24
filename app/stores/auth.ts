@@ -10,14 +10,27 @@ interface AuthState {
 
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => {
-    // We use Nuxt's useCookie to persist state across SSR and client refresh
+    // Check local storage first on client, fallback to cookies, then null
+    let initialUser = null
+    let initialToken = null
+
+    if (import.meta.client) {
+      try {
+        const userStr = localStorage.getItem('user')
+        if (userStr) initialUser = JSON.parse(userStr)
+        initialToken = localStorage.getItem('accessToken')
+      } catch (e) {
+        console.error('Error parsing user from localStorage:', e)
+      }
+    }
+
     const accessTokenCookie = useCookie<string | null>('accessToken')
     const userCookie = useCookie<User | null>('user')
     
     return {
-      user: userCookie.value || null,
-      isLoggedIn: !!accessTokenCookie.value,
-      accessToken: accessTokenCookie.value || null,
+      user: initialUser || userCookie.value || null,
+      isLoggedIn: !!(initialToken || accessTokenCookie.value),
+      accessToken: initialToken || accessTokenCookie.value || null,
       isLoading: false,
     }
   },
@@ -134,14 +147,26 @@ export const useAuthStore = defineStore('auth', {
       this.isLoggedIn = true
     },
     initAuth() {
-      // Fallback: load from localStorage on client-side if cookies weren't set properly
+      // Priority 1: Check cookies first (most reliable for SSR and cross-tab)
+      const accessTokenCookie = useCookie<string | null>('accessToken')
+      const userCookie = useCookie<User | null>('user')
+      
+      if (accessTokenCookie.value) {
+        this.accessToken = accessTokenCookie.value
+        this.isLoggedIn = true
+      }
+      
+      if (userCookie.value) {
+        this.user = userCookie.value
+      }
+
+      // Priority 2: Fallback to localStorage on client-side
       if (import.meta.client) {
         if (!this.accessToken) {
           const token = localStorage.getItem('accessToken')
           if (token) {
             this.accessToken = token
             this.isLoggedIn = true
-            const accessTokenCookie = useCookie<string | null>('accessToken', { maxAge: 60 * 60 * 24 * 7 })
             accessTokenCookie.value = token
           }
         }
@@ -150,7 +175,6 @@ export const useAuthStore = defineStore('auth', {
           if (userStr) {
             try {
               this.user = JSON.parse(userStr)
-              const userCookie = useCookie<User | null>('user', { maxAge: 60 * 60 * 24 * 7 })
               userCookie.value = this.user
             } catch (e) {
               console.error('Failed to parse user from localStorage', e)
