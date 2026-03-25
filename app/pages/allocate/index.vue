@@ -7,11 +7,16 @@ import Button from '~/components/ui/Button.vue'
 import Shimmer from '~/components/ui/Shimmer.vue'
 import Spinner from '~/components/ui/Spinner.vue'
 import { useDirectoryStore } from '~/stores/directory'
+import { useMenuConfigsStore } from '~/stores/menuConfigs'
+import { useAuthStore } from '~/stores/auth'
 
 const directoryStore = useDirectoryStore()
+const menuConfigsStore = useMenuConfigsStore()
+const authStore = useAuthStore()
 
 onMounted(() => {
   directoryStore.fetchDirectories()
+  menuConfigsStore.fetchConfigs()
 })
 
 interface App {
@@ -53,14 +58,107 @@ const merchants = computed(() => {
   return Array.from(uniqueMerchants).sort()
 })
 
-const availableCodes = ['123', '456', '789', '999', '000']
-const menuFlows = [
-  'Main Menu Flow',
-  'Payment Flow',
-  'Inquiry Flow',
-  'Settings Flow',
-  'Custom Flow'
-]
+const menuFlows = computed(() => {
+  return menuConfigsStore.configs.map(config => ({
+    id: config.id,
+    name: config.name
+  }))
+})
+
+// Available Codes Fetch Logic
+const availableCodes = ref<number[]>([])
+const isFetchingCodes = ref(false)
+const autoSelectedCode = ref<number | null>(null)
+
+const fetchAvailableCodes = async (level: string) => {
+  isFetchingCodes.value = true
+  autoSelectedCode.value = null
+  
+  try {
+    const config = useRuntimeConfig()
+    const baseUrl = config.public.apiBaseUrl as string
+    
+    // Map 'Primary' -> 'PRIMARY', 'Secondary' -> 'SECONDARY'
+    const levelQuery = level.toUpperCase()
+    // parentCode is 1 for SECONDARY, empty for PRIMARY
+    const parentCodeQuery = levelQuery === 'SECONDARY' ? '&parentCode=1' : ''
+    
+    const response = await $fetch<any>(`${baseUrl}/directory/available-codes?level=${levelQuery}${parentCodeQuery}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${authStore.accessToken}`,
+      },
+    })
+
+    if (response.success && response.data?.availableCodes) {
+      availableCodes.value = response.data.availableCodes
+      if (availableCodes.value.length > 0) {
+        // Randomly pick one code for auto-generation
+        const randomIndex = Math.floor(Math.random() * availableCodes.value.length)
+        autoSelectedCode.value = availableCodes.value[randomIndex] ?? null
+      }
+    } else {
+      availableCodes.value = []
+    }
+  } catch (e) {
+    console.error('Failed to fetch available codes:', e)
+    availableCodes.value = []
+  } finally {
+    isFetchingCodes.value = false
+  }
+}
+
+watch(() => newApp.value.level, (newLevel) => {
+  if (!isEditing.value) {
+    fetchAvailableCodes(newLevel)
+  }
+})
+
+// Merchant Name Auto-Fetch Logic
+const isFetchingMerchant = ref(false)
+let debounceTimeout: NodeJS.Timeout | null = null
+
+const fetchMerchantName = async (code: string) => {
+  if (!code || code.trim() === '') {
+    newApp.value.merchant = ''
+    return
+  }
+
+  isFetchingMerchant.value = true
+  try {
+    const config = useRuntimeConfig()
+    const baseUrl = config.public.apiBaseUrl as string
+    
+    const response = await $fetch<any>(`${baseUrl}/merchants/${code}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${authStore.accessToken}`,
+      },
+    })
+
+    if (response.success && response.data?.merchant?.merchantName) {
+      newApp.value.merchant = response.data.merchant.merchantName
+    } else {
+      newApp.value.merchant = 'Unknown Merchant'
+    }
+  } catch (e) {
+    console.error('Failed to fetch merchant details:', e)
+    newApp.value.merchant = 'Unknown Merchant'
+  } finally {
+    isFetchingMerchant.value = false
+  }
+}
+
+watch(() => newApp.value.merchantId, (newId) => {
+  if (isEditing.value) return // Don't auto-fetch while editing an existing record
+  
+  if (debounceTimeout) clearTimeout(debounceTimeout)
+  
+  // Debounce the API call so it doesn't fire on every keystroke
+  debounceTimeout = setTimeout(() => {
+    fetchMerchantName(newId)
+  }, 500)
+})
 
 const apps = computed<App[]>(() => {
   return directoryStore.directories.map(dir => ({
@@ -99,6 +197,7 @@ const openAllocateModal = () => {
   editingId.value = null
   newApp.value = { merchant: '', merchantId: '', level: 'Secondary', method: 'Automatic', selectedCode: '', menuFlow: '' }
   showModal.value = true
+  fetchAvailableCodes('Secondary') // Fetch codes for default level when opening
 }
 
 const openEditModal = (app: App) => {
@@ -106,10 +205,17 @@ const openEditModal = (app: App) => {
   editingId.value = app.id
   
   let codeSuffix = ''
-  if (app.code === '*920#') {
+  // Strip both *820* and *820*1* dynamically based on the level
+  const prefix = app.type === 'Secondary' ? '*820*1*' : '*820*'
+  const exactCodeMatch = app.type === 'Secondary' ? '*820*1#' : '*820#'
+  
+  if (app.code === exactCodeMatch) {
     codeSuffix = ''
   } else {
-    codeSuffix = app.code.replace(/^\*920\*/, '').replace(/#$/, '')
+    // Escape prefix for regex
+    const escapedPrefix = prefix.replace(/\*/g, '\\*')
+    const regex = new RegExp(`^${escapedPrefix}`)
+    codeSuffix = app.code.replace(regex, '').replace(/#$/, '')
   }
   
   newApp.value = {
@@ -125,35 +231,65 @@ const openEditModal = (app: App) => {
 }
 
 const handleAllocate = async () => {
-  if (!newApp.value.merchant || !newApp.value.merchantId) return
+  if (!newApp.value.merchant || !newApp.value.merchantId || !newApp.value.menuFlow) {
+    alert('Please fill in all required fields.')
+    return
+  }
 
   isSubmitting.value = true
-  await new Promise(resolve => setTimeout(resolve, 800))
 
-  let allocatedCode = ''
+  let codeToAssignNumber = 0
   
   if (newApp.value.method === 'Automatic' && !isEditing.value) {
-    allocatedCode = `*920*${Math.floor(100 + Math.random() * 900)}#`
-  } else {
-    if (!newApp.value.selectedCode && newApp.value.selectedCode !== '') return
-    
-    if (newApp.value.selectedCode === '') {
-        allocatedCode = '*920#'
+    if (autoSelectedCode.value !== null) {
+        codeToAssignNumber = autoSelectedCode.value
     } else {
-        allocatedCode = `*920*${newApp.value.selectedCode}#`
+        codeToAssignNumber = Math.floor(100 + Math.random() * 900)
     }
+  } else {
+    if (!newApp.value.selectedCode || newApp.value.selectedCode === '') {
+        alert('Please select a code.')
+        isSubmitting.value = false
+        return
+    }
+    codeToAssignNumber = parseInt(newApp.value.selectedCode, 10)
   }
 
   if (isEditing.value && editingId.value) {
     // This will be updated to use actual API call later
     const index = apps.value.findIndex(a => a.id === editingId.value)
     // For now we just close the modal since we can't mutate computed properties directly
+    showModal.value = false
+    isSubmitting.value = false
   } else {
-    // This will be updated to use actual API call later
-  }
+    // Find the corresponding menuConfigFlowId based on the selected name
+    const selectedFlow = menuConfigsStore.configs.find(c => c.name === newApp.value.menuFlow)
+    const menuConfigFlowId = selectedFlow ? selectedFlow.id : ''
 
-  showModal.value = false
-  isSubmitting.value = false
+    if (!menuConfigFlowId) {
+        alert('Invalid Menu Flow selected.')
+        isSubmitting.value = false
+        return
+    }
+
+    const payload = {
+      merchantCode: newApp.value.merchantId,
+      codeToAssign: codeToAssignNumber,
+      level: newApp.value.level.toUpperCase(),
+      methodOfAllocation: newApp.value.method === 'Automatic' ? 'AUTO' : 'MANUAL',
+      menuConfigFlowId: menuConfigFlowId,
+      ...(newApp.value.level === 'Secondary' ? { parentCode: 1 } : {})
+    }
+
+    const response = await directoryStore.allocateCode(payload)
+
+    if (response.success) {
+      showModal.value = false
+    } else {
+      alert(`Allocation Failed: ${response.message}`)
+    }
+    isSubmitting.value = false
+  }
 }
 </script>
 
@@ -187,41 +323,49 @@ const handleAllocate = async () => {
         </div>
         
         <div class="p-6 space-y-4">
-          <!-- Merchant Select -->
-          <div>
-            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Select Merchant</label>
-            <select 
-              v-model="newApp.merchant"
-              class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:bg-white dark:focus:bg-gray-800 transition-all disabled:opacity-60 disabled:cursor-not-allowed dark:text-gray-200"
-              :disabled="isEditing"
-            >
-              <option value="" disabled>Choose a merchant...</option>
-              <option v-for="m in merchants" :key="m" :value="m">{{ m }}</option>
-            </select>
-          </div>
-          
           <!-- Merchant ID -->
           <div>
             <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Merchant ID</label>
-            <input 
-              v-model="newApp.merchantId"
-              type="text" 
-              class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:bg-white dark:focus:bg-gray-800 transition-all font-mono disabled:opacity-60 disabled:cursor-not-allowed dark:text-gray-200"
-              placeholder="e.g. MER-001"
-              :disabled="isEditing"
-            />
+            <div class="relative">
+              <input 
+                v-model="newApp.merchantId"
+                type="text" 
+                class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:bg-white dark:focus:bg-gray-800 transition-all font-mono disabled:opacity-60 disabled:cursor-not-allowed dark:text-gray-200"
+                placeholder="e.g. MER-001"
+                :disabled="isEditing"
+              />
+              <div v-if="isFetchingMerchant" class="absolute right-3 top-1/2 -translate-y-1/2">
+                <Spinner size="sm" color="primary" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Merchant Name -->
+          <div>
+            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Merchant Name</label>
+            <div 
+              class="w-full px-4 py-2.5 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-700 dark:text-gray-300 font-medium opacity-80 cursor-not-allowed"
+            >
+              {{ newApp.merchant || 'Enter Merchant ID to auto-fill' }}
+            </div>
           </div>
 
           <!-- Menu Flow -->
           <div>
             <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Menu Flow</label>
-            <select 
-              v-model="newApp.menuFlow"
-              class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:bg-white dark:focus:bg-gray-800 transition-all dark:text-gray-200"
-            >
-              <option value="" disabled>Select a menu flow...</option>
-              <option v-for="flow in menuFlows" :key="flow" :value="flow">{{ flow }}</option>
-            </select>
+            <div class="relative">
+              <select 
+                v-model="newApp.menuFlow"
+                class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:bg-white dark:focus:bg-gray-800 transition-all dark:text-gray-200 disabled:opacity-60"
+                :disabled="menuConfigsStore.isLoading"
+              >
+                <option value="" disabled>{{ menuConfigsStore.isLoading ? 'Loading flows...' : 'Select a menu flow...' }}</option>
+                <option v-for="flow in menuFlows" :key="flow.id" :value="flow.name">{{ flow.name }}</option>
+              </select>
+              <div v-if="menuConfigsStore.isLoading" class="absolute right-8 top-1/2 -translate-y-1/2">
+                <Spinner size="sm" color="primary" />
+              </div>
+            </div>
           </div>
 
           <!-- Level & Method -->
@@ -258,7 +402,10 @@ const handleAllocate = async () => {
           <div v-if="newApp.method === 'Automatic' && !isEditing">
             <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Auto-Generated Code</label>
             <div class="w-full px-4 py-2.5 bg-vibes-50 dark:bg-vibes-900/30 border border-blue-100 dark:border-blue-800 rounded-lg text-sm font-mono text-vibes-600 dark:text-vibes-400 flex items-center justify-between">
-              <span>*920*<span class="font-bold text-blue-800 dark:text-vibes-300">XXX</span>#</span>
+              <span v-if="isFetchingCodes" class="flex items-center gap-2">
+                <Spinner size="sm" color="primary" /> Fetching...
+              </span>
+              <span v-else>*820*<span v-if="newApp.level === 'Secondary'">1*</span><span class="font-bold text-blue-800 dark:text-vibes-300">{{ autoSelectedCode !== null ? autoSelectedCode : 'XXX' }}</span>#</span>
               <span class="text-xs bg-vibes-100 dark:bg-vibes-800 px-2 py-0.5 rounded text-vibes-700 dark:text-vibes-300 font-bold">Auto</span>
             </div>
             <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">System will automatically assign an available code</p>
@@ -268,7 +415,7 @@ const handleAllocate = async () => {
             <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">{{ isEditing ? 'Assigned Code' : 'Select Available Code' }}</label>
             <div v-if="isEditing" class="relative">
                  <div class="flex items-center w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus-within:ring-2 focus-within:ring-vibes-500 focus-within:bg-white dark:focus-within:bg-gray-800 transition-all font-mono">
-                    <span class="text-gray-500 dark:text-gray-400 mr-1">*920*</span>
+                    <span class="text-gray-500 dark:text-gray-400 mr-1">*820*<span v-if="newApp.level === 'Secondary'">1*</span></span>
                     <input 
                       v-model="newApp.selectedCode" 
                       type="text" 
@@ -278,14 +425,19 @@ const handleAllocate = async () => {
                     <span class="text-gray-500 dark:text-gray-400 ml-1">#</span>
                  </div>
             </div>
-            <select 
-              v-else
-              v-model="newApp.selectedCode"
-              class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:bg-white dark:focus:bg-gray-800 transition-all font-mono dark:text-gray-200"
-            >
-              <option value="" disabled>Choose a code...</option>
-              <option v-for="code in availableCodes" :key="code" :value="code">*920*{{ code }}#</option>
-            </select>
+            <div v-else class="relative">
+              <select 
+                v-model="newApp.selectedCode"
+                class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:bg-white dark:focus:bg-gray-800 transition-all font-mono dark:text-gray-200 disabled:opacity-60"
+                :disabled="isFetchingCodes"
+              >
+                <option value="" disabled>{{ isFetchingCodes ? 'Loading codes...' : 'Choose a code...' }}</option>
+                <option v-for="code in availableCodes" :key="code" :value="code">*820*<template v-if="newApp.level === 'Secondary'">1*</template>{{ code }}#</option>
+              </select>
+              <div v-if="isFetchingCodes" class="absolute right-8 top-1/2 -translate-y-1/2">
+                <Spinner size="sm" color="primary" />
+              </div>
+            </div>
           </div>
         </div>
         

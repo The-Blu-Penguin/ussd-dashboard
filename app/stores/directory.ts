@@ -78,6 +78,46 @@ export const useDirectoryStore = defineStore('directory', {
         this.isLoading = false
         return { success: false, message: this.error }
       }
+    },
+    
+    async allocateCode(payload: {
+      merchantCode: string
+      codeToAssign: number
+      parentCode?: number
+      level: string
+      methodOfAllocation: string
+      menuConfigFlowId: string
+    }) {
+      this.isLoading = true
+      this.error = null
+      
+      try {
+        const config = useRuntimeConfig()
+        const baseUrl = config.public.apiBaseUrl as string
+        const authStore = useAuthStore()
+
+        const response = await $fetch<any>(`${baseUrl}/directory`, {
+          method: 'POST',
+          body: payload,
+          headers: {
+            Authorization: `Bearer ${authStore.accessToken}`,
+          },
+        })
+
+        if (response.success) {
+          // Refresh the list to get the new allocation
+          await this.fetchDirectories(true)
+          return { success: true, message: response.message || 'Code allocated successfully' }
+        } else {
+          this.error = response.message || 'Failed to allocate code'
+          this.isLoading = false
+          return { success: false, message: this.error }
+        }
+      } catch (error: any) {
+        this.error = error.response?._data?.message || error.message || 'Failed to allocate code'
+        this.isLoading = false
+        return { success: false, message: this.error }
+      }
     }
   }
 })
