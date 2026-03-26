@@ -61,9 +61,25 @@ const mappedSubscribers = computed<MappedMerchant[]>(() => {
 
 const searchQuery = ref('')
 const currentPage = ref(1)
-const itemsPerPage = 10
+const itemsPerPage = ref(10)
 const showModal = ref(false)
 const selectedMerchant = ref<MappedMerchant | null>(null)
+
+const filteredSubscribers = computed(() => {
+  if (!searchQuery.value) return mappedSubscribers.value
+  const query = searchQuery.value.toLowerCase()
+  return mappedSubscribers.value.filter(sub => 
+    sub.name.toLowerCase().includes(query) || 
+    sub.ussdCode.toLowerCase().includes(query) ||
+    sub.merchantId.toLowerCase().includes(query)
+  )
+})
+
+const paginatedSubscribers = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return filteredSubscribers.value.slice(start, end)
+})
 
 const closeModal = () => {
   showModal.value = false
@@ -239,12 +255,12 @@ const getNetworkBadge = (network: string) => {
                 <p class="mt-2 text-sm">Loading merchants...</p>
               </td>
             </tr>
-            <tr v-else-if="mappedSubscribers.length === 0">
+            <tr v-else-if="filteredSubscribers.length === 0">
               <td colspan="7" class="px-6 py-8 text-center text-gray-500">
                 <p class="text-sm">No merchants found.</p>
               </td>
             </tr>
-            <tr v-else v-for="sub in mappedSubscribers" :key="sub.id" class="hover:bg-vibes-50/30 dark:hover:bg-gray-700/50 transition-colors group">
+            <tr v-else v-for="sub in paginatedSubscribers" :key="sub.id" class="hover:bg-vibes-50/30 dark:hover:bg-gray-700/50 transition-colors group">
               <td class="px-6 py-4">
                 <div class="flex items-center">
                   <div class="h-9 w-9 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 text-xs font-bold mr-3">
@@ -314,9 +330,10 @@ const getNetworkBadge = (network: string) => {
 
       <Pagination 
         :current-page="currentPage" 
-        :total-items="mappedSubscribers.length" 
+        :total-items="filteredSubscribers.length" 
         :items-per-page="itemsPerPage"
         @page-change="handlePageChange"
+        @update:itemsPerPage="itemsPerPage = $event"
       />
     </div>
 
