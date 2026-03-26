@@ -7,26 +7,34 @@ import {
   Clock,
   AlertCircle,
 } from 'lucide-vue-next'
+import type { LogLevel, TransactionStatus, DirectoryStatus } from '~/types/api'
 
 // --- Log Levels ---
 
-export const getLevelColor = (level: string): string => {
+export const getLevelColor = (level: LogLevel): string => {
   switch (level) {
     case 'Info': return 'bg-vibes-100 text-blue-800 border-blue-200'
     case 'Warning': return 'bg-amber-100 text-amber-800 border-amber-200'
     case 'Error': return 'bg-red-100 text-red-800 border-red-200'
     case 'Critical': return 'bg-purple-100 text-purple-800 border-purple-200'
-    default: return 'bg-gray-100 text-gray-800 border-gray-200'
+    default: {
+      // Exhaustive check - TypeScript will error if we miss a case
+      const _exhaustive: never = level
+      return 'bg-gray-100 text-gray-800 border-gray-200'
+    }
   }
 }
 
-export const getLevelIcon = (level: string) => {
+export const getLevelIcon = (level: LogLevel) => {
   switch (level) {
     case 'Info': return Info
     case 'Warning': return AlertTriangle
     case 'Error': return XCircle
     case 'Critical': return Activity
-    default: return Info
+    default: {
+      const _exhaustive: never = level
+      return Info
+    }
   }
 }
 
@@ -42,20 +50,52 @@ export const getStatusCodeColor = (code: number): string => {
 
 // --- Transaction Status ---
 
-export const getStatusColor = (status: string): string => {
+export const getStatusColor = (status: TransactionStatus): string => {
   switch (status) {
     case 'Success': return 'bg-green-100 text-green-800 border-green-200'
     case 'Failed': return 'bg-red-100 text-red-800 border-red-200'
     case 'Pending': return 'bg-amber-100 text-amber-800 border-amber-200'
-    default: return 'bg-gray-100 text-gray-800 border-gray-200'
+    default: {
+      const _exhaustive: never = status
+      return 'bg-gray-100 text-gray-800 border-gray-200'
+    }
   }
 }
 
-export const getStatusIcon = (status: string) => {
+export const getStatusIcon = (status: TransactionStatus) => {
   switch (status) {
     case 'Success': return CheckCircle
     case 'Failed': return XCircle
     case 'Pending': return Clock
-    default: return AlertCircle
+    default: {
+      const _exhaustive: never = status
+      return AlertCircle
+    }
+  }
+}
+
+// --- Directory Status ---
+
+export const getDirectoryStatusColor = (status: DirectoryStatus): string => {
+  switch (status) {
+    case 'Active': return 'bg-green-100 text-green-800 border-green-200'
+    case 'Inactive': return 'bg-gray-100 text-gray-800 border-gray-200'
+    case 'Suspended': return 'bg-red-100 text-red-800 border-red-200'
+    default: {
+      const _exhaustive: never = status
+      return 'bg-gray-100 text-gray-800 border-gray-200'
+    }
+  }
+}
+
+export const getDirectoryStatusIcon = (status: DirectoryStatus) => {
+  switch (status) {
+    case 'Active': return CheckCircle
+    case 'Inactive': return Clock
+    case 'Suspended': return XCircle
+    default: {
+      const _exhaustive: never = status
+      return AlertCircle
+    }
   }
 }
