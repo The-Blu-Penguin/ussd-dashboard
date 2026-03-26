@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import { useApi } from '~/composables/useApi'
+import { useErrorHandler } from '~/composables/useErrorHandler'
 import type { User, ApiResponse, LoginResponseData, ChangePasswordRequest } from '~/types/api'
+import { validatePassword } from '~/utils/passwordValidation'
 
 interface AuthState {
   user: User | null
@@ -34,6 +36,8 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     async login(email: string, password: string) {
       this.isLoading = true
+      const errorHandler = useErrorHandler()
+      
       try {
         const api = useApi()
 
@@ -72,37 +76,10 @@ export const useAuthStore = defineStore('auth', {
         }
       } catch (error: any) {
         console.error(`[Auth Store] Login error:`, error)
-        let message = 'Login failed. Please try again.'
-
-        if (error.response) {
-          const status = error.response.status
-          switch (status) {
-            case 401:
-              message = 'Invalid email or password.'
-              break
-            case 403:
-              message = 'Access forbidden. Please contact administrator.'
-              break
-            case 422:
-              message = error.response._data?.message || 'Validation error. Please check your inputs.'
-              break
-            case 500:
-              message = 'Server error. Please try again later.'
-              break
-            case 502:
-            case 503:
-              message = 'Service temporarily unavailable. Please try again later.'
-              break
-            default:
-              message = error.response._data?.message || error.message || 'Login failed. Please try again.'
-          }
-        } else if (error.message) {
-          message = 'Unable to connect. Please check your internet connection.'
-        }
-
+        const standardError = errorHandler.handleError(error, { showToast: false })
         return {
           success: false,
-          message,
+          message: standardError.message,
         }
       } finally {
         this.isLoading = false
@@ -149,9 +126,21 @@ export const useAuthStore = defineStore('auth', {
     },
     async changePassword(data: ChangePasswordRequest) {
       this.isLoading = true
+      const errorHandler = useErrorHandler()
+      
       try {
         if (!this.user?.id) {
           return { success: false, message: 'User ID not found. Please log in again.' }
+        }
+
+        // Validate new password
+        const validation = validatePassword(data.newPassword)
+        if (!validation.isValid) {
+          return {
+            success: false,
+            message: 'Password does not meet requirements',
+            errors: validation.errors,
+          }
         }
 
         const api = useApi()
@@ -167,34 +156,10 @@ export const useAuthStore = defineStore('auth', {
           return { success: false, message: response.message || 'Failed to change password' }
         }
       } catch (error: any) {
-        let message = 'Failed to change password. Please try again.'
-
-        if (error.response) {
-          const status = error.response.status
-          switch (status) {
-            case 400:
-            case 422:
-              message = error.response._data?.message || 'Validation error. Please check your inputs.'
-              break
-            case 401:
-              message = 'Unauthorized. Please log in again.'
-              break
-            case 403:
-              message = 'Current password is incorrect.'
-              break
-            case 500:
-              message = 'Server error. Please try again later.'
-              break
-            default:
-              message = error.response._data?.message || error.message || 'Failed to change password.'
-          }
-        } else if (error.message) {
-          message = 'Unable to connect. Please check your internet connection.'
-        }
-
+        const standardError = errorHandler.handleError(error, { showToast: false })
         return {
           success: false,
-          message,
+          message: standardError.message,
         }
       } finally {
         this.isLoading = false

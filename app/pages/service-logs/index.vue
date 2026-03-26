@@ -52,17 +52,30 @@ const addMockLog = () => {
 
 onMounted(() => {
   // Simulate initial loading
-  setTimeout(() => {
+  const loadingTimeout = setTimeout(() => {
     isLoading.value = false
   }, 1200)
 
   if (import.meta.client) {
-    intervalId = setInterval(addMockLog, 2000)
+    try {
+      intervalId = setInterval(addMockLog, 2000)
+    } catch (error) {
+      console.error('Failed to start log interval:', error)
+      clearInterval(intervalId)
+      clearTimeout(loadingTimeout)
+    }
   }
 })
 
 onUnmounted(() => {
-  clearInterval(intervalId)
+  // Clean up interval
+  if (intervalId !== undefined) {
+    clearInterval(intervalId)
+    intervalId = undefined
+  }
+  
+  // Clean up logs array to prevent memory leak
+  logs.value = []
 })
 
 const toggleLive = () => { isLive.value = !isLive.value }

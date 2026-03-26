@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import Button from '~/components/ui/Button.vue'
 import AuthNotification from '~/components/ui/AuthNotification.vue'
 import { useToast } from '~/composables/useToast'
@@ -99,17 +99,25 @@ const moveAway = (index: number, event: MouseEvent) => {
 }
 
 onMounted(() => {
-  for (let i = 0; i < 20; i++) {
-    floatingChars.value.push({
-      char: ussdChars[Math.floor(Math.random() * ussdChars.length)] ?? '*',
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      size: Math.random() * 60 + 40, // Increased size: minimum 40px, up to 100px
-      duration: Math.random() * 10 + 5,
-      delay: Math.random() * 5,
-      opacity: Math.random() * 0.3 + 0.1,
-    })
+  // Only initialize if array is empty to prevent duplicates on remount
+  if (floatingChars.value.length === 0) {
+    for (let i = 0; i < 20; i++) {
+      floatingChars.value.push({
+        char: ussdChars[Math.floor(Math.random() * ussdChars.length)] ?? '*',
+        left: Math.random() * 100,
+        top: Math.random() * 100,
+        size: Math.random() * 60 + 40, // Increased size: minimum 40px, up to 100px
+        duration: Math.random() * 10 + 5,
+        delay: Math.random() * 5,
+        opacity: Math.random() * 0.3 + 0.1,
+      })
+    }
   }
+})
+
+onUnmounted(() => {
+  // Clean up floating characters array
+  floatingChars.value = []
 })
 </script>
 
