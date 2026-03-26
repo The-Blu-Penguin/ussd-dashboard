@@ -41,13 +41,17 @@ export const useDirectoryStore = defineStore('directory', {
           const merchantPromises = this.directories.map(async (dir, index) => {
             if (dir.merchantCode) {
               try {
-                const merchantResponse = await api<MerchantApiResponse>(`/merchants/${dir.merchantCode}`, {
+                const merchantResponse = await api<any>(`/merchants/${dir.merchantCode}`, {
                   method: 'GET',
                 })
                 
-                if (merchantResponse.status === 'success' && merchantResponse.data?.merchant?.merchantName) {
+                if (merchantResponse.success) {
                   if (this.directories[index]) {
-                    this.directories[index].merchantName = merchantResponse.data.merchant.merchantName
+                    if (merchantResponse.data?.merchantName) {
+                      this.directories[index].merchantName = merchantResponse.data.merchantName
+                    } else if (merchantResponse.data?.merchant?.merchantName) {
+                      this.directories[index].merchantName = merchantResponse.data.merchant.merchantName
+                    }
                   }
                 }
               } catch (e) {
@@ -92,7 +96,7 @@ export const useDirectoryStore = defineStore('directory', {
         })
 
         if (response.success) {
-          // Refresh the list to get the new allocation
+          // Only refresh the list if the allocation was truly successful
           await this.fetchDirectories(true)
           return { success: true, message: response.message || 'Code allocated successfully' }
         } else {

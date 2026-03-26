@@ -85,7 +85,7 @@ const fetchAvailableCodes = async (level: string) => {
     // parentCode is 1 for SECONDARY, empty for PRIMARY
     const parentCodeQuery = levelQuery === 'SECONDARY' ? '&parentCode=1' : ''
     
-    const response = await api<any>(`/directory/available-codes?level=${levelQuery}${parentCodeQuery}`, {
+    const response = await api<any>(`/directory/available-codes?level=${levelQuery}${parentCodeQuery}&limit=100`, {
       method: 'GET',
     })
 
@@ -131,7 +131,9 @@ const fetchMerchantName = async (code: string) => {
       method: 'GET',
     })
 
-    if (response.success && response.data?.merchant?.merchantName) {
+    if (response.success && response.data?.merchantName) {
+      newApp.value.merchant = response.data.merchantName
+    } else if (response.success && response.data?.merchant?.merchantName) {
       newApp.value.merchant = response.data.merchant.merchantName
     } else {
       newApp.value.merchant = 'Unknown Merchant'
