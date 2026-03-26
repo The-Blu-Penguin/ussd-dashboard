@@ -11,6 +11,7 @@ import { useMenuConfigsStore } from '~/stores/menuConfigs'
 import { useAuthStore } from '~/stores/auth'
 import { useApi } from '~/composables/useApi'
 import { useToast } from '~/composables/useToast'
+import type { MerchantApiResponse } from '~/types/api'
 
 const directoryStore = useDirectoryStore()
 const menuConfigsStore = useMenuConfigsStore()
@@ -127,13 +128,13 @@ const fetchMerchantName = async (code: string) => {
   try {
     const api = useApi()
     
-    const response = await api<any>(`/merchants/${code}`, {
+    const response = await api<MerchantApiResponse>(`/merchants/${code}`, {
       method: 'GET',
     })
 
-    if (response.success && response.data?.merchantName) {
+    if ((response.success || response.status === 'success') && response.data?.merchantName) {
       newApp.value.merchant = response.data.merchantName
-    } else if (response.success && response.data?.merchant?.merchantName) {
+    } else if ((response.success || response.status === 'success') && response.data?.merchant?.merchantName) {
       newApp.value.merchant = response.data.merchant.merchantName
     } else {
       newApp.value.merchant = 'Unknown Merchant'

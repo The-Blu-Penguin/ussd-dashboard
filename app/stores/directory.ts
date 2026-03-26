@@ -41,11 +41,11 @@ export const useDirectoryStore = defineStore('directory', {
           const merchantPromises = this.directories.map(async (dir, index) => {
             if (dir.merchantCode) {
               try {
-                const merchantResponse = await api<any>(`/merchants/${dir.merchantCode}`, {
+                const merchantResponse = await api<MerchantApiResponse>(`/merchants/${dir.merchantCode}`, {
                   method: 'GET',
                 })
                 
-                if (merchantResponse.success) {
+                if (merchantResponse.success || merchantResponse.status === 'success') {
                   if (this.directories[index]) {
                     if (merchantResponse.data?.merchantName) {
                       this.directories[index].merchantName = merchantResponse.data.merchantName

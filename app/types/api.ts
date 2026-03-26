@@ -101,12 +101,15 @@ export interface MerchantDetails {
 }
 
 export interface MerchantResponseData {
-  merchant: MerchantDetails
-  accessToken: string
+  merchant?: MerchantDetails
+  merchantName?: string
+  accessToken?: string
+  [key: string]: any
 }
 
 export interface MerchantApiResponse {
-  status: string
+  success?: boolean
+  status?: string
   message: string
   data: MerchantResponseData
 }
