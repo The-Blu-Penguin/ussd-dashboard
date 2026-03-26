@@ -7,38 +7,29 @@ interface AuthState {
   isLoggedIn: boolean
   accessToken: string | null
   isLoading: boolean
+  tokenExpiry: number | null
 }
 
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => {
-    // Priority 1: Check cookies (reliable for SSR)
+    // Use cookies as single source of truth (SSR-safe)
     const accessTokenCookie = useCookie<string | null>('accessToken')
     const userCookie = useCookie<User | null>('user')
-    
-    let initialUser = userCookie.value || null
-    let initialToken = accessTokenCookie.value || null
-
-    // Priority 2: Fallback to localStorage immediately on client creation
-    if (import.meta.client) {
-      try {
-        if (!initialUser) {
-          const userStr = localStorage.getItem('user')
-          if (userStr) initialUser = JSON.parse(userStr)
-        }
-        if (!initialToken) {
-          initialToken = localStorage.getItem('accessToken') || null
-        }
-      } catch (e) {
-        console.error('Error parsing user from localStorage:', e)
-      }
-    }
+    const tokenExpiryCookie = useCookie<number | null>('tokenExpiry')
     
     return {
-      user: initialUser,
-      isLoggedIn: !!initialToken,
-      accessToken: initialToken,
+      user: userCookie.value || null,
+      isLoggedIn: !!accessTokenCookie.value,
+      accessToken: accessTokenCookie.value || null,
       isLoading: false,
+      tokenExpiry: tokenExpiryCookie.value || null,
     }
+  },
+  getters: {
+    isTokenExpired: (state) => {
+      if (!state.tokenExpiry) return false
+      return Date.now() > state.tokenExpiry
+    },
   },
   actions: {
     async login(email: string, password: string) {
@@ -60,17 +51,19 @@ export const useAuthStore = defineStore('auth', {
           this.accessToken = response.data.accessToken
           this.isLoggedIn = true
 
-          // Persist state in cookies so it's available on refresh across SSR and client
-          const accessTokenCookie = useCookie<string | null>('accessToken', { maxAge: 60 * 60 * 24 * 7 })
-          const userCookie = useCookie<User | null>('user', { maxAge: 60 * 60 * 24 * 7 })
+          // Calculate token expiry (expiresIn is in seconds)
+          const expiryTime = Date.now() + (response.data.expiresIn * 1000)
+          this.tokenExpiry = expiryTime
+
+          // Persist state in cookies only (single source of truth)
+          const maxAge = 60 * 60 * 24 * 7 // 7 days
+          const accessTokenCookie = useCookie<string | null>('accessToken', { maxAge })
+          const userCookie = useCookie<User | null>('user', { maxAge })
+          const tokenExpiryCookie = useCookie<number | null>('tokenExpiry', { maxAge })
           
           accessTokenCookie.value = response.data.accessToken
           userCookie.value = response.data.user
-
-          if (import.meta.client) {
-            localStorage.setItem('accessToken', response.data.accessToken)
-            localStorage.setItem('user', JSON.stringify(response.data.user))
-          }
+          tokenExpiryCookie.value = expiryTime
 
           return { success: true, message: response.message }
         } else {
@@ -128,17 +121,16 @@ export const useAuthStore = defineStore('auth', {
         this.user = null
         this.accessToken = null
         this.isLoggedIn = false
+        this.tokenExpiry = null
 
         // Clear cookies
         const accessTokenCookie = useCookie<string | null>('accessToken')
         const userCookie = useCookie<User | null>('user')
+        const tokenExpiryCookie = useCookie<number | null>('tokenExpiry')
+        
         accessTokenCookie.value = null
         userCookie.value = null
-
-        if (import.meta.client) {
-          localStorage.removeItem('accessToken')
-          localStorage.removeItem('user')
-        }
+        tokenExpiryCookie.value = null
 
         navigateTo('/login')
       }
@@ -148,43 +140,11 @@ export const useAuthStore = defineStore('auth', {
       this.isLoggedIn = true
     },
     async initAuth() {
-      // Priority 1: Check cookies first (most reliable for SSR and cross-tab)
-      const accessTokenCookie = useCookie<string | null>('accessToken')
-      const userCookie = useCookie<User | null>('user')
-      
-      if (accessTokenCookie.value) {
-        this.accessToken = accessTokenCookie.value
-        this.isLoggedIn = true
-      }
-      
-      if (userCookie.value) {
-        this.user = userCookie.value
-      }
-
-      // Priority 2: Fallback to localStorage on client-side
-      if (import.meta.client) {
-        // Wait a tiny bit to ensure localStorage is accessible in all browsers
-        await new Promise(resolve => setTimeout(resolve, 0))
-        
-        if (!this.accessToken) {
-          const token = localStorage.getItem('accessToken')
-          if (token) {
-            this.accessToken = token
-            this.isLoggedIn = true
-            accessTokenCookie.value = token
-          }
-        }
-        if (!this.user) {
-          const userStr = localStorage.getItem('user')
-          if (userStr) {
-            try {
-              this.user = JSON.parse(userStr)
-              userCookie.value = this.user
-            } catch (e) {
-              console.error('Failed to parse user from localStorage', e)
-            }
-          }
-        }
+      // Cookies are already loaded in state initialization
+      // Check if token is expired and logout if needed
+      if (this.isTokenExpired && this.accessToken) {
+        console.warn('Token expired, logging out...')
+        await this.logout()
       }
     },
     async changePassword(data: ChangePasswordRequest) {

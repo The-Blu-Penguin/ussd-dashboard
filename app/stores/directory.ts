@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { useApi } from '~/composables/useApi'
-import type { Directory, ApiResponse, MerchantApiResponse } from '~/types/api'
+import { useMerchantsStore } from '~/stores/merchants'
+import type { Directory, ApiResponse } from '~/types/api'
 
 interface DirectoryState {
   directories: Directory[]
@@ -37,31 +38,27 @@ export const useDirectoryStore = defineStore('directory', {
           // Mark main loading as complete so UI can show the table incrementally
           this.isLoading = false
           
-          // Fetch merchant names for each directory concurrently without blocking the UI
-          const merchantPromises = this.directories.map(async (dir, index) => {
-            if (dir.merchantCode) {
-              try {
-                const merchantResponse = await api<MerchantApiResponse>(`/merchants/${dir.merchantCode}`, {
-                  method: 'GET',
-                })
-                
-                if (merchantResponse.success || merchantResponse.status === 'success') {
-                  if (this.directories[index]) {
-                    if (merchantResponse.data?.merchantName) {
-                      this.directories[index].merchantName = merchantResponse.data.merchantName
-                    } else if (merchantResponse.data?.merchant?.merchantName) {
-                      this.directories[index].merchantName = merchantResponse.data.merchant.merchantName
-                    }
-                  }
-                }
-              } catch (e) {
-                console.error(`Failed to fetch merchant details for code: ${dir.merchantCode}`, e)
-              }
-            }
-          })
+          // Fetch merchant names using the merchant store (with caching and deduplication)
+          const merchantsStore = useMerchantsStore()
+          const merchantCodes = this.directories
+            .map(dir => dir.merchantCode)
+            .filter(Boolean) as string[]
           
-          // Wait for all merchant details to load silently in background
-          await Promise.all(merchantPromises)
+          if (merchantCodes.length > 0) {
+            // Fetch all merchant names in batch (or parallel with deduplication)
+            const merchantNames = await merchantsStore.fetchMerchantNamesBatch(merchantCodes)
+            
+            // Update directories with merchant names
+            this.directories.forEach((dir, index) => {
+              if (dir.merchantCode) {
+                const merchantName = merchantNames[dir.merchantCode]
+                const directory = this.directories[index]
+                if (merchantName && directory) {
+                  directory.merchantName = merchantName
+                }
+              }
+            })
+          }
           
           return { success: true, message: response.message }
         } else {
