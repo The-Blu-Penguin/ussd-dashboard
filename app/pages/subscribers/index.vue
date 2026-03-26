@@ -4,7 +4,9 @@ import { useState } from '#imports'
 import SearchInput from '~/components/ui/SearchInput.vue'
 import Pagination from '~/components/ui/Pagination.vue'
 import FilterButton from '~/components/ui/FilterButton.vue'
+import Spinner from '~/components/ui/Spinner.vue'
 import { useDirectoryStore } from '~/stores/directory'
+import { useToast } from '~/composables/useToast'
 import type { Directory } from '~/types/api'
 import { formatDistanceToNow } from 'date-fns'
 import { 
@@ -48,7 +50,7 @@ const mappedSubscribers = computed<MappedMerchant[]>(() => {
     merchantId: dir.merchantCode,
     name: dir.merchantName || dir.createdBy?.fullName || 'Unknown',
     ussdCode: dir.ussdCode,
-    status: dir.status === 'ACTIVE' ? 'Active' : dir.status === 'BLOCKED' ? 'Blocked' : dir.status === 'SUSPENDED' ? 'Suspended' : 'Unknown',
+    status: dir.status === 'Active' ? 'Active' : dir.status === 'Inactive' ? 'Inactive' : dir.status === 'Suspended' ? 'Suspended' : 'Unknown',
     level: dir.level === 'PRIMARY' ? 'Primary' : dir.level === 'SECONDARY' ? 'Secondary' : dir.level,
     type: dir.menuConfig?.metadata?.name || 'Standard Flow',
     lastActive: dir.updatedAt ? formatDistanceToNow(new Date(dir.updatedAt), { addSuffix: true }) : 'Unknown',
@@ -95,6 +97,9 @@ const viewMerchant = (merchant: MappedMerchant) => {
 }
 
 const activeMenuId = ref<string | null>(null)
+const showDeleteConfirm = ref(false)
+const merchantToDelete = ref<MappedMerchant | null>(null)
+const isDeleting = ref(false)
 
 const handlePageChange = (page: number) => {
   currentPage.value = page
@@ -113,7 +118,7 @@ const closeMenu = () => {
   activeMenuId.value = null
 }
 
-const getStatusColor = (status: string) => {
+const getStatusColor = (status: string | null) => {
   switch (status) {
     case 'Active': return 'bg-green-100 text-green-800 border-green-200'
     case 'Blocked': return 'bg-red-100 text-red-800 border-red-200'
@@ -128,6 +133,54 @@ const getNetworkBadge = (network: string) => {
     case 'Telecel': return 'bg-red-50 text-red-700 border-red-100'
     case 'AT': return 'bg-vibes-50 text-vibes-700 border-blue-100'
     default: return 'bg-gray-50 text-gray-600 border-gray-200'
+  }
+}
+
+const confirmUnsubscribe = (merchant: MappedMerchant) => {
+  merchantToDelete.value = merchant
+  showDeleteConfirm.value = true
+  activeMenuId.value = null // Close dropdown
+}
+
+const cancelUnsubscribe = () => {
+  showDeleteConfirm.value = false
+  merchantToDelete.value = null
+}
+
+const unsubscribeMerchant = async () => {
+  if (!merchantToDelete.value) return
+  
+  isDeleting.value = true
+  const toast = useToast()
+  const merchantId = merchantToDelete.value.id
+  const merchantName = merchantToDelete.value.name
+  
+  try {
+    const result = await directoryStore.deleteDirectory(merchantId)
+    
+    if (result.success) {
+      toast.success(`${merchantName} unsubscribed successfully`)
+      showDeleteConfirm.value = false
+      merchantToDelete.value = null
+      
+      // Close modal if it's open for the deleted merchant
+      if (selectedMerchant.value?.id === merchantId) {
+        closeModal()
+      }
+    } else {
+      toast.error(result.message || 'Failed to unsubscribe merchant')
+    }
+  } catch (error: any) {
+    const errorMessage = error.response?._data?.message || error.message || 'Failed to unsubscribe merchant'
+    toast.error(errorMessage)
+  } finally {
+    isDeleting.value = false
+  }
+}
+
+const unsubscribeFromModal = () => {
+  if (selectedMerchant.value) {
+    confirmUnsubscribe(selectedMerchant.value)
   }
 }
 </script>
@@ -317,7 +370,10 @@ const getNetworkBadge = (network: string) => {
                     <Eye class="w-4 h-4 mr-2 text-gray-400 dark:text-gray-500" />
                     View Details
                   </button>
-                  <button class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 flex items-center">
+                  <button 
+                    @click="confirmUnsubscribe(sub)"
+                    class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 flex items-center"
+                  >
                     <Trash2 class="w-4 h-4 mr-2" />
                     Unsubscribe
                   </button>
@@ -436,9 +492,62 @@ const getNetworkBadge = (network: string) => {
         <!-- Modal Footer -->
         <div class="bg-gray-50 dark:bg-gray-900/50 px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3">
           <button @click="closeModal" class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Close</button>
-          <button class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center">
+          <button 
+            @click="unsubscribeFromModal"
+            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center"
+          >
             <Trash2 class="w-4 h-4 mr-2" />
             Unsubscribe
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div 
+      v-if="showDeleteConfirm" 
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+    >
+      <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+        <!-- Modal Header -->
+        <div class="bg-red-50 dark:bg-red-900/20 px-6 py-4 border-b border-red-100 dark:border-red-900/50">
+          <div class="flex items-center">
+            <div class="w-10 h-10 bg-red-100 dark:bg-red-900/50 rounded-full flex items-center justify-center mr-3">
+              <Trash2 class="w-5 h-5 text-red-600 dark:text-red-400" />
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">Confirm Unsubscribe</h3>
+          </div>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6" v-if="merchantToDelete">
+          <p class="text-gray-700 dark:text-gray-300 mb-4">
+            Are you sure you want to unsubscribe <span class="font-bold">{{ merchantToDelete.name }}</span>?
+          </p>
+          <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900/50 rounded-lg p-4">
+            <p class="text-sm text-amber-800 dark:text-amber-200">
+              <strong>Warning:</strong> This action will remove the merchant's USSD code allocation and cannot be undone.
+            </p>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="bg-gray-50 dark:bg-gray-900/50 px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3">
+          <button 
+            @click="cancelUnsubscribe"
+            :disabled="isDeleting"
+            class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Cancel
+          </button>
+          <button 
+            @click="unsubscribeMerchant"
+            :disabled="isDeleting"
+            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Trash2 v-if="!isDeleting" class="w-4 h-4 mr-2" />
+            <Spinner v-else size="sm" color="white" class="mr-2" />
+            {{ isDeleting ? 'Unsubscribing...' : 'Yes, Unsubscribe' }}
           </button>
         </div>
       </div>

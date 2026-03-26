@@ -106,6 +106,41 @@ export const useDirectoryStore = defineStore('directory', {
         this.isLoading = false
         return { success: false, message: this.error }
       }
+    },
+    
+    async deleteDirectory(id: string) {
+      this.isLoading = true
+      this.error = null
+      
+      try {
+        const api = useApi()
+
+        const response = await api<ApiResponse<any>>(`/directory/${id}`, {
+          method: 'DELETE',
+        })
+
+        if (response.success || response.success !== false) {
+          // Remove from local state
+          this.directories = this.directories.filter(dir => dir.id !== id)
+          this.isLoading = false
+          return { success: true, message: response.message || 'Directory deleted successfully' }
+        } else {
+          this.error = response.message || 'Failed to delete directory'
+          this.isLoading = false
+          return { success: false, message: this.error }
+        }
+      } catch (error: any) {
+        // If it's a 200 OK but failed to parse JSON (empty response body), treat it as success
+        if (error.response && error.response.status === 200) {
+          this.directories = this.directories.filter(dir => dir.id !== id)
+          this.isLoading = false
+          return { success: true, message: 'Directory deleted successfully' }
+        }
+        
+        this.error = error.response?._data?.message || error.message || 'Failed to delete directory'
+        this.isLoading = false
+        return { success: false, message: this.error }
+      }
     }
   }
 })
