@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { useAuthStore } from './auth'
+import { useApi } from '~/composables/useApi'
 import type { MenuConfigFlow, CreateMenuConfigRequest, ApiResponse } from '~/types/api'
 
 interface MenuConfigsState {
@@ -26,15 +26,10 @@ export const useMenuConfigsStore = defineStore('menuConfigs', {
       this.error = null
       
       try {
-        const config = useRuntimeConfig()
-        const baseUrl = config.public.apiBaseUrl as string
-        const authStore = useAuthStore()
+        const api = useApi()
 
-        const response = await $fetch<ApiResponse<MenuConfigFlow[]>>(`${baseUrl}/menuConfigFlow`, {
+        const response = await api<ApiResponse<MenuConfigFlow[]>>('/menuConfigFlow', {
           method: 'GET',
-          headers: {
-            Authorization: `Bearer ${authStore.accessToken}`,
-          },
         })
 
         if (response.success && response.data) {
@@ -57,15 +52,10 @@ export const useMenuConfigsStore = defineStore('menuConfigs', {
       this.error = null
       
       try {
-        const config = useRuntimeConfig()
-        const baseUrl = config.public.apiBaseUrl as string
-        const authStore = useAuthStore()
+        const api = useApi()
 
-        const response = await $fetch<ApiResponse<MenuConfigFlow>>(`${baseUrl}/menuConfigFlow/${id}`, {
+        const response = await api<ApiResponse<MenuConfigFlow>>(`/menuConfigFlow/${id}`, {
           method: 'GET',
-          headers: {
-            Authorization: `Bearer ${authStore.accessToken}`,
-          },
         })
 
         if (response.success && response.data) {
@@ -86,16 +76,11 @@ export const useMenuConfigsStore = defineStore('menuConfigs', {
       this.error = null
       
       try {
-        const config = useRuntimeConfig()
-        const baseUrl = config.public.apiBaseUrl as string
-        const authStore = useAuthStore()
+        const api = useApi()
 
-        const response = await $fetch<ApiResponse<MenuConfigFlow>>(`${baseUrl}/menuConfigFlow`, {
+        const response = await api<ApiResponse<MenuConfigFlow>>('/menuConfigFlow', {
           method: 'POST',
           body: data,
-          headers: {
-            Authorization: `Bearer ${authStore.accessToken}`,
-          },
         })
 
         if (response.success && response.data) {
@@ -118,15 +103,10 @@ export const useMenuConfigsStore = defineStore('menuConfigs', {
       this.error = null
       
       try {
-        const config = useRuntimeConfig()
-        const baseUrl = config.public.apiBaseUrl as string
-        const authStore = useAuthStore()
+        const api = useApi()
 
-        const response = await $fetch<ApiResponse<void>>(`${baseUrl}/menuConfigFlow/${id}`, {
+        const response = await api<ApiResponse<void>>(`/menuConfigFlow/${id}`, {
           method: 'DELETE',
-          headers: {
-            Authorization: `Bearer ${authStore.accessToken}`,
-          },
         })
 
         // If there's no response body (undefined) but it didn't throw an error, it was a 200 OK.

@@ -9,10 +9,13 @@ import Spinner from '~/components/ui/Spinner.vue'
 import { useDirectoryStore } from '~/stores/directory'
 import { useMenuConfigsStore } from '~/stores/menuConfigs'
 import { useAuthStore } from '~/stores/auth'
+import { useApi } from '~/composables/useApi'
+import { useToast } from '~/composables/useToast'
 
 const directoryStore = useDirectoryStore()
 const menuConfigsStore = useMenuConfigsStore()
 const authStore = useAuthStore()
+const toast = useToast()
 
 onMounted(() => {
   directoryStore.fetchDirectories()
@@ -75,19 +78,15 @@ const fetchAvailableCodes = async (level: string) => {
   autoSelectedCode.value = null
   
   try {
-    const config = useRuntimeConfig()
-    const baseUrl = config.public.apiBaseUrl as string
+    const api = useApi()
     
     // Map 'Primary' -> 'PRIMARY', 'Secondary' -> 'SECONDARY'
     const levelQuery = level.toUpperCase()
     // parentCode is 1 for SECONDARY, empty for PRIMARY
     const parentCodeQuery = levelQuery === 'SECONDARY' ? '&parentCode=1' : ''
     
-    const response = await $fetch<any>(`${baseUrl}/directory/available-codes?level=${levelQuery}${parentCodeQuery}`, {
+    const response = await api<any>(`/directory/available-codes?level=${levelQuery}${parentCodeQuery}`, {
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${authStore.accessToken}`,
-      },
     })
 
     if (response.success && response.data?.availableCodes) {
@@ -126,14 +125,10 @@ const fetchMerchantName = async (code: string) => {
 
   isFetchingMerchant.value = true
   try {
-    const config = useRuntimeConfig()
-    const baseUrl = config.public.apiBaseUrl as string
+    const api = useApi()
     
-    const response = await $fetch<any>(`${baseUrl}/merchants/${code}`, {
+    const response = await api<any>(`/merchants/${code}`, {
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${authStore.accessToken}`,
-      },
     })
 
     if (response.success && response.data?.merchant?.merchantName) {
@@ -232,7 +227,7 @@ const openEditModal = (app: App) => {
 
 const handleAllocate = async () => {
   if (!newApp.value.merchant || !newApp.value.merchantId || !newApp.value.menuFlow) {
-    alert('Please fill in all required fields.')
+    toast.error('Please fill in all required fields.')
     return
   }
 
@@ -248,7 +243,7 @@ const handleAllocate = async () => {
     }
   } else {
     if (!newApp.value.selectedCode || newApp.value.selectedCode === '') {
-        alert('Please select a code.')
+        toast.error('Please select a code.')
         isSubmitting.value = false
         return
     }
@@ -259,6 +254,7 @@ const handleAllocate = async () => {
     // This will be updated to use actual API call later
     const index = apps.value.findIndex(a => a.id === editingId.value)
     // For now we just close the modal since we can't mutate computed properties directly
+    toast.success('Code allocation updated successfully')
     showModal.value = false
     isSubmitting.value = false
   } else {
@@ -267,7 +263,7 @@ const handleAllocate = async () => {
     const menuConfigFlowId = selectedFlow ? selectedFlow.id : ''
 
     if (!menuConfigFlowId) {
-        alert('Invalid Menu Flow selected.')
+        toast.error('Invalid Menu Flow selected.')
         isSubmitting.value = false
         return
     }
@@ -284,9 +280,10 @@ const handleAllocate = async () => {
     const response = await directoryStore.allocateCode(payload)
 
     if (response.success) {
+      toast.success(response.message || 'Code allocated successfully')
       showModal.value = false
     } else {
-      alert(`Allocation Failed: ${response.message}`)
+      toast.error(`Allocation Failed: ${response.message}`)
     }
     isSubmitting.value = false
   }

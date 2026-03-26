@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { useApi } from '~/composables/useApi'
 import { useAuthStore } from './auth'
 import type { User, ApiResponse, DeleteUserResponseData, UpdateUserRequest } from '~/types/api'
 
@@ -24,15 +25,10 @@ export const useUsersStore = defineStore('users', {
       this.error = null
       
       try {
-        const config = useRuntimeConfig()
-        const baseUrl = config.public.apiBaseUrl as string
-        const authStore = useAuthStore()
+        const api = useApi()
 
-        const response = await $fetch<ApiResponse<User[]>>(`${baseUrl}/users`, {
+        const response = await api<ApiResponse<User[]>>('/users', {
           method: 'GET',
-          headers: {
-            Authorization: `Bearer ${authStore.accessToken}`,
-          },
         })
 
         if (response.success && response.data) {
@@ -55,15 +51,10 @@ export const useUsersStore = defineStore('users', {
       this.error = null
       
       try {
-        const config = useRuntimeConfig()
-        const baseUrl = config.public.apiBaseUrl as string
-        const authStore = useAuthStore()
+        const api = useApi()
 
-        const response = await $fetch<ApiResponse<DeleteUserResponseData>>(`${baseUrl}/users/${userId}`, {
+        const response = await api<ApiResponse<DeleteUserResponseData>>(`/users/${userId}`, {
           method: 'DELETE',
-          headers: {
-            Authorization: `Bearer ${authStore.accessToken}`,
-          },
         })
 
         if (response.success) {
@@ -86,16 +77,11 @@ export const useUsersStore = defineStore('users', {
       this.error = null
       
       try {
-        const config = useRuntimeConfig()
-        const baseUrl = config.public.apiBaseUrl as string
-        const authStore = useAuthStore()
+        const api = useApi()
 
-        const response = await $fetch<ApiResponse<User>>(`${baseUrl}/users/${userId}`, {
+        const response = await api<ApiResponse<User>>(`/users/${userId}`, {
           method: 'PUT',
           body: data,
-          headers: {
-            Authorization: `Bearer ${authStore.accessToken}`,
-          },
         })
 
         if (response.success && response.data) {
@@ -106,6 +92,7 @@ export const useUsersStore = defineStore('users', {
           }
           
           // If the updated user is the currently logged in user, update the auth store too
+          const authStore = useAuthStore()
           if (authStore.user?.id === userId) {
             authStore.setUser(response.data)
           }

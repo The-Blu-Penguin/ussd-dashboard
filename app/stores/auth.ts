@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { useApi } from '~/composables/useApi'
 import type { User, ApiResponse, LoginResponseData, ChangePasswordRequest } from '~/types/api'
 
 interface AuthState {
@@ -43,12 +44,11 @@ export const useAuthStore = defineStore('auth', {
     async login(email: string, password: string) {
       this.isLoading = true
       try {
-        const config = useRuntimeConfig()
-        const baseUrl = config.public.apiBaseUrl as string
+        const api = useApi()
 
-        console.log(`[Auth Store] Attempting login for ${email} at ${baseUrl}/auth/login`)
+        console.log(`[Auth Store] Attempting login for ${email}`)
 
-        const response = await $fetch<ApiResponse<LoginResponseData>>(`${baseUrl}/auth/login`, {
+        const response = await api<ApiResponse<LoginResponseData>>('/auth/login', {
           method: 'POST',
           body: { email, password },
         })
@@ -117,14 +117,10 @@ export const useAuthStore = defineStore('auth', {
     },
     async logout() {
       try {
-        const config = useRuntimeConfig()
-        const baseUrl = config.public.apiBaseUrl as string
+        const api = useApi()
 
-        await $fetch(`${baseUrl}/auth/logout`, {
+        await api('/auth/logout', {
           method: 'POST',
-          headers: {
-            Authorization: `Bearer ${this.accessToken}`,
-          },
         })
       } catch (error) {
         // Continue with logout even if API call fails
@@ -198,15 +194,11 @@ export const useAuthStore = defineStore('auth', {
           return { success: false, message: 'User ID not found. Please log in again.' }
         }
 
-        const config = useRuntimeConfig()
-        const baseUrl = config.public.apiBaseUrl as string
+        const api = useApi()
 
-        const response = await $fetch<ApiResponse>(`${baseUrl}/auth/${this.user.id}/change-password`, {
+        const response = await api<ApiResponse>(`/auth/${this.user.id}/change-password`, {
           method: 'POST',
           body: data,
-          headers: {
-            Authorization: `Bearer ${this.accessToken}`,
-          },
         })
 
         if (response.success) {

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { useAuthStore } from './auth'
+import { useApi } from '~/composables/useApi'
 import type { Directory, ApiResponse, MerchantApiResponse } from '~/types/api'
 
 interface DirectoryState {
@@ -25,15 +25,10 @@ export const useDirectoryStore = defineStore('directory', {
       this.error = null
       
       try {
-        const config = useRuntimeConfig()
-        const baseUrl = config.public.apiBaseUrl as string
-        const authStore = useAuthStore()
+        const api = useApi()
 
-        const response = await $fetch<ApiResponse<Directory[]>>(`${baseUrl}/directory`, {
+        const response = await api<ApiResponse<Directory[]>>('/directory', {
           method: 'GET',
-          headers: {
-            Authorization: `Bearer ${authStore.accessToken}`,
-          },
         })
 
         if (response.success && response.data) {
@@ -46,11 +41,8 @@ export const useDirectoryStore = defineStore('directory', {
           const merchantPromises = this.directories.map(async (dir, index) => {
             if (dir.merchantCode) {
               try {
-                const merchantResponse = await $fetch<MerchantApiResponse>(`${baseUrl}/merchants/${dir.merchantCode}`, {
+                const merchantResponse = await api<MerchantApiResponse>(`/merchants/${dir.merchantCode}`, {
                   method: 'GET',
-                  headers: {
-                    Authorization: `Bearer ${authStore.accessToken}`,
-                  },
                 })
                 
                 if (merchantResponse.status === 'success' && merchantResponse.data?.merchant?.merchantName) {
@@ -92,16 +84,11 @@ export const useDirectoryStore = defineStore('directory', {
       this.error = null
       
       try {
-        const config = useRuntimeConfig()
-        const baseUrl = config.public.apiBaseUrl as string
-        const authStore = useAuthStore()
+        const api = useApi()
 
-        const response = await $fetch<any>(`${baseUrl}/directory`, {
+        const response = await api<any>('/directory', {
           method: 'POST',
           body: payload,
-          headers: {
-            Authorization: `Bearer ${authStore.accessToken}`,
-          },
         })
 
         if (response.success) {

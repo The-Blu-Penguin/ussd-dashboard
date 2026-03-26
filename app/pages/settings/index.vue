@@ -6,9 +6,11 @@ import Shimmer from '~/components/ui/Shimmer.vue'
 import { useAuthStore } from '~/stores/auth'
 import { useUsersStore } from '~/stores/users'
 import type { User } from '~/types/api'
+import { useToast } from '~/composables/useToast'
 
 const authStore = useAuthStore()
 const usersStore = useUsersStore()
+const toast = useToast()
 
 const profileImage = ref('https://i.pravatar.cc/150?img=11')
 const passwordForm = ref({
@@ -22,8 +24,6 @@ const showNewPassword = ref(false)
 const showConfirmPassword = ref(false)
 
 const isUpdatingPassword = ref(false)
-const passwordMessage = ref('')
-const passwordError = ref(false)
 
 const isAddingUser = ref(false)
 
@@ -70,18 +70,13 @@ const handleImageUpload = async (event: Event) => {
 }
 
 const handlePasswordChange = async () => {
-  passwordMessage.value = ''
-  passwordError.value = false
-
   if (!passwordForm.value.currentPassword || !passwordForm.value.newPassword) {
-    passwordMessage.value = 'Please fill in all password fields.'
-    passwordError.value = true
+    toast.warning('Please fill in all password fields.')
     return
   }
 
   if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) {
-    passwordMessage.value = 'New passwords do not match.'
-    passwordError.value = true
+    toast.error('New passwords do not match.')
     return
   }
 
@@ -93,8 +88,7 @@ const handlePasswordChange = async () => {
   })
   
   if (result.success) {
-    passwordMessage.value = result.message || 'Password changed successfully!'
-    passwordError.value = false
+    toast.success(result.message || 'Password changed successfully!')
     // Reset form
     passwordForm.value = {
       currentPassword: '',
@@ -102,20 +96,23 @@ const handlePasswordChange = async () => {
       confirmPassword: ''
     }
   } else {
-    passwordMessage.value = result.message || 'Failed to change password.'
-    passwordError.value = true
+    toast.error(result.message || 'Failed to change password.')
   }
   
   isUpdatingPassword.value = false
 }
 
 const handleAddUser = async () => {
-  if (!newUser.value.name || !newUser.value.email || !newUser.value.password) return
+  if (!newUser.value.name || !newUser.value.email || !newUser.value.password) {
+    toast.warning('Please fill in all required fields.')
+    return
+  }
   
   isAddingUser.value = true
   await new Promise(resolve => setTimeout(resolve, 800))
   
   // TODO: Add API endpoint for creating user when available
+  toast.success('User added successfully')
   
   newUser.value = { name: '', email: '', password: '', role: 'Viewer' }
   isAddingUser.value = false
@@ -144,9 +141,10 @@ const handleUpdateUser = async () => {
   })
   
   if (result.success) {
+    toast.success('User updated successfully')
     closeEditModal()
   } else {
-    alert(result.message)
+    toast.error(result.message)
   }
   
   isUpdatingUser.value = false
@@ -154,7 +152,12 @@ const handleUpdateUser = async () => {
 
 const removeUser = async (id: string) => {
   if (confirm('Are you sure you want to delete this user?')) {
-    await usersStore.deleteUser(id)
+    const result = await usersStore.deleteUser(id)
+    if (result.success) {
+      toast.success('User deleted successfully')
+    } else {
+      toast.error(result.message || 'Failed to delete user')
+    }
   }
 }
 </script>
@@ -260,17 +263,12 @@ const removeUser = async (id: string) => {
             </div>
           </div>
           
-          <div class="flex items-center justify-between mt-6">
-            <p v-if="passwordMessage" class="text-sm font-medium" :class="passwordError ? 'text-red-500' : 'text-green-500'">
-              {{ passwordMessage }}
-            </p>
-            <div v-else class="flex-1"></div>
-            
+          <div class="flex items-center justify-end mt-6">
             <Button 
               type="submit" 
               variant="primary"
               :loading="isUpdatingPassword"
-              class="shadow-sm ml-auto"
+              class="shadow-sm"
             >
               Update Password
             </Button>

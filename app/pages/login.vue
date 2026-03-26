@@ -2,12 +2,14 @@
 import { onMounted, ref } from 'vue'
 import Button from '~/components/ui/Button.vue'
 import AuthNotification from '~/components/ui/AuthNotification.vue'
+import { useToast } from '~/composables/useToast'
 
 definePageMeta({
   layout: 'auth'
 })
 
 const { login } = useAuth()
+const toast = useToast()
 
 const email = ref('')
 const password = ref('')
@@ -46,6 +48,7 @@ const handleLogin = async () => {
     }, 1500)
   } else {
     error.value = result.message || 'Login failed'
+    toast.error(error.value)
     loading.value = false
   }
 }
