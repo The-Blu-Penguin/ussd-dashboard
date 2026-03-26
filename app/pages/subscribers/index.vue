@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useState } from '#imports'
 import SearchInput from '~/components/ui/SearchInput.vue'
 import Pagination from '~/components/ui/Pagination.vue'
 import FilterButton from '~/components/ui/FilterButton.vue'
+import { useDirectoryStore } from '~/stores/directory'
+import type { Directory } from '~/types/api'
+import { formatDistanceToNow } from 'date-fns'
 import { 
   Users, 
   Download, 
@@ -18,9 +21,9 @@ import {
   X
 } from 'lucide-vue-next'
 
-interface Subscriber {
+export interface MappedMerchant {
   id: string
-  msisdn: string
+  merchantId: string
   name: string
   ussdCode: string
   status: string
@@ -28,26 +31,39 @@ interface Subscriber {
   type: string
   lastActive: string
   reference: boolean
-  menu: string[] | null
   traffic: string
+  menu?: string[] | null
   region?: string
 }
 
-const subscribers = ref<Subscriber[]>([
-  { id: 'MER-001', msisdn: '+233541234567', name: 'Kofi Electronics', ussdCode: '*920*10#', status: 'Active', level: 'Primary', type: 'Basic', lastActive: '2 mins ago', reference: true, menu: null, traffic: '12.5k' },
-  { id: 'MER-002', msisdn: '+233209876543', name: 'Ama Provisions', ussdCode: '*920*11#', status: 'Active', level: 'Secondary', type: 'Menu', lastActive: '1 hour ago', reference: false, menu: ['Check Balance', 'Buy Airtime', 'Pay Bills'], traffic: '3.2k' },
-  { id: 'MER-003', msisdn: '+233555555555', name: 'Tech Solutions', ussdCode: '*920*12#', status: 'Blocked', level: 'Primary', type: 'API', lastActive: '2 days ago', reference: true, menu: null, traffic: '0' },
-  { id: 'MER-004', msisdn: '+233244444444', name: 'Accra Mall Pharmacy', ussdCode: '*920*13#', status: 'Active', level: 'Primary', type: 'Menu', lastActive: '5 mins ago', reference: false, menu: ['Order Drugs', 'Consultation', 'Emergency'], traffic: '45.1k' },
-  { id: 'MER-005', msisdn: '+233277777777', name: 'Kumasi Motors', ussdCode: '*920*14#', status: 'Suspended', level: 'Secondary', type: 'Basic', lastActive: '1 week ago', reference: true, menu: null, traffic: '1.1k' },
-  { id: 'MER-006', msisdn: '+233266666666', name: 'Cape Coast Textiles', ussdCode: '*920*15#', status: 'Active', level: 'Secondary', type: 'Menu', lastActive: '10 mins ago', reference: false, menu: ['New Arrivals', 'Discounts', 'Locations'], traffic: '8.9k' },
-  { id: 'MER-007', msisdn: '+233500000000', name: 'Volta Grains', ussdCode: '*920*16#', status: 'Active', level: 'Primary', type: 'API', lastActive: 'Just now', reference: true, menu: null, traffic: '560' },
-])
+const directoryStore = useDirectoryStore()
+
+onMounted(() => {
+  directoryStore.fetchDirectories()
+})
+
+const mappedSubscribers = computed<MappedMerchant[]>(() => {
+  return directoryStore.directories.map(dir => ({
+    id: dir.id,
+    merchantId: dir.merchantCode,
+    name: dir.merchantName || dir.createdBy?.fullName || 'Unknown',
+    ussdCode: dir.ussdCode,
+    status: dir.status === 'ACTIVE' ? 'Active' : dir.status === 'BLOCKED' ? 'Blocked' : dir.status === 'SUSPENDED' ? 'Suspended' : 'Unknown',
+    level: dir.level === 'PRIMARY' ? 'Primary' : dir.level === 'SECONDARY' ? 'Secondary' : dir.level,
+    type: dir.menuConfig?.metadata?.name || 'Standard Flow',
+    lastActive: dir.updatedAt ? formatDistanceToNow(new Date(dir.updatedAt), { addSuffix: true }) : 'Unknown',
+    reference: dir.parentDirectoryId !== null,
+    traffic: '0',
+    menu: null,
+    region: 'N/A'
+  }))
+})
 
 const searchQuery = ref('')
 const currentPage = ref(1)
 const itemsPerPage = 10
 const showModal = ref(false)
-const selectedMerchant = ref<Subscriber | null>(null)
+const selectedMerchant = ref<MappedMerchant | null>(null)
 
 const closeModal = () => {
   showModal.value = false
@@ -56,7 +72,7 @@ const closeModal = () => {
 
 const isCollapsed = useState('sidebarCollapsed', () => false)
 
-const viewMerchant = (merchant: Subscriber) => {
+const viewMerchant = (merchant: MappedMerchant) => {
   selectedMerchant.value = merchant
   showModal.value = true
   activeMenuId.value = null // Close dropdown
@@ -217,11 +233,22 @@ const getNetworkBadge = (network: string) => {
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
-            <tr v-for="sub in subscribers" :key="sub.id" class="hover:bg-vibes-50/30 dark:hover:bg-gray-700/50 transition-colors group">
+            <tr v-if="directoryStore.isLoading">
+              <td colspan="7" class="px-6 py-8 text-center text-gray-500">
+                <Spinner size="md" color="primary" class="mx-auto" />
+                <p class="mt-2 text-sm">Loading merchants...</p>
+              </td>
+            </tr>
+            <tr v-else-if="mappedSubscribers.length === 0">
+              <td colspan="7" class="px-6 py-8 text-center text-gray-500">
+                <p class="text-sm">No merchants found.</p>
+              </td>
+            </tr>
+            <tr v-else v-for="sub in mappedSubscribers" :key="sub.id" class="hover:bg-vibes-50/30 dark:hover:bg-gray-700/50 transition-colors group">
               <td class="px-6 py-4">
                 <div class="flex items-center">
                   <div class="h-9 w-9 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 text-xs font-bold mr-3">
-                    {{ sub.name.split(' ').map(n => n[0]).join('') }}
+                    {{ sub.name.split(' ').map((n: string) => n[0]).join('') }}
                   </div>
                   <div>
                     <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ sub.name }}</div>
@@ -287,7 +314,7 @@ const getNetworkBadge = (network: string) => {
 
       <Pagination 
         :current-page="currentPage" 
-        :total-items="subscribers.length" 
+        :total-items="mappedSubscribers.length" 
         :items-per-page="itemsPerPage"
         @page-change="handlePageChange"
       />
@@ -316,7 +343,7 @@ const getNetworkBadge = (network: string) => {
               </div>
               <div>
                 <p class="text-lg font-bold text-gray-900 dark:text-gray-100">{{ selectedMerchant.name }}</p>
-                <p class="text-sm text-gray-500 dark:text-gray-400 font-mono">{{ selectedMerchant.msisdn }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 font-mono">{{ selectedMerchant.merchantId }}</p>
               </div>
             </div>
              <span 
