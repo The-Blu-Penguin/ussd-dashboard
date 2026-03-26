@@ -3,6 +3,7 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import Button from '~/components/ui/Button.vue'
 import AuthNotification from '~/components/ui/AuthNotification.vue'
 import { useToast } from '~/composables/useToast'
+import { validateEmailWithError } from '~/utils/validation'
 
 definePageMeta({
   layout: 'auth'
@@ -17,8 +18,6 @@ const error = ref('')
 const loading = ref(false)
 const showSuccessModal = ref(false)
 
-const validateEmail = (val: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)
-
 const handleLogin = async () => {
   error.value = ''
   loading.value = true
@@ -28,11 +27,14 @@ const handleLogin = async () => {
     loading.value = false
     return
   }
-  if (!validateEmail(email.value)) {
-    error.value = 'Please enter a valid email address'
+  
+  const emailValidation = validateEmailWithError(email.value)
+  if (!emailValidation.valid) {
+    error.value = emailValidation.error || 'Invalid email'
     loading.value = false
     return
   }
+  
   if (!password.value) {
     error.value = 'Password is required'
     loading.value = false

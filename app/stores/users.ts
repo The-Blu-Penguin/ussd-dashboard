@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import { useApi } from '~/composables/useApi'
-import { useAuthStore } from './auth'
 import type { User, ApiResponse, DeleteUserResponseData, UpdateUserRequest } from '~/types/api'
 
 interface UsersState {
@@ -72,7 +71,7 @@ export const useUsersStore = defineStore('users', {
       }
     },
 
-    async updateUser(userId: string, data: UpdateUserRequest) {
+    async updateUser(userId: string, data: UpdateUserRequest, onCurrentUserUpdate?: (user: User) => void) {
       this.isLoading = true
       this.error = null
       
@@ -91,10 +90,9 @@ export const useUsersStore = defineStore('users', {
             this.users[index] = response.data
           }
           
-          // If the updated user is the currently logged in user, update the auth store too
-          const authStore = useAuthStore()
-          if (authStore.user?.id === userId) {
-            authStore.setUser(response.data)
+          // Notify caller if this is the current user (via callback)
+          if (onCurrentUserUpdate) {
+            onCurrentUserUpdate(response.data)
           }
           
           return { success: true, message: response.message || 'User updated successfully' }

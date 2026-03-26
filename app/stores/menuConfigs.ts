@@ -137,16 +137,11 @@ export const useMenuConfigsStore = defineStore('menuConfigs', {
       this.error = null
       
       try {
-        const config = useRuntimeConfig()
-        const baseUrl = config.public.apiBaseUrl as string
-        const authStore = useAuthStore()
+        const api = useApi()
 
-        const response = await $fetch<ApiResponse<MenuConfigFlow>>(`${baseUrl}/menuConfigFlow/${id}`, {
+        const response = await api<ApiResponse<MenuConfigFlow>>(`/menuConfigFlow/${id}`, {
           method: 'PATCH',
           body: data,
-          headers: {
-            Authorization: `Bearer ${authStore.accessToken}`,
-          },
         })
 
         if (response.success && response.data) {

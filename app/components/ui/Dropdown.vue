@@ -29,15 +29,24 @@ const handleClickOutside = (event: MouseEvent) => {
   }
 }
 
+const handleKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape' && isOpen.value) {
+    close()
+    event.preventDefault()
+  }
+}
+
 onMounted(() => {
   if (import.meta.client) {
     document.addEventListener('click', handleClickOutside)
+    document.addEventListener('keydown', handleKeydown)
   }
 })
 
 onUnmounted(() => {
   if (import.meta.client) {
     document.removeEventListener('click', handleClickOutside)
+    document.removeEventListener('keydown', handleKeydown)
   }
   // Clean up refs
   dropdownRef.value = null
@@ -46,7 +55,15 @@ onUnmounted(() => {
 
 <template>
   <div class="relative inline-block text-left" ref="dropdownRef">
-    <div @click.stop="toggle">
+    <div 
+      @click.stop="toggle"
+      @keydown.enter.prevent="toggle"
+      @keydown.space.prevent="toggle"
+      role="button"
+      tabindex="0"
+      :aria-expanded="isOpen"
+      aria-haspopup="true"
+    >
       <slot name="trigger" />
     </div>
 
@@ -60,11 +77,13 @@ onUnmounted(() => {
     >
       <div
         v-if="isOpen"
-        class="absolute z-50 mt-2 rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+        class="absolute z-50 mt-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 dark:ring-gray-700 focus:outline-none"
         :class="[
           width,
           placement === 'bottom-right' ? 'right-0 origin-top-right' : 'left-0 origin-top-left'
         ]"
+        role="menu"
+        aria-orientation="vertical"
       >
         <div class="py-1" @click="close">
           <slot />

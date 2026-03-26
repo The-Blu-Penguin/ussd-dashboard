@@ -130,14 +130,18 @@ const closeMobileSidebar = () => {
       isCollapsed ? 'w-20' : 'w-64',
       isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
     ]"
+    role="navigation"
+    aria-label="Main navigation"
+    id="mobile-sidebar"
   >
     <!-- Logo -->
     <div class="h-16 flex items-center justify-between px-4 border-b border-gray-50 dark:border-gray-800 relative">
       <div class="flex items-center overflow-hidden whitespace-nowrap">
-        <img src="/images.png" alt="Logo" class="w-14 h-14 min-w-[32px] transition-all object-contain" :class="isCollapsed ? 'mx-auto' : 'mr-3'" />
+        <img src="/images.png" alt="USSD Admin Logo" class="w-14 h-14 min-w-[32px] transition-all object-contain" :class="isCollapsed ? 'mx-auto' : 'mr-3'" />
         <span 
           class="text-xl font-bold text-gray-800 dark:text-gray-100 transition-opacity duration-200"
           :class="isCollapsed ? 'opacity-0 w-0' : 'opacity-100'"
+          aria-hidden="true"
         >
           USSD ADMIN
         </span>
@@ -147,9 +151,11 @@ const closeMobileSidebar = () => {
       <button 
         @click="toggleSidebar"
         class="absolute -right-3 top-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full p-1 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 z-50 hidden md:flex"
+        :aria-label="isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+        :aria-expanded="!isCollapsed"
       >
-        <ChevronLeft v-if="!isCollapsed" class="w-3 h-3" />
-        <ChevronRight v-else class="w-3 h-3" />
+        <ChevronLeft v-if="!isCollapsed" class="w-3 h-3" aria-hidden="true" />
+        <ChevronRight v-else class="w-3 h-3" aria-hidden="true" />
       </button>
     </div>
 
@@ -159,10 +165,11 @@ const closeMobileSidebar = () => {
         <h3 
           class="text-xs font-bold text-gray-400 dark:text-gray-500 mb-3 px-2 tracking-wider transition-opacity duration-200 whitespace-nowrap overflow-hidden"
           :class="isCollapsed ? 'opacity-0 h-0 mb-0' : 'opacity-100'"
+          :id="`nav-section-${idx}`"
         >
           {{ section.header }}
         </h3>
-        <ul>
+        <ul :aria-labelledby="`nav-section-${idx}`">
           <li v-for="(item, itemIdx) in section.items" :key="itemIdx" class="mb-1">
             <div v-if="item.children">
                 <button 
@@ -173,6 +180,9 @@ const closeMobileSidebar = () => {
                     isCollapsed ? 'justify-center' : ''
                   ]"
                   :title="isCollapsed ? item.name : ''"
+                  :aria-label="`${item.name} menu`"
+                  :aria-expanded="openMenus[item.name] ? 'true' : 'false'"
+                  :aria-current="isActive(item) ? 'page' : undefined"
                 >
                   <component 
                     :is="item.icon" 
@@ -180,7 +190,8 @@ const closeMobileSidebar = () => {
                     :class="[
                       isActive(item) ? 'text-vibes-600 dark:text-vibes-400' : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300',
                       isCollapsed ? 'mr-0' : 'mr-3'
-                    ]" 
+                    ]"
+                    aria-hidden="true"
                   />
                   
                   <span 
@@ -196,15 +207,18 @@ const closeMobileSidebar = () => {
                         isCollapsed ? 'hidden' : '',
                         openMenus[item.name] ? 'rotate-180' : ''
                     ]"
+                    aria-hidden="true"
                   />
                   
-                  <div v-if="isActive(item)" class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-vibes-600 dark:bg-vibes-500 rounded-r-full"></div>
+                  <div v-if="isActive(item)" class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-vibes-600 dark:bg-vibes-500 rounded-r-full" aria-hidden="true"></div>
                 </button>
 
                 <!-- Submenu -->
                 <div 
                     v-if="!isCollapsed && openMenus[item.name]" 
                     class="mt-1 ml-4 border-l border-gray-100 dark:border-gray-800 pl-2 space-y-1 overflow-hidden transition-all duration-300"
+                    role="menu"
+                    :aria-label="`${item.name} submenu`"
                 >
                     <NuxtLink 
                         v-for="(child, childIdx) in item.children" 
@@ -213,6 +227,8 @@ const closeMobileSidebar = () => {
                         class="flex items-center px-3 py-2 rounded-lg text-sm transition-colors duration-200"
                         :class="isChildActive(child.to) ? 'text-vibes-600 dark:text-vibes-400 bg-vibes-50/50 dark:bg-vibes-900/20 font-medium' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'"
                         @click="closeMobileSidebar"
+                        role="menuitem"
+                        :aria-current="isChildActive(child.to) ? 'page' : undefined"
                     >
                         <span>{{ child.name }}</span>
                     </NuxtLink>
@@ -229,6 +245,8 @@ const closeMobileSidebar = () => {
                ]"
                :title="isCollapsed ? item.name : ''"
                @click="closeMobileSidebar"
+               :aria-label="item.name"
+               :aria-current="isActive(item) ? 'page' : undefined"
             >
               <component 
                 :is="item.icon" 
@@ -236,7 +254,8 @@ const closeMobileSidebar = () => {
                 :class="[
                   isActive(item) ? 'text-vibes-600 dark:text-vibes-400' : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300',
                   isCollapsed ? 'mr-0' : 'mr-3'
-                ]" 
+                ]"
+                aria-hidden="true"
               />
               
               <span 
@@ -246,7 +265,7 @@ const closeMobileSidebar = () => {
                 {{ item.name }}
               </span>
               
-              <div v-if="isActive(item)" class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-vibes-600 dark:bg-vibes-500 rounded-r-full"></div>
+              <div v-if="isActive(item)" class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-vibes-600 dark:bg-vibes-500 rounded-r-full" aria-hidden="true"></div>
             </NuxtLink>
           </li>
         </ul>
@@ -258,11 +277,16 @@ const closeMobileSidebar = () => {
       <div 
         class="bg-vibes-50 dark:bg-gray-800 rounded-xl flex items-center transition-colors duration-200 group cursor-pointer hover:bg-vibes-100 dark:hover:bg-gray-700"
         :class="isCollapsed ? 'p-2 justify-center' : 'p-3 justify-between'"
+        role="button"
+        tabindex="0"
+        :aria-label="`User profile: ${user?.fullName || 'User'}`"
+        @keydown.enter="handleLogout"
+        @keydown.space.prevent="handleLogout"
       >
         <div class="flex items-center overflow-hidden">
           <div class="w-8 h-8 min-w-[32px] rounded-full bg-blue-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden" :class="isCollapsed ? '' : 'mr-3'">
-             <img v-if="user?.avatarUrl" :src="user.avatarUrl" :alt="user?.fullName || 'User'" class="w-full h-full object-cover" />
-             <span v-else class="text-xs font-bold text-vibes-700 dark:text-vibes-300">{{ user?.fullName?.charAt(0) || 'U' }}</span>
+             <img v-if="user?.avatarUrl" :src="user.avatarUrl" :alt="`${user?.fullName || 'User'} avatar`" class="w-full h-full object-cover" />
+             <span v-else class="text-xs font-bold text-vibes-700 dark:text-vibes-300" aria-hidden="true">{{ user?.fullName?.charAt(0) || 'U' }}</span>
           </div>
           <div 
             class="transition-all duration-200 whitespace-nowrap"
@@ -272,7 +296,14 @@ const closeMobileSidebar = () => {
             <p class="text-xs text-gray-500 dark:text-gray-400">{{ user?.role || 'Guest' }}</p>
           </div>
         </div>
-        <LogOut v-if="!isCollapsed" @click="handleLogout" class="w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-vibes-600 dark:group-hover:text-vibes-400 ml-2 cursor-pointer" />
+        <button
+          v-if="!isCollapsed"
+          @click="handleLogout"
+          class="ml-2"
+          aria-label="Logout"
+        >
+          <LogOut class="w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-vibes-600 dark:group-hover:text-vibes-400 cursor-pointer" aria-hidden="true" />
+        </button>
       </div>
     </div>
   </aside>

@@ -1,4 +1,5 @@
 import { useAuthStore } from '~/stores/auth'
+import { validateApiResponse, ValidationError } from '~/utils/validation'
 
 // Request deduplication cache
 const pendingRequests = new Map<string, Promise<any>>()
@@ -47,6 +48,18 @@ export const useApi = () => {
       if (options.method?.toUpperCase() === 'GET' || !options.method) {
         const key = `${options.method || 'GET'}-${request}`
         pendingRequests.delete(key)
+      }
+      
+      // Validate API response structure
+      try {
+        if (response._data) {
+          validateApiResponse(response._data)
+        }
+      } catch (error) {
+        if (error instanceof ValidationError) {
+          console.error('[API Validation Error]', error.message)
+          // Log but don't throw - allow response to continue
+        }
       }
     },
     
