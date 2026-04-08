@@ -40,16 +40,12 @@ export interface MappedMerchant {
 
 const directoryStore = useDirectoryStore()
 
-onMounted(async () => {
-  console.log('[MerchantsPage] onMounted — calling fetchDirectories')
-  await directoryStore.fetchDirectories()
-  console.log('[MerchantsPage] After fetchDirectories — directories:', directoryStore.directories)
-  console.log('[MerchantsPage] isLoading:', directoryStore.isLoading, '| error:', directoryStore.error)
+onMounted(() => {
+  directoryStore.fetchDirectories()
 })
 
 const mappedSubscribers = computed<MappedMerchant[]>(() => {
-  console.log('[MerchantsPage] mappedSubscribers computed — raw directories count:', directoryStore.directories.length)
-  const mapped = directoryStore.directories.map(dir => ({
+  return directoryStore.directories.map(dir => ({
     id: dir.id,
     merchantId: dir.merchantCode,
     name: dir.merchantName || dir.createdBy?.fullName || 'Unknown',
@@ -63,8 +59,6 @@ const mappedSubscribers = computed<MappedMerchant[]>(() => {
     menu: null,
     region: 'N/A'
   }))
-  console.log('[MerchantsPage] mappedSubscribers computed — mapped:', mapped)
-  return mapped
 })
 
 const searchQuery = ref('')
