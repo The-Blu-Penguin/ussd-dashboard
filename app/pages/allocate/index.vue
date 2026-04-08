@@ -18,8 +18,11 @@ const menuConfigsStore = useMenuConfigsStore()
 const authStore = useAuthStore()
 const toast = useToast()
 
-onMounted(() => {
-  directoryStore.fetchDirectories()
+onMounted(async () => {
+  console.log('[AllocatePage] onMounted — calling fetchDirectories & fetchConfigs')
+  await directoryStore.fetchDirectories()
+  console.log('[AllocatePage] After fetchDirectories — directories:', directoryStore.directories)
+  console.log('[AllocatePage] isLoading:', directoryStore.isLoading, '| error:', directoryStore.error)
   menuConfigsStore.fetchConfigs()
 })
 
@@ -159,7 +162,8 @@ watch(() => newApp.value.merchantId, (newId) => {
 })
 
 const apps = computed<App[]>(() => {
-  return directoryStore.directories.map(dir => ({
+  console.log('[AllocatePage] apps computed — raw directories count:', directoryStore.directories.length)
+  const mapped = directoryStore.directories.map(dir => ({
     id: dir.id,
     name: dir.merchantName || dir.createdBy?.fullName || 'Unknown',
     merchantId: dir.merchantCode || '-',
@@ -169,6 +173,8 @@ const apps = computed<App[]>(() => {
     status: dir.status,
     traffic: '0' // Placeholder as traffic data is not in the directory API
   }))
+  console.log('[AllocatePage] apps computed — mapped apps:', mapped)
+  return mapped
 })
 
 const filteredApps = computed(() => {
