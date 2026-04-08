@@ -33,8 +33,13 @@ export const useDirectoryStore = defineStore('directory', {
         })
 
         if (response.success && response.data) {
-          // Initialize directories
-          this.directories = response.data
+          // Normalise: API may return an array directly, or wrap it in an object
+          const raw = response.data
+          this.directories = Array.isArray(raw)
+            ? raw
+            : Array.isArray((raw as any)?.directories)
+              ? (raw as any).directories
+              : []
           // Mark main loading as complete so UI can show the table incrementally
           this.isLoading = false
           
