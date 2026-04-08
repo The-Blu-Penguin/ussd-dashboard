@@ -53,11 +53,21 @@ export const useApi = () => {
       // Validate API response structure
       try {
         if (response._data) {
-          validateApiResponse(response._data)
+          // Skip validation for known non-standard endpoints
+          const url = typeof request === 'string' ? request : request.toString()
+          const skipValidation = [
+            '/merchants/',           // Uses status: "success" instead of success: true
+            '/directory/available-codes'  // Non-standard response format
+          ].some(pattern => url.includes(pattern))
+          
+          if (!skipValidation) {
+            validateApiResponse(response._data)
+          }
         }
       } catch (error) {
         if (error instanceof ValidationError) {
-          console.error('[API Validation Error]', error.message)
+          const url = typeof request === 'string' ? request : request.toString()
+          console.warn('[API Validation Warning]', error.message, 'Endpoint:', url)
           // Log but don't throw - allow response to continue
         }
       }
