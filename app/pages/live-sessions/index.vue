@@ -3,7 +3,6 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useMonitoringStore } from '~/stores/monitoring'
 import type { SessionEvent } from '~/stores/monitoring'
 import SearchInput from '~/components/ui/SearchInput.vue'
-import Pagination from '~/components/ui/Pagination.vue'
 import FilterButton from '~/components/ui/FilterButton.vue'
 import { 
   Activity, 
@@ -14,42 +13,25 @@ import {
   Eye, 
   Signal,
   Wifi,
-  X,
-  Pause,
-  Play
+  X
 } from 'lucide-vue-next'
 
 const monitoringStore = useMonitoringStore()
 const searchQuery = ref('')
-const currentPage = ref(1)
-const itemsPerPage = 10
 const showModal = ref(false)
 const selectedSession = ref<SessionEvent | null>(null)
 
-let disconnectSessions = () => {}
-
 onMounted(() => {
-  if (import.meta.client && monitoringStore.isLive) {
-    disconnectSessions = monitoringStore.connectSessions()
+  if (import.meta.client) {
+    monitoringStore.connectSessions()
   }
 })
 
-onUnmounted(() => {
-  disconnectSessions()
-})
-
-const toggleLive = () => {
-  monitoringStore.toggleLive()
-  if (monitoringStore.isLive) {
-    disconnectSessions = monitoringStore.connectSessions()
-  } else {
-    disconnectSessions()
-    disconnectSessions = () => {}
-  }
-}
-
-const clearEvents = () => {
+const refreshSessions = () => {
+  monitoringStore.disconnectAll()
   monitoringStore.clearEvents('sessions')
+  monitoringStore.sessionStats = null
+  monitoringStore.connectSessions()
 }
 
 const filteredEvents = computed(() => {
@@ -63,10 +45,7 @@ const filteredEvents = computed(() => {
   )
 })
 
-const paginatedEvents = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
-  return filteredEvents.value.slice(start, start + itemsPerPage)
-})
+
 
 const viewSession = (session: SessionEvent) => {
   selectedSession.value = session
@@ -78,9 +57,7 @@ const closeModal = () => {
   selectedSession.value = null
 }
 
-const handlePageChange = (page: number) => {
-  currentPage.value = page
-}
+
 
 const formatDuration = (seconds: number) => {
   if (!seconds) return '0s'
@@ -135,12 +112,11 @@ const formatTime = (timestamp: number) => {
       </div>
       <div class="flex items-center space-x-3 w-full sm:w-auto">
         <button 
-          @click="toggleLive" 
-          class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border"
-          :class="monitoringStore.isLive ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800 hover:bg-green-200 dark:hover:bg-green-900/50' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'"
+          @click="refreshSessions" 
+          class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
         >
-          <component :is="monitoringStore.isLive ? Pause : Play" class="w-3.5 h-3.5" />
-          <span>{{ monitoringStore.isLive ? 'Live' : 'Paused' }}</span>
+          <RefreshCw class="w-3.5 h-3.5" />
+          <span>Refresh</span>
         </button>
         <span 
           class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border"
@@ -259,7 +235,7 @@ const formatTime = (timestamp: number) => {
                 {{ monitoringStore.isLive ? 'Waiting for session events...' : 'Live feed paused' }}
               </td>
             </tr>
-            <tr v-for="event in paginatedEvents" :key="event.sessionId + event.timestamp" class="hover:bg-vibes-50/30 dark:hover:bg-gray-700/50 transition-colors group">
+            <tr v-for="event in filteredEvents" :key="event.sessionId + event.timestamp" class="hover:bg-vibes-50/30 dark:hover:bg-gray-700/50 transition-colors group">
               <td class="px-6 py-4">
                 <div class="flex flex-col">
                   <span class="text-sm font-medium text-gray-900 dark:text-gray-100 font-mono">{{ event.sessionId }}</span>
@@ -308,12 +284,7 @@ const formatTime = (timestamp: number) => {
         </table>
       </div>
       
-      <Pagination 
-        :current-page="currentPage" 
-        :total-items="filteredEvents.length" 
-        :items-per-page="itemsPerPage"
-        @page-change="handlePageChange"
-      />
+
     </div>
 
     <!-- View Session Modal -->

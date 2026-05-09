@@ -74,6 +74,9 @@ interface MonitoringState {
     transactions: 'connecting' | 'connected' | 'disconnected' | 'error'
   }
   maxEvents: number
+  _disconnectSessions: (() => void) | null
+  _disconnectLogs: (() => void) | null
+  _disconnectTransactions: (() => void) | null
 }
 
 export const useMonitoringStore = defineStore('monitoring', {
@@ -90,7 +93,10 @@ export const useMonitoringStore = defineStore('monitoring', {
       logs: 'disconnected',
       transactions: 'disconnected',
     },
-    maxEvents: 100,
+    maxEvents: 1000,
+    _disconnectSessions: null,
+    _disconnectLogs: null,
+    _disconnectTransactions: null,
   }),
 
   getters: {
@@ -134,11 +140,11 @@ export const useMonitoringStore = defineStore('monitoring', {
     },
 
     connectSessions() {
-      if (!this.isLive) return () => {}
+      if (!this.isLive || this._disconnectSessions) return
       this.connectionStatus.sessions = 'connecting'
       const { connect } = useSse()
 
-      return connect('/sse/sessions', {
+      this._disconnectSessions = connect('/sse/sessions', {
         onOpen: () => {
           this.connectionStatus.sessions = 'connected'
         },
@@ -156,11 +162,11 @@ export const useMonitoringStore = defineStore('monitoring', {
     },
 
     connectLogs() {
-      if (!this.isLive) return () => {}
+      if (!this.isLive || this._disconnectLogs) return
       this.connectionStatus.logs = 'connecting'
       const { connect } = useSse()
 
-      return connect('/sse/logs', {
+      this._disconnectLogs = connect('/sse/logs', {
         onOpen: () => {
           this.connectionStatus.logs = 'connected'
         },
@@ -178,11 +184,11 @@ export const useMonitoringStore = defineStore('monitoring', {
     },
 
     connectTransactions() {
-      if (!this.isLive) return () => {}
+      if (!this.isLive || this._disconnectTransactions) return
       this.connectionStatus.transactions = 'connecting'
       const { connect } = useSse()
 
-      return connect('/sse/transactions', {
+      this._disconnectTransactions = connect('/sse/transactions', {
         onOpen: () => {
           this.connectionStatus.transactions = 'connected'
         },
@@ -197,6 +203,20 @@ export const useMonitoringStore = defineStore('monitoring', {
           this.connectionStatus.transactions = 'error'
         },
       })
+    },
+
+    disconnectAll() {
+      this._disconnectSessions?.()
+      this._disconnectLogs?.()
+      this._disconnectTransactions?.()
+      this._disconnectSessions = null
+      this._disconnectLogs = null
+      this._disconnectTransactions = null
+      this.connectionStatus = {
+        sessions: 'disconnected',
+        logs: 'disconnected',
+        transactions: 'disconnected',
+      }
     },
 
     toggleLive() {

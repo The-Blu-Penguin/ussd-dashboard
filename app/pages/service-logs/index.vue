@@ -3,74 +3,85 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useMonitoringStore } from '~/stores/monitoring'
 import { getLevelColor, getLevelIcon, getStatusCodeColor } from '~/utils/statusHelpers'
 import SearchInput from '~/components/ui/SearchInput.vue'
-import Pagination from '~/components/ui/Pagination.vue'
 import FilterButton from '~/components/ui/FilterButton.vue'
 import LogDetailsModal from '~/components/logs/LogDetailsModal.vue'
 import Shimmer from '~/components/ui/Shimmer.vue'
 import { 
   ScrollText, AlertTriangle, CheckCircle, XCircle, Info,
-  Server, Activity, Pause, Play
+  Server, Activity, RefreshCw
 } from 'lucide-vue-next'
 import type { LogLevel } from '~/types/api'
 
 const monitoringStore = useMonitoringStore()
 const searchQuery = ref('')
-const currentPage = ref(1)
-const itemsPerPage = 10
 const showModal = ref(false)
 const selectedLog = ref<Record<string, any> | undefined>(undefined)
 const isLoading = ref(true)
+const autoRefreshInterval = ref(0) // 0 = off, otherwise minutes
+const selectedServiceFilter = ref('All')
+let autoRefreshTimer: ReturnType<typeof setInterval> | null = null
 
-let disconnectLogs = () => {}
+const refreshLogs = () => {
+  monitoringStore.disconnectAll()
+  monitoringStore.clearEvents('logs')
+  monitoringStore.logStats = null
+  monitoringStore.connectLogs()
+}
+
+const setupAutoRefresh = () => {
+  if (autoRefreshTimer) {
+    clearInterval(autoRefreshTimer)
+    autoRefreshTimer = null
+  }
+  if (autoRefreshInterval.value > 0) {
+    autoRefreshTimer = setInterval(() => {
+      refreshLogs()
+    }, autoRefreshInterval.value * 60 * 1000)
+  }
+}
 
 onMounted(() => {
   const loadingTimeout = setTimeout(() => {
     isLoading.value = false
   }, 800)
 
-  if (import.meta.client && monitoringStore.isLive) {
-    disconnectLogs = monitoringStore.connectLogs()
+  if (import.meta.client) {
+    monitoringStore.connectLogs()
   }
 
   return () => clearTimeout(loadingTimeout)
 })
 
 onUnmounted(() => {
-  disconnectLogs()
+  if (autoRefreshTimer) {
+    clearInterval(autoRefreshTimer)
+  }
 })
 
-const toggleLive = () => {
-  monitoringStore.toggleLive()
-  if (monitoringStore.isLive) {
-    disconnectLogs = monitoringStore.connectLogs()
-  } else {
-    disconnectLogs()
-    disconnectLogs = () => {}
-  }
-}
-
-const clearLogs = () => {
-  monitoringStore.clearEvents('logs')
-}
+const availableServices = computed(() => {
+  const services = new Set(monitoringStore.logEvents.map(l => l.service))
+  return ['All', ...Array.from(services)]
+})
 
 const filteredLogs = computed(() => {
+  let logs = monitoringStore.logEvents
+  if (selectedServiceFilter.value !== 'All') {
+    logs = logs.filter(l => l.service === selectedServiceFilter.value)
+  }
   const q = searchQuery.value.toLowerCase()
-  if (!q) return monitoringStore.logEvents
-  return monitoringStore.logEvents.filter(l =>
+  if (!q) return logs
+  return logs.filter(l =>
     l.message.toLowerCase().includes(q) ||
     l.service.toLowerCase().includes(q) ||
     l.level.toLowerCase().includes(q)
   )
 })
 
-const paginatedLogs = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
-  return filteredLogs.value.slice(start, start + itemsPerPage)
-})
+
 
 const viewLog = (log: any) => { selectedLog.value = log; showModal.value = true }
 const closeModal = () => { showModal.value = false; selectedLog.value = undefined }
-const handlePageChange = (page: number) => { currentPage.value = page }
+
 
 const formatDuration = (ms: number) => {
   if (ms < 1000) return `${ms}ms`
@@ -168,13 +179,24 @@ const formatDuration = (ms: number) => {
         <div class="flex flex-col sm:flex-row sm:items-center gap-4">
            <div class="flex items-center space-x-2">
              <button 
-               @click="toggleLive" 
-               class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border"
-               :class="monitoringStore.isLive ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800 hover:bg-green-200 dark:hover:bg-green-900/50' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'"
+               @click="refreshLogs" 
+               class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
              >
-               <component :is="monitoringStore.isLive ? Pause : Play" class="w-3.5 h-3.5" />
-               <span>{{ monitoringStore.isLive ? 'Live' : 'Paused' }}</span>
+               <RefreshCw class="w-3.5 h-3.5" />
+               <span>Refresh</span>
              </button>
+             <select 
+               v-model="autoRefreshInterval"
+               @change="setupAutoRefresh"
+               class="text-xs border-gray-200 dark:border-gray-700 rounded-md focus:ring-vibes-500 focus:border-vibes-500 bg-white dark:bg-gray-800 py-1.5 px-2 text-gray-600 dark:text-gray-300"
+             >
+               <option :value="0">Auto: Off</option>
+               <option :value="1">1 min</option>
+               <option :value="2">2 min</option>
+               <option :value="5">5 min</option>
+               <option :value="15">15 min</option>
+               <option :value="30">30 min</option>
+             </select>
            </div>
            <div class="hidden sm:block h-4 w-px bg-gray-200 dark:bg-gray-700"></div>
            <div class="w-full sm:w-64">
@@ -190,8 +212,12 @@ const formatDuration = (ms: number) => {
              <span class="w-1.5 h-1.5 rounded-full mr-1.5" :class="monitoringStore.connectionStatus.logs === 'connected' ? 'bg-green-500 animate-pulse' : monitoringStore.connectionStatus.logs === 'error' ? 'bg-red-500' : 'bg-amber-500'"></span>
              {{ monitoringStore.connectionStatus.logs }}
            </span>
-           <FilterButton label="Level" />
-           <FilterButton label="Service" />
+           <select 
+             v-model="selectedServiceFilter"
+             class="text-xs border-gray-200 dark:border-gray-700 rounded-md focus:ring-vibes-500 focus:border-vibes-500 bg-white dark:bg-gray-800 py-1.5 px-2 text-gray-600 dark:text-gray-300"
+           >
+             <option v-for="svc in availableServices" :key="svc" :value="svc">{{ svc }}</option>
+           </select>
         </div>
       </div>
 
@@ -220,10 +246,10 @@ const formatDuration = (ms: number) => {
            </template>
 
            <template v-else>
-             <div v-if="paginatedLogs.length === 0" class="text-gray-500 dark:text-gray-400 text-center py-10 italic">
+             <div v-if="filteredLogs.length === 0" class="text-gray-500 dark:text-gray-400 text-center py-10 italic">
                {{ monitoringStore.isLive ? 'Waiting for log events...' : 'Live feed paused' }}
              </div>
-             <div v-for="log in paginatedLogs" :key="log.timestamp + log.message" class="flex items-center space-x-4 px-6 py-3 border-b border-gray-50 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer group" @click="viewLog(log)">
+             <div v-for="log in filteredLogs" :key="log.timestamp + log.message" class="flex items-center space-x-4 px-6 py-3 border-b border-gray-50 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer group" @click="viewLog(log)">
                 <!-- Timestamp -->
                 <div class="w-36 shrink-0">
                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ log.dateTime ? log.dateTime.split('\n')[0] : '-' }}</div>

@@ -3,52 +3,44 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useMonitoringStore } from '~/stores/monitoring'
 import { getStatusColor, getStatusIcon } from '~/utils/statusHelpers'
 import SearchInput from '~/components/ui/SearchInput.vue'
-import Pagination from '~/components/ui/Pagination.vue'
-import FilterButton from '~/components/ui/FilterButton.vue'
 import TransactionDetailsModal from '~/components/transactions/TransactionDetailsModal.vue'
 import { 
   FileText, CheckCircle, XCircle, Clock, AlertCircle, Eye, ArrowUpRight,
-  Pause, Play
+  RefreshCw
 } from 'lucide-vue-next'
 import type { TransactionStatus } from '~/types/api'
 
 const monitoringStore = useMonitoringStore()
 const searchQuery = ref('')
-const currentPage = ref(1)
-const itemsPerPage = 10
 const showModal = ref(false)
 const selectedTxn = ref<Record<string, any> | undefined>(undefined)
 
-let disconnectTransactions = () => {}
-
 onMounted(() => {
-  if (import.meta.client && monitoringStore.isLive) {
-    disconnectTransactions = monitoringStore.connectTransactions()
+  if (import.meta.client) {
+    monitoringStore.connectTransactions()
   }
 })
 
-onUnmounted(() => {
-  disconnectTransactions()
-})
-
-const toggleLive = () => {
-  monitoringStore.toggleLive()
-  if (monitoringStore.isLive) {
-    disconnectTransactions = monitoringStore.connectTransactions()
-  } else {
-    disconnectTransactions()
-    disconnectTransactions = () => {}
-  }
-}
-
-const clearEvents = () => {
+const refreshTransactions = () => {
+  monitoringStore.disconnectAll()
   monitoringStore.clearEvents('transactions')
+  monitoringStore.transactionStats = null
+  monitoringStore.connectTransactions()
 }
+
+const dedupedTransactions = computed(() => {
+  const seen = new Set<string>()
+  return monitoringStore.transactionEvents.filter(t => {
+    if (seen.has(t.transactionId)) return false
+    seen.add(t.transactionId)
+    return true
+  })
+})
 
 const filteredTransactions = computed(() => {
   const q = searchQuery.value.toLowerCase()
-  if (!q) return monitoringStore.transactionEvents
-  return monitoringStore.transactionEvents.filter(t =>
+  if (!q) return dedupedTransactions.value
+  return dedupedTransactions.value.filter(t =>
     t.transactionId.toLowerCase().includes(q) ||
     t.merchantName.toLowerCase().includes(q) ||
     t.msisdn.toLowerCase().includes(q) ||
@@ -56,19 +48,28 @@ const filteredTransactions = computed(() => {
   )
 })
 
-const paginatedTransactions = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
-  return filteredTransactions.value.slice(start, start + itemsPerPage)
-})
+
 
 const viewTxn = (txn: any) => { selectedTxn.value = txn; showModal.value = true }
 const closeModal = () => { showModal.value = false; selectedTxn.value = undefined }
-const handlePageChange = (page: number) => { currentPage.value = page }
+
 
 const formatVolume = (volume: number) => {
   if (volume >= 1000000) return `${(volume / 1000000).toFixed(2)}M`
   if (volume >= 1000) return `${(volume / 1000).toFixed(2)}k`
   return volume.toFixed(2)
+}
+
+const normalizeTxnStatus = (status: string): TransactionStatus => {
+  const map: Record<string, TransactionStatus> = {
+    'PENDING': 'Pending',
+    'SUCCESS': 'Success',
+    'SUCCESSFUL': 'Success',
+    'FAILED': 'Failed',
+    'FAILURE': 'Failed',
+    'COMPLETED': 'Success',
+  }
+  return map[status.toUpperCase()] || 'Pending'
 }
 </script>
 
@@ -81,12 +82,11 @@ const formatVolume = (volume: number) => {
       </div>
       <div class="flex items-center space-x-3 w-full sm:w-auto">
         <button 
-          @click="toggleLive" 
-          class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border"
-          :class="monitoringStore.isLive ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800 hover:bg-green-200 dark:hover:bg-green-900/50' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'"
+          @click="refreshTransactions" 
+          class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
         >
-          <component :is="monitoringStore.isLive ? Pause : Play" class="w-3.5 h-3.5" />
-          <span>{{ monitoringStore.isLive ? 'Live' : 'Paused' }}</span>
+          <RefreshCw class="w-3.5 h-3.5" />
+          <span>Refresh</span>
         </button>
       </div>
     </div>
@@ -184,9 +184,7 @@ const formatVolume = (volume: number) => {
           <SearchInput v-model="searchQuery" placeholder="Search by ID, MSISDN, or Merchant..." />
         </div>
         
-        <div class="flex items-center space-x-3">
-          <FilterButton label="Filter" />
-        </div>
+
       </div>
 
       <div class="overflow-x-auto">
@@ -209,7 +207,7 @@ const formatVolume = (volume: number) => {
                 {{ monitoringStore.isLive ? 'Waiting for transaction events...' : 'Live feed paused' }}
               </td>
             </tr>
-            <tr v-for="txn in paginatedTransactions" :key="txn.transactionId + txn.timestamp" class="hover:bg-vibes-50/30 dark:hover:bg-gray-700/50 transition-colors group">
+            <tr v-for="txn in filteredTransactions" :key="txn.transactionId + txn.timestamp" class="hover:bg-vibes-50/30 dark:hover:bg-gray-700/50 transition-colors group">
               <td class="px-6 py-4">
                 <span class="text-sm font-medium text-gray-900 dark:text-gray-100 font-mono">{{ txn.transactionId }}</span>
               </td>
@@ -232,9 +230,9 @@ const formatVolume = (volume: number) => {
                 <span class="text-sm font-bold text-gray-900 dark:text-gray-100">{{ txn.amount }}</span>
               </td>
               <td class="px-6 py-4">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border" :class="getStatusColor(txn.status as TransactionStatus)">
-                  <component :is="getStatusIcon(txn.status as TransactionStatus)" class="w-3 h-3 mr-1.5" />
-                  {{ txn.status }}
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border" :class="getStatusColor(normalizeTxnStatus(txn.status))">
+                  <component :is="getStatusIcon(normalizeTxnStatus(txn.status))" class="w-3 h-3 mr-1.5" />
+                  {{ normalizeTxnStatus(txn.status) }}
                 </span>
               </td>
               <td class="px-6 py-4 text-right">
@@ -251,12 +249,7 @@ const formatVolume = (volume: number) => {
         </table>
       </div>
 
-      <Pagination 
-        :current-page="currentPage" 
-        :total-items="filteredTransactions.length" 
-        :items-per-page="itemsPerPage"
-        @page-change="handlePageChange"
-      />
+
     </div>
 
     <TransactionDetailsModal
