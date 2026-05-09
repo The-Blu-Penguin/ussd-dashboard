@@ -3,6 +3,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useMonitoringStore } from '~/stores/monitoring'
 import { getStatusColor, getStatusIcon } from '~/utils/statusHelpers'
 import SearchInput from '~/components/ui/SearchInput.vue'
+import Shimmer from '~/components/ui/Shimmer.vue'
 import TransactionDetailsModal from '~/components/transactions/TransactionDetailsModal.vue'
 import { 
   FileText, CheckCircle, XCircle, Clock, AlertCircle, Eye, ArrowUpRight,
@@ -14,6 +15,7 @@ const monitoringStore = useMonitoringStore()
 const searchQuery = ref('')
 const showModal = ref(false)
 const selectedTxn = ref<Record<string, any> | undefined>(undefined)
+const isRefreshing = ref(false)
 
 onMounted(() => {
   if (import.meta.client) {
@@ -22,10 +24,12 @@ onMounted(() => {
 })
 
 const refreshTransactions = () => {
+  isRefreshing.value = true
   monitoringStore.disconnectAll()
   monitoringStore.clearEvents('transactions')
   monitoringStore.transactionStats = null
   monitoringStore.connectTransactions()
+  setTimeout(() => { isRefreshing.value = false }, 800)
 }
 
 const dedupedTransactions = computed(() => {
@@ -202,12 +206,25 @@ const normalizeTxnStatus = (status: string): TransactionStatus => {
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
-            <tr v-if="monitoringStore.transactionEvents.length === 0">
-              <td colspan="8" class="px-6 py-10 text-center text-gray-500 dark:text-gray-400 italic">
-                {{ monitoringStore.isLive ? 'Waiting for transaction events...' : 'Live feed paused' }}
-              </td>
-            </tr>
-            <tr v-for="txn in filteredTransactions" :key="txn.transactionId + txn.timestamp" class="hover:bg-vibes-50/30 dark:hover:bg-gray-700/50 transition-colors group">
+            <template v-if="isRefreshing">
+              <tr v-for="i in 6" :key="i" class="border-b border-gray-50 dark:border-gray-700/50">
+                <td class="px-6 py-4"><Shimmer width="120px" height="14px" /></td>
+                <td class="px-6 py-4"><Shimmer width="80px" height="14px" /></td>
+                <td class="px-6 py-4"><Shimmer width="100px" height="14px" /></td>
+                <td class="px-6 py-4"><Shimmer width="100px" height="14px" /></td>
+                <td class="px-6 py-4"><Shimmer width="60px" height="20px" class="rounded-full" /></td>
+                <td class="px-6 py-4"><Shimmer width="60px" height="14px" /></td>
+                <td class="px-6 py-4"><Shimmer width="70px" height="20px" class="rounded-full" /></td>
+                <td class="px-6 py-4 text-right"><Shimmer width="30px" height="14px" /></td>
+              </tr>
+            </template>
+            <template v-else>
+              <tr v-if="monitoringStore.transactionEvents.length === 0">
+                <td colspan="8" class="px-6 py-10 text-center text-gray-500 dark:text-gray-400 italic">
+                  Waiting for transaction events...
+                </td>
+              </tr>
+              <tr v-for="txn in filteredTransactions" :key="txn.transactionId + txn.timestamp" class="hover:bg-vibes-50/30 dark:hover:bg-gray-700/50 transition-colors group">
               <td class="px-6 py-4">
                 <span class="text-sm font-medium text-gray-900 dark:text-gray-100 font-mono">{{ txn.transactionId }}</span>
               </td>
@@ -245,6 +262,7 @@ const normalizeTxnStatus = (status: string): TransactionStatus => {
                 </button>
               </td>
             </tr>
+            </template>
           </tbody>
         </table>
       </div>

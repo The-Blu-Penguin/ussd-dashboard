@@ -22,10 +22,12 @@ const selectedServiceFilter = ref('All')
 let autoRefreshTimer: ReturnType<typeof setInterval> | null = null
 
 const refreshLogs = () => {
+  isLoading.value = true
   monitoringStore.disconnectAll()
   monitoringStore.clearEvents('logs')
   monitoringStore.logStats = null
   monitoringStore.connectLogs()
+  setTimeout(() => { isLoading.value = false }, 800)
 }
 
 const setupAutoRefresh = () => {
