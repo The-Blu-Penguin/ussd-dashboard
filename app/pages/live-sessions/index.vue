@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useMonitoringStore } from '~/stores/monitoring'
+import type { SessionEvent } from '~/stores/monitoring'
 import SearchInput from '~/components/ui/SearchInput.vue'
 import Pagination from '~/components/ui/Pagination.vue'
 import FilterButton from '~/components/ui/FilterButton.vue'
@@ -11,13 +12,11 @@ import {
   Clock, 
   AlertCircle, 
   Eye, 
-  Download,
   Signal,
   Wifi,
   X,
   Pause,
-  Play,
-  Trash2
+  Play
 } from 'lucide-vue-next'
 
 const monitoringStore = useMonitoringStore()
@@ -25,7 +24,7 @@ const searchQuery = ref('')
 const currentPage = ref(1)
 const itemsPerPage = 10
 const showModal = ref(false)
-const selectedSession = ref(null)
+const selectedSession = ref<SessionEvent | null>(null)
 
 let disconnectSessions = () => {}
 
@@ -69,7 +68,7 @@ const paginatedEvents = computed(() => {
   return filteredEvents.value.slice(start, start + itemsPerPage)
 })
 
-const viewSession = (session) => {
+const viewSession = (session: SessionEvent) => {
   selectedSession.value = session
   showModal.value = true
 }
@@ -79,18 +78,18 @@ const closeModal = () => {
   selectedSession.value = null
 }
 
-const handlePageChange = (page) => {
+const handlePageChange = (page: number) => {
   currentPage.value = page
 }
 
-const formatDuration = (seconds) => {
+const formatDuration = (seconds: number) => {
   if (!seconds) return '0s'
   if (seconds < 60) return `${seconds}s`
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${seconds % 60}s`
   return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`
 }
 
-const getStatusFromEvent = (eventType) => {
+const getStatusFromEvent = (eventType: string) => {
   switch (eventType) {
     case 'SESSION_STARTED': return 'Active'
     case 'SESSION_ERROR': return 'Error'
@@ -100,7 +99,7 @@ const getStatusFromEvent = (eventType) => {
   }
 }
 
-const getStatusColor = (status) => {
+const getStatusColor = (status: string) => {
   switch (status) {
     case 'Active': return 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800'
     case 'Error': return 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800'
@@ -110,7 +109,7 @@ const getStatusColor = (status) => {
   }
 }
 
-const getStatusDot = (status) => {
+const getStatusDot = (status: string) => {
   switch (status) {
     case 'Active': return 'bg-green-500 animate-pulse'
     case 'Error': return 'bg-red-500'
@@ -120,7 +119,7 @@ const getStatusDot = (status) => {
   }
 }
 
-const formatTime = (timestamp) => {
+const formatTime = (timestamp: number) => {
   if (!timestamp) return '-'
   const date = new Date(timestamp)
   return date.toLocaleTimeString()
@@ -143,13 +142,6 @@ const formatTime = (timestamp) => {
           <component :is="monitoringStore.isLive ? Pause : Play" class="w-3.5 h-3.5" />
           <span>{{ monitoringStore.isLive ? 'Live' : 'Paused' }}</span>
         </button>
-        <button 
-          @click="clearEvents" 
-          class="p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" 
-          title="Clear Events"
-        >
-          <Trash2 class="w-4 h-4" />
-        </button>
         <span 
           class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border"
           :class="monitoringStore.connectionStatus.sessions === 'connected' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 border-green-200 dark:border-green-800' : monitoringStore.connectionStatus.sessions === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400 border-red-200 dark:border-red-800' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400 border-amber-200 dark:border-amber-800'"
@@ -157,10 +149,7 @@ const formatTime = (timestamp) => {
           <Activity class="w-3.5 h-3.5 mr-1.5" :class="monitoringStore.connectionStatus.sessions === 'connected' ? 'animate-pulse' : ''" />
           {{ monitoringStore.activeSessionCount }} Active
         </span>
-        <button class="flex-1 sm:flex-none flex items-center justify-center space-x-2 px-4 py-2 bg-vibes-600 hover:bg-vibes-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
-          <Download class="w-4 h-4" />
-          <span>Export Report</span>
-        </button>
+
       </div>
     </div>
 

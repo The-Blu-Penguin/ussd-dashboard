@@ -8,9 +8,10 @@ import FilterButton from '~/components/ui/FilterButton.vue'
 import LogDetailsModal from '~/components/logs/LogDetailsModal.vue'
 import Shimmer from '~/components/ui/Shimmer.vue'
 import { 
-  ScrollText, Download, AlertTriangle, CheckCircle, XCircle, Info,
-  Server, Activity, Pause, Play, Trash2
+  ScrollText, AlertTriangle, CheckCircle, XCircle, Info,
+  Server, Activity, Pause, Play
 } from 'lucide-vue-next'
+import type { LogLevel } from '~/types/api'
 
 const monitoringStore = useMonitoringStore()
 const searchQuery = ref('')
@@ -85,10 +86,7 @@ const formatDuration = (ms: number) => {
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">System events, API calls, and error tracking</p>
       </div>
       <div class="flex items-center space-x-3 w-full sm:w-auto">
-        <button class="flex-1 sm:flex-none flex justify-center items-center space-x-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors shadow-sm">
-          <Download class="w-4 h-4" />
-          <span>Export Logs</span>
-        </button>
+
       </div>
     </div>
 
@@ -177,9 +175,6 @@ const formatDuration = (ms: number) => {
                <component :is="monitoringStore.isLive ? Pause : Play" class="w-3.5 h-3.5" />
                <span>{{ monitoringStore.isLive ? 'Live' : 'Paused' }}</span>
              </button>
-             <button @click="clearLogs" class="p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Clear Logs">
-               <Trash2 class="w-4 h-4" />
-             </button>
            </div>
            <div class="hidden sm:block h-4 w-px bg-gray-200 dark:bg-gray-700"></div>
            <div class="w-full sm:w-64">
@@ -242,8 +237,8 @@ const formatDuration = (ms: number) => {
 
                 <!-- Level -->
                 <div class="w-24 shrink-0">
-                   <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border" :class="getLevelColor(log.level)">
-                      <component :is="getLevelIcon(log.level)" class="w-3 h-3 mr-1.5" />
+                   <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border" :class="getLevelColor(log.level as LogLevel)">
+                      <component :is="getLevelIcon(log.level as LogLevel)" class="w-3 h-3 mr-1.5" />
                       {{ log.level }}
                    </span>
                 </div>
