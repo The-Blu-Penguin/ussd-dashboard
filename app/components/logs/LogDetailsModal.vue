@@ -24,7 +24,7 @@ const emit = defineEmits(['close'])
       <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
         <div>
           <h3 class="text-lg font-bold text-gray-800">Log Details</h3>
-          <p class="text-xs text-gray-500 font-mono mt-0.5">{{ log?.id }}</p>
+          <p class="text-xs text-gray-500 font-mono mt-0.5">{{ log?.id || log?.timestamp }}</p>
         </div>
         <button @click="$emit('close')" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1 rounded-full transition-colors">
           <X class="w-5 h-5" />
@@ -54,7 +54,7 @@ const emit = defineEmits(['close'])
         <div class="grid grid-cols-2 gap-4">
            <div class="p-3 border border-gray-100 rounded-lg">
             <p class="text-xs text-gray-500 mb-1">Timestamp</p>
-            <p class="text-sm font-medium text-gray-900">{{ log.timestamp }}</p>
+            <p class="text-sm font-medium text-gray-900">{{ log.dateTime || log.timestamp }}</p>
           </div>
            <div class="p-3 border border-gray-100 rounded-lg">
             <p class="text-xs text-gray-500 mb-1">Service</p>
@@ -62,7 +62,7 @@ const emit = defineEmits(['close'])
           </div>
            <div class="p-3 border border-gray-100 rounded-lg">
             <p class="text-xs text-gray-500 mb-1">Duration</p>
-            <p class="text-sm font-medium text-gray-900">{{ log.duration }}</p>
+            <p class="text-sm font-medium text-gray-900">{{ log.duration || (log.durationMs ? log.durationMs + 'ms' : '-') }}</p>
           </div>
         </div>
 

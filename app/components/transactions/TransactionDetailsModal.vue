@@ -47,7 +47,7 @@ const getStatusIcon = (status) => {
       <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
         <div>
           <h3 class="text-lg font-bold text-gray-800">Transaction Details</h3>
-          <p class="text-xs text-gray-500 font-mono mt-0.5">{{ txn?.id }}</p>
+          <p class="text-xs text-gray-500 font-mono mt-0.5">{{ txn?.id || txn?.transactionId }}</p>
         </div>
         <button @click="$emit('close')" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1 rounded-full transition-colors">
           <X class="w-5 h-5" />
@@ -73,19 +73,19 @@ const getStatusIcon = (status) => {
         <div class="grid grid-cols-2 gap-4">
            <div class="p-3 border border-gray-100 rounded-lg">
             <p class="text-xs text-gray-500 mb-1">Date & Time</p>
-            <p class="text-sm font-medium text-gray-900">{{ txn.date }}</p>
+            <p class="text-sm font-medium text-gray-900">{{ txn.date || txn.dateTime }}</p>
           </div>
            <div class="p-3 border border-gray-100 rounded-lg">
             <p class="text-xs text-gray-500 mb-1">Type</p>
             <p class="text-sm font-medium text-gray-900">{{ txn.type }}</p>
           </div>
-           <div class="p-3 border border-gray-100 rounded-lg">
+           <div v-if="txn.method" class="p-3 border border-gray-100 rounded-lg">
             <p class="text-xs text-gray-500 mb-1">Payment Method</p>
             <p class="text-sm font-medium text-gray-900">{{ txn.method }}</p>
           </div>
            <div class="p-3 border border-gray-100 rounded-lg">
             <p class="text-xs text-gray-500 mb-1">Merchant</p>
-            <p class="text-sm font-medium text-vibes-600">{{ txn.merchant }}</p>
+            <p class="text-sm font-medium text-vibes-600">{{ txn.merchant || txn.merchantName }}</p>
           </div>
         </div>
 
@@ -94,9 +94,9 @@ const getStatusIcon = (status) => {
              <span class="text-sm text-gray-500">MSISDN</span>
              <span class="text-sm font-mono font-medium text-gray-900">{{ txn.msisdn }}</span>
            </div>
-           <div class="flex justify-between items-center py-2 border-b border-gray-50" v-if="txn.error">
+           <div class="flex justify-between items-center py-2 border-b border-gray-50" v-if="txn.error || txn.errorMessage">
              <span class="text-sm text-gray-500">Error Message</span>
-             <span class="text-sm font-medium text-red-600">{{ txn.error }}</span>
+             <span class="text-sm font-medium text-red-600">{{ txn.error || txn.errorMessage }}</span>
            </div>
         </div>
         
@@ -106,10 +106,10 @@ const getStatusIcon = (status) => {
           <div class="bg-gray-900 rounded-lg p-3 overflow-x-auto">
             <pre class="text-xs text-green-400 font-mono">
 {
-  "transactionId": "{{ txn.id }}",
+  "transactionId": "{{ txn.id || txn.transactionId }}",
   "msisdn": "{{ txn.msisdn }}",
   "amount": "{{ txn.amount }}",
-  "timestamp": "{{ txn.date }}",
+  "timestamp": "{{ txn.date || txn.dateTime }}",
   "status": "{{ txn.status }}"
 }</pre>
           </div>

@@ -1,32 +1,55 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useState } from '#imports'
-import { useMockData } from '~/composables/useMockData'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useMonitoringStore } from '~/stores/monitoring'
 import { getStatusColor, getStatusIcon } from '~/utils/statusHelpers'
 import SearchInput from '~/components/ui/SearchInput.vue'
 import Pagination from '~/components/ui/Pagination.vue'
 import FilterButton from '~/components/ui/FilterButton.vue'
 import TransactionDetailsModal from '~/components/transactions/TransactionDetailsModal.vue'
 import { 
-  FileText, Download, CheckCircle, XCircle, Clock, AlertCircle, Eye, ArrowUpRight
+  FileText, Download, CheckCircle, XCircle, Clock, AlertCircle, Eye, ArrowUpRight,
+  Pause, Play, Trash2
 } from 'lucide-vue-next'
 
-const { initialTransactions } = useMockData()
-const transactions = ref([...initialTransactions])
-
+const monitoringStore = useMonitoringStore()
 const searchQuery = ref('')
 const currentPage = ref(1)
 const itemsPerPage = 10
 const showModal = ref(false)
 const selectedTxn = ref<Record<string, any> | undefined>(undefined)
-const isCollapsed = useState('sidebarCollapsed', () => false)
+
+let disconnectTransactions = () => {}
+
+onMounted(() => {
+  if (import.meta.client && monitoringStore.isLive) {
+    disconnectTransactions = monitoringStore.connectTransactions()
+  }
+})
+
+onUnmounted(() => {
+  disconnectTransactions()
+})
+
+const toggleLive = () => {
+  monitoringStore.toggleLive()
+  if (monitoringStore.isLive) {
+    disconnectTransactions = monitoringStore.connectTransactions()
+  } else {
+    disconnectTransactions()
+    disconnectTransactions = () => {}
+  }
+}
+
+const clearEvents = () => {
+  monitoringStore.clearEvents('transactions')
+}
 
 const filteredTransactions = computed(() => {
   const q = searchQuery.value.toLowerCase()
-  if (!q) return transactions.value
-  return transactions.value.filter(t =>
-    t.id.toLowerCase().includes(q) ||
-    t.merchant.toLowerCase().includes(q) ||
+  if (!q) return monitoringStore.transactionEvents
+  return monitoringStore.transactionEvents.filter(t =>
+    t.transactionId.toLowerCase().includes(q) ||
+    t.merchantName.toLowerCase().includes(q) ||
     t.msisdn.toLowerCase().includes(q) ||
     t.type.toLowerCase().includes(q)
   )
@@ -40,6 +63,12 @@ const paginatedTransactions = computed(() => {
 const viewTxn = (txn: any) => { selectedTxn.value = txn; showModal.value = true }
 const closeModal = () => { showModal.value = false; selectedTxn.value = undefined }
 const handlePageChange = (page: number) => { currentPage.value = page }
+
+const formatVolume = (volume: number) => {
+  if (volume >= 1000000) return `${(volume / 1000000).toFixed(2)}M`
+  if (volume >= 1000) return `${(volume / 1000).toFixed(2)}k`
+  return volume.toFixed(2)
+}
 </script>
 
 <template>
@@ -50,6 +79,21 @@ const handlePageChange = (page: number) => { currentPage.value = page }
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Real-time record of all USSD transactions</p>
       </div>
       <div class="flex items-center space-x-3 w-full sm:w-auto">
+        <button 
+          @click="toggleLive" 
+          class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border"
+          :class="monitoringStore.isLive ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800 hover:bg-green-200 dark:hover:bg-green-900/50' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'"
+        >
+          <component :is="monitoringStore.isLive ? Pause : Play" class="w-3.5 h-3.5" />
+          <span>{{ monitoringStore.isLive ? 'Live' : 'Paused' }}</span>
+        </button>
+        <button 
+          @click="clearEvents" 
+          class="p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" 
+          title="Clear Events"
+        >
+          <Trash2 class="w-4 h-4" />
+        </button>
         <button class="flex-1 sm:flex-none flex justify-center items-center space-x-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors shadow-sm">
           <Download class="w-4 h-4" />
           <span>Export CSV</span>
@@ -60,7 +104,6 @@ const handlePageChange = (page: number) => { currentPage.value = page }
     <!-- Stats Overview -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
       <div class="relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] border-0 hover:-translate-y-0.5 transition-transform duration-300">
-        <!-- Texture Pattern Overlay -->
         <div class="absolute inset-0 opacity-10 mix-blend-overlay" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 16px 16px;"></div>
         <div class="absolute -right-6 -top-6 w-32 h-32 rounded-full bg-white/20 blur-2xl"></div>
         <div class="absolute -bottom-8 -left-8 w-40 h-40 rounded-full bg-black/10 blur-3xl"></div>
@@ -70,15 +113,14 @@ const handlePageChange = (page: number) => { currentPage.value = page }
             <div class="p-3 bg-vibes-100/20 backdrop-blur-sm rounded-lg text-white border border-white/10 shadow-inner">
               <FileText class="w-6 h-6" />
             </div>
-            <span class="text-xs font-bold text-white bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 shadow-sm">+8%</span>
+            <span class="text-xs font-bold text-white bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 shadow-sm">Live</span>
           </div>
-          <h3 class="text-3xl font-bold text-white mb-1 drop-shadow-sm">14,205</h3>
+          <h3 class="text-3xl font-bold text-white mb-1 drop-shadow-sm">{{ monitoringStore.totalTransactions }}</h3>
           <p class="text-sm text-white/90 font-medium tracking-wide">Total Transactions</p>
         </div>
       </div>
 
       <div class="relative overflow-hidden bg-gradient-to-br from-emerald-500 to-emerald-600 p-6 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] border-0 hover:-translate-y-0.5 transition-transform duration-300">
-        <!-- Texture Pattern Overlay -->
         <div class="absolute inset-0 opacity-10 mix-blend-overlay" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 16px 16px;"></div>
         <div class="absolute -right-6 -top-6 w-32 h-32 rounded-full bg-white/20 blur-2xl"></div>
         <div class="absolute -bottom-8 -left-8 w-40 h-40 rounded-full bg-black/10 blur-3xl"></div>
@@ -88,15 +130,14 @@ const handlePageChange = (page: number) => { currentPage.value = page }
             <div class="p-3 bg-emerald-100/20 backdrop-blur-sm rounded-lg text-white border border-white/10 shadow-inner">
               <CheckCircle class="w-6 h-6" />
             </div>
-            <span class="text-xs font-bold px-2.5 py-1 text-white bg-white/20 backdrop-blur-md rounded-full border border-white/20 shadow-sm">98.2%</span>
+            <span class="text-xs font-bold px-2.5 py-1 text-white bg-white/20 backdrop-blur-md rounded-full border border-white/20 shadow-sm">Success</span>
           </div>
-          <h3 class="text-3xl font-bold text-white mb-1 drop-shadow-sm">13,950</h3>
+          <h3 class="text-3xl font-bold text-white mb-1 drop-shadow-sm">{{ monitoringStore.successfulTransactions }}</h3>
           <p class="text-sm text-white/90 font-medium tracking-wide">Successful</p>
         </div>
       </div>
 
       <div class="relative overflow-hidden bg-gradient-to-br from-red-500 to-red-600 p-6 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] border-0 hover:-translate-y-0.5 transition-transform duration-300">
-        <!-- Texture Pattern Overlay -->
         <div class="absolute inset-0 opacity-10 mix-blend-overlay" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 16px 16px;"></div>
         <div class="absolute -right-6 -top-6 w-32 h-32 rounded-full bg-white/20 blur-2xl"></div>
         <div class="absolute -bottom-8 -left-8 w-40 h-40 rounded-full bg-black/10 blur-3xl"></div>
@@ -106,15 +147,14 @@ const handlePageChange = (page: number) => { currentPage.value = page }
             <div class="p-3 bg-red-100/20 backdrop-blur-sm rounded-lg text-white border border-white/10 shadow-inner">
               <XCircle class="w-6 h-6" />
             </div>
-            <span class="text-xs font-bold text-white bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 shadow-sm">+0.5%</span>
+            <span class="text-xs font-bold text-white bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 shadow-sm">Failed</span>
           </div>
-          <h3 class="text-3xl font-bold text-white mb-1 drop-shadow-sm">255</h3>
+          <h3 class="text-3xl font-bold text-white mb-1 drop-shadow-sm">{{ monitoringStore.failedTransactions }}</h3>
           <p class="text-sm text-white/90 font-medium tracking-wide">Failed</p>
         </div>
       </div>
 
       <div class="relative overflow-hidden bg-gradient-to-br from-purple-500 to-purple-600 p-6 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] border-0 hover:-translate-y-0.5 transition-transform duration-300">
-        <!-- Texture Pattern Overlay -->
         <div class="absolute inset-0 opacity-10 mix-blend-overlay" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 16px 16px;"></div>
         <div class="absolute -right-6 -top-6 w-32 h-32 rounded-full bg-white/20 blur-2xl"></div>
         <div class="absolute -bottom-8 -left-8 w-40 h-40 rounded-full bg-black/10 blur-3xl"></div>
@@ -124,11 +164,25 @@ const handlePageChange = (page: number) => { currentPage.value = page }
             <div class="p-3 bg-purple-100/20 backdrop-blur-sm rounded-lg text-white border border-white/10 shadow-inner">
               <ArrowUpRight class="w-6 h-6" />
             </div>
-            <span class="text-xs font-bold text-white bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 shadow-sm">+15%</span>
+            <span class="text-xs font-bold text-white bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 shadow-sm">Volume</span>
           </div>
-          <h3 class="text-3xl font-bold text-white mb-1 drop-shadow-sm">GHS 45.2k</h3>
+          <h3 class="text-3xl font-bold text-white mb-1 drop-shadow-sm">{{ formatVolume(monitoringStore.totalVolume) }}</h3>
           <p class="text-sm text-white/90 font-medium tracking-wide">Total Volume</p>
         </div>
+      </div>
+    </div>
+
+    <!-- Connection Status Bar -->
+    <div class="flex items-center justify-between px-1">
+      <div class="flex items-center space-x-3">
+        <span 
+          class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border"
+          :class="monitoringStore.connectionStatus.transactions === 'connected' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800' : monitoringStore.connectionStatus.transactions === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800'"
+        >
+          <span class="w-1.5 h-1.5 rounded-full mr-1.5" :class="monitoringStore.connectionStatus.transactions === 'connected' ? 'bg-green-500 animate-pulse' : monitoringStore.connectionStatus.transactions === 'error' ? 'bg-red-500' : 'bg-amber-500'"></span>
+          {{ monitoringStore.connectionStatus.transactions }}
+        </span>
+        <span class="text-xs text-gray-500 dark:text-gray-400">{{ monitoringStore.transactionEvents.length }} events received</span>
       </div>
     </div>
 
@@ -160,16 +214,21 @@ const handlePageChange = (page: number) => { currentPage.value = page }
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
-            <tr v-for="txn in paginatedTransactions" :key="txn.id" class="hover:bg-vibes-50/30 dark:hover:bg-gray-700/50 transition-colors group">
+            <tr v-if="monitoringStore.transactionEvents.length === 0">
+              <td colspan="8" class="px-6 py-10 text-center text-gray-500 dark:text-gray-400 italic">
+                {{ monitoringStore.isLive ? 'Waiting for transaction events...' : 'Live feed paused' }}
+              </td>
+            </tr>
+            <tr v-for="txn in paginatedTransactions" :key="txn.transactionId + txn.timestamp" class="hover:bg-vibes-50/30 dark:hover:bg-gray-700/50 transition-colors group">
               <td class="px-6 py-4">
-                <span class="text-sm font-medium text-gray-900 dark:text-gray-100 font-mono">{{ txn.id }}</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-gray-100 font-mono">{{ txn.transactionId }}</span>
               </td>
               <td class="px-6 py-4">
-                <div class="text-sm text-gray-600 dark:text-gray-300">{{ txn.date.split(' ')[0] }}</div>
-                <div class="text-xs text-gray-400 dark:text-gray-500">{{ txn.date.split(' ')[1] }}</div>
+                <div class="text-sm text-gray-600 dark:text-gray-300">{{ txn.dateTime ? txn.dateTime.split(' ')[0] : '-' }}</div>
+                <div class="text-xs text-gray-400 dark:text-gray-500">{{ txn.dateTime ? txn.dateTime.split(' ')[1] : '-' }}</div>
               </td>
               <td class="px-6 py-4">
-                <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ txn.merchant }}</div>
+                <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ txn.merchantName }}</div>
               </td>
               <td class="px-6 py-4">
                 <span class="text-sm text-gray-600 dark:text-gray-300 font-mono">{{ txn.msisdn }}</span>
@@ -213,7 +272,7 @@ const handlePageChange = (page: number) => { currentPage.value = page }
     <TransactionDetailsModal
       :show="showModal"
       :txn="selectedTxn"
-      :is-collapsed="isCollapsed"
+      :is-collapsed="false"
       @close="closeModal"
     />
   </div>

@@ -14,6 +14,9 @@ export default defineNuxtConfig({
       '/api/**': {
         proxy: process.env.API_TARGET_URL ? `${process.env.API_TARGET_URL}/**` : 'https://ussd.blupayafrica.com/api/v1/**',
       },
+      '/sse/**': {
+        proxy: process.env.SSE_TARGET_URL || 'https://ussd.blupayafrica.com/ussd/sse/**',
+      },
     },
   },
 })
