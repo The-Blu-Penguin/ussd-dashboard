@@ -18,7 +18,7 @@ import '@vue-flow/core/dist/theme-default.css'
 const route = useRoute()
 const menuConfigsStore = useMenuConfigsStore()
 const logger = useLogger()
-const { onConnect, addEdges, addNodes, project, onNodeClick, onPaneClick } = useVueFlow()
+const { onConnect, addEdges, addNodes, project, onNodeClick, onPaneClick, getNodes, getEdges } = useVueFlow()
 
 const showProperties = ref(false)
 const selectedNode = ref(null)
@@ -130,8 +130,10 @@ const onDrop = (event) => {
       variable: '',
       actionName: '',
       endpoint: '',
-      validation: { type: 'ALPHANUMERIC' },
-      options: [],
+      validation: type === 'INPUT' ? { type: 'ALPHANUMERIC' } : undefined,
+      options: type === 'MENU' ? [] : undefined,
+      onSuccess: '',
+      onFailure: ''
     }
   }
   
@@ -211,7 +213,15 @@ onMounted(async () => {
 })
 
 const saveFlow = async () => {
-  const { steps, entry } = nodesEdgesToSteps(nodes.value, edges.value)
+  // Get current nodes and edges from VueFlow
+  const currentNodes = getNodes.value
+  const currentEdges = getEdges.value
+  
+  // Debug: Check what's in the nodes array
+  console.log('[Visual Builder] Nodes array before serialization:', currentNodes.map(n => ({ id: n.id, type: n.type, componentType: n.data?.componentType })))
+  console.log('[Visual Builder] Edges array before serialization:', currentEdges.map(e => ({ id: e.id, source: e.source, target: e.target })))
+  
+  const { steps, entry } = nodesEdgesToSteps(currentNodes, currentEdges)
   
   const requestData = {
     name: flowName.value,
@@ -230,6 +240,9 @@ const saveFlow = async () => {
     }
   }
   
+  // Log the payload for debugging
+  console.log('[Visual Builder] Saving flow with payload:', JSON.stringify(requestData, null, 2))
+  
   let result;
   if (isEditing.value && configId.value) {
     result = await menuConfigsStore.updateConfig(configId.value, requestData)
@@ -244,13 +257,18 @@ const saveFlow = async () => {
     logger.builder.flowSaved(flowName.value, configId.value || undefined)
   } else {
     logger.error(`Failed to save flow: ${result.message}`, { category: 'builder' })
+    console.error('[Visual Builder] Save failed. Request data:', requestData)
   }
 
   setTimeout(() => { saveMessage.value = '' }, 3000)
 }
 
 const exportJson = () => {
-  const { steps, entry } = nodesEdgesToSteps(nodes.value, edges.value)
+  // Get current nodes and edges from VueFlow
+  const currentNodes = getNodes.value
+  const currentEdges = getEdges.value
+  
+  const { steps, entry } = nodesEdgesToSteps(currentNodes, currentEdges)
   const payload = {
     name: flowName.value,
     type: flowType.value,
@@ -351,7 +369,7 @@ const copyToClipboard = () => {
       <PropertiesPanel 
         :show="showProperties" 
         :selected-node="selectedNode"
-        :all-nodes="nodes"
+        :all-nodes="getNodes.value"
         @close="showProperties = false"
       />
     </div>

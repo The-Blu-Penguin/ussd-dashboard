@@ -50,6 +50,23 @@ export interface FlowPayload {
 // ─── Vue Flow → Steps ───
 
 export function nodesEdgesToSteps(nodes: Node[], edges: Edge[]): { steps: FlowStep[]; entry: string } {
+  // Filter out any invalid nodes (edges that got mixed in, or nodes without componentType)
+  const validNodes = nodes.filter(n => {
+    // Exclude edge IDs (they start with 'e-')
+    if (n.id.startsWith('e-')) {
+      console.warn(`[Flow Serializer] Filtering out edge ID from nodes: ${n.id}`)
+      return false
+    }
+    // Exclude nodes without componentType
+    if (!n.data?.componentType) {
+      console.warn(`[Flow Serializer] Filtering out node without componentType: ${n.id}`)
+      return false
+    }
+    return true
+  })
+
+  console.log(`[Flow Serializer] Processing ${validNodes.length} valid nodes out of ${nodes.length} total`)
+
   // Build adjacency maps
   const outgoing = new Map<string, Edge[]>()
   const incoming = new Map<string, number>()
@@ -63,13 +80,13 @@ export function nodesEdgesToSteps(nodes: Node[], edges: Edge[]): { steps: FlowSt
 
   // Find entry = node with zero incoming edges (prefer INPUT/MENU)
   let entry = ''
-  const candidates = nodes.filter(n => !incoming.has(n.id) && ['INPUT', 'MENU'].includes(n.data?.componentType))
+  const candidates = validNodes.filter(n => !incoming.has(n.id) && ['INPUT', 'MENU'].includes(n.data?.componentType))
   if (candidates.length > 0) {
     entry = candidates[0]!.id
   } else {
     // Fallback: first INPUT/MENU node
-    const first = nodes.find(n => ['INPUT', 'MENU'].includes(n.data?.componentType))
-    entry = first?.id || nodes[0]?.id || ''
+    const first = validNodes.find(n => ['INPUT', 'MENU'].includes(n.data?.componentType))
+    entry = first?.id || validNodes[0]?.id || ''
   }
 
   // Traverse from entry to build steps in order
@@ -80,8 +97,11 @@ export function nodesEdgesToSteps(nodes: Node[], edges: Edge[]): { steps: FlowSt
     if (visited.has(nodeId)) return
     visited.add(nodeId)
 
-    const node = nodes.find(n => n.id === nodeId)
-    if (!node) return
+    const node = validNodes.find(n => n.id === nodeId)
+    if (!node) {
+      console.warn(`[Flow Serializer] Node not found: ${nodeId}`)
+      return
+    }
 
     const step = nodeToStep(node, outgoing.get(nodeId) || [])
     steps.push(step)
@@ -99,9 +119,11 @@ export function nodesEdgesToSteps(nodes: Node[], edges: Edge[]): { steps: FlowSt
 
   if (entry) traverse(entry)
 
-  // Also include any orphaned END nodes not reached (e.g. failure branches)
-  for (const node of nodes) {
-    if (!visited.has(node.id)) {
+  // Also include any orphaned nodes not reached (e.g. disconnected END nodes)
+  // But ONLY include actual nodes, not edges or other artifacts
+  for (const node of validNodes) {
+    if (!visited.has(node.id) && node.data?.componentType) {
+      console.log(`[Flow Serializer] Including orphaned node: ${node.id}`)
       steps.push(nodeToStep(node, outgoing.get(node.id) || []))
     }
   }
@@ -115,35 +137,77 @@ function nodeToStep(node: Node, outEdges: Edge[]): FlowStep {
 
   switch (type) {
     case 'INPUT': {
-      base.prompt = node.data?.prompt || ''
-      base.input = {
-        variable: node.data?.variable || '',
-        ...(node.data?.validation ? { validation: node.data.validation } : {}),
+      if (node.data?.prompt) {
+        base.prompt = node.data.prompt
       }
+      
+      // Build input config - only include validation if it exists and has meaningful data
+      const inputConfig: InputConfig = {
+        variable: node.data?.variable || ''
+      }
+      
+      if (node.data?.validation && node.data.validation.type) {
+        const validation: ValidationRule = {
+          type: node.data.validation.type
+        }
+        
+        // Only include optional fields if they have values
+        if (node.data.validation.minValue !== undefined && node.data.validation.minValue !== null) {
+          validation.minValue = node.data.validation.minValue
+        }
+        if (node.data.validation.errorMessage) {
+          validation.errorMessage = node.data.validation.errorMessage
+        }
+        
+        inputConfig.validation = validation
+      }
+      
+      base.input = inputConfig
+      
       const nextEdge = outEdges.find(e => !e.label)
       if (nextEdge) base.next = nextEdge.target
       break
     }
 
     case 'MENU': {
-      base.prompt = node.data?.prompt || ''
-      base.options = node.data?.options || []
+      if (node.data?.prompt) {
+        base.prompt = node.data.prompt
+      }
+      
+      // Ensure options have proper structure with set object
+      const options = (node.data?.options || []).map((opt: any) => ({
+        input: opt.input || '',
+        value: opt.value || '',
+        next: opt.next || '',
+        set: opt.set || {}
+      }))
+      
+      base.options = options
       // MENU root doesn't have a `next`, each option has its own
       break
     }
 
     case 'ACTION': {
-      base.actionName = node.data?.actionName || ''
+      if (node.data?.actionName) {
+        base.actionName = node.data.actionName
+      }
+      
       const successEdge = outEdges.find(e => e.label === 'onSuccess')
       const failureEdge = outEdges.find(e => e.label === 'onFailure')
+      
       // Prefer labeled edges (visual connections); fall back to node.data set by the Properties Panel
-      base.onSuccess = successEdge?.target || node.data?.onSuccess || undefined
-      base.onFailure = failureEdge?.target || node.data?.onFailure || undefined
+      const successTarget = successEdge?.target || node.data?.onSuccess
+      const failureTarget = failureEdge?.target || node.data?.onFailure
+      
+      if (successTarget) base.onSuccess = successTarget
+      if (failureTarget) base.onFailure = failureTarget
       break
     }
 
     case 'END': {
-      base.prompt = node.data?.prompt || ''
+      if (node.data?.prompt) {
+        base.prompt = node.data.prompt
+      }
       break
     }
   }

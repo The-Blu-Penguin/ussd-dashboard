@@ -91,7 +91,28 @@ export const useMenuConfigsStore = defineStore('menuConfigs', {
           return { success: false, message: response.message || 'Failed to save menu config' }
         }
       } catch (error: any) {
-        const message = error.response?._data?.message || error.message || 'Failed to save menu config'
+        // Extract detailed validation errors if available
+        let message = 'Failed to save menu config'
+        
+        if (error.response?._data?.message) {
+          message = error.response._data.message
+        } else if (error.response?._data?.errors) {
+          // If there are field-specific errors, format them
+          const errors = error.response._data.errors
+          const errorMessages = Object.entries(errors)
+            .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
+            .join('; ')
+          message = `Validation failed: ${errorMessages}`
+        } else if (error.message) {
+          message = error.message
+        }
+        
+        console.error('[MenuConfigs Store] Save error details:', {
+          status: error.response?.status,
+          data: error.response?._data,
+          message: error.message
+        })
+        
         return { success: false, message }
       } finally {
         this.isSaving = false
