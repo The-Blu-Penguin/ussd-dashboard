@@ -4,13 +4,13 @@ import { List, Type, Globe, GitBranch, XCircle, Lock, Database, Route, Code } fr
 const components = [
   { type: 'MENU', label: 'Menu Screen', icon: List, color: 'blue' },
   { type: 'INPUT', label: 'User Input', icon: Type, color: 'blue' },
-  { type: 'AUTH', label: 'PIN / Auth', icon: Lock, color: 'slate', disabled: true },
-  { type: 'ACTION', label: 'API Request', icon: Globe, color: 'purple' },
-  { type: 'DATABASE', label: 'DB Lookup', icon: Database, color: 'emerald', disabled: true },
+  { type: 'ACTION', label: 'Action', icon: Globe, color: 'purple' },
+  { type: 'END', label: 'End Session', icon: XCircle, color: 'red' },
   { type: 'CONDITION', label: 'Logic / IF', icon: GitBranch, color: 'orange' },
+  { type: 'AUTH', label: 'PIN / Auth', icon: Lock, color: 'slate', disabled: true },
+  { type: 'DATABASE', label: 'DB Lookup', icon: Database, color: 'emerald', disabled: true },
   { type: 'ROUTE', label: 'Router / Switch', icon: Route, color: 'yellow', disabled: true },
   { type: 'SET_VAR', label: 'Set Variable', icon: Code, color: 'indigo', disabled: true },
-  { type: 'END', label: 'End Session', icon: XCircle, color: 'red' },
 ]
 
 const onDragStart = (event, type, disabled) => {

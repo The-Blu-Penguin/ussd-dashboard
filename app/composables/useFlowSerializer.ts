@@ -1,4 +1,5 @@
 import type { Node, Edge } from '@vue-flow/core'
+import { Position } from '@vue-flow/core'
 
 // ─── Types matching the backend JSON schema ───
 
@@ -265,8 +266,9 @@ export function stepsToNodesEdges(steps: FlowStep[], entry: string): { nodes: No
         id: `e-${step.id}-${step.next}`,
         source: step.id,
         target: step.next,
+        type: 'smoothstep',
         animated: true,
-        style: { stroke: '#3b82f6' },
+        style: { stroke: '#3b82f6', strokeWidth: 2, strokeDasharray: '5,5' },
       })
     }
     if (step.onSuccess) {
@@ -274,9 +276,10 @@ export function stepsToNodesEdges(steps: FlowStep[], entry: string): { nodes: No
         id: `e-${step.id}-${step.onSuccess}`,
         source: step.id,
         target: step.onSuccess,
+        type: 'smoothstep',
         animated: true,
         label: 'onSuccess',
-        style: { stroke: '#22c55e' },
+        style: { stroke: '#22c55e', strokeWidth: 2, strokeDasharray: '5,5' },
         labelBgStyle: { fill: '#f0fdf4' },
       })
     }
@@ -285,9 +288,10 @@ export function stepsToNodesEdges(steps: FlowStep[], entry: string): { nodes: No
         id: `e-${step.id}-${step.onFailure}`,
         source: step.id,
         target: step.onFailure,
+        type: 'smoothstep',
         animated: true,
         label: 'onFailure',
-        style: { stroke: '#ef4444' },
+        style: { stroke: '#ef4444', strokeWidth: 2, strokeDasharray: '5,5' },
         labelBgStyle: { fill: '#fef2f2' },
       })
     }
@@ -298,9 +302,10 @@ export function stepsToNodesEdges(steps: FlowStep[], entry: string): { nodes: No
             id: `e-${step.id}-${opt.next}-${opt.input}`,
             source: step.id,
             target: opt.next,
+            type: 'smoothstep',
             animated: true,
             label: opt.input,
-            style: { stroke: '#3b82f6' },
+            style: { stroke: '#3b82f6', strokeWidth: 2, strokeDasharray: '5,5' },
           })
         }
       }
@@ -321,7 +326,6 @@ function stepToNode(step: FlowStep, position: { x: number; y: number }): Node {
   switch (step.type) {
     case 'INPUT': {
       classNames = 'bg-vibes-50 border-2 border-vibes-500 rounded-lg shadow-sm text-center p-3 font-medium'
-      nodeType = 'input'
       baseData.prompt = step.prompt || ''
       baseData.variable = step.input?.variable || ''
       baseData.validation = step.input?.validation
@@ -343,7 +347,6 @@ function stepToNode(step: FlowStep, position: { x: number; y: number }): Node {
     }
     case 'END': {
       classNames = 'bg-red-50 border-2 border-red-500 rounded-lg shadow-sm text-center p-3 font-medium'
-      nodeType = 'output'
       baseData.prompt = step.prompt || ''
       break
     }
@@ -355,6 +358,8 @@ function stepToNode(step: FlowStep, position: { x: number; y: number }): Node {
     position,
     label: `${step.type}: ${step.id}`,
     class: classNames,
+    sourcePosition: Position.Bottom,
+    targetPosition: Position.Top,
     data: baseData,
   }
 }
