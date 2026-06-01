@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import { Save, Settings } from 'lucide-vue-next'
+import { Save, Settings, FileJson } from 'lucide-vue-next'
 import { VueFlow, useVueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import ComponentsSidebar from '~/components/builder/ComponentsSidebar.vue'
@@ -8,6 +8,8 @@ import PropertiesPanel from '~/components/builder/PropertiesPanel.vue'
 import { useMenuConfigsStore } from '~/stores/menuConfigs'
 import Button from '~/components/ui/Button.vue'
 import { useRoute } from '#imports'
+import { nodesEdgesToSteps, stepsToNodesEdges } from '~/composables/useFlowSerializer'
+import { useLogger } from '~/composables/useLogger'
 
 // Import Vue Flow styles
 import '@vue-flow/core/dist/style.css'
@@ -15,6 +17,7 @@ import '@vue-flow/core/dist/theme-default.css'
 
 const route = useRoute()
 const menuConfigsStore = useMenuConfigsStore()
+const logger = useLogger()
 const { onConnect, addEdges, addNodes, project, onNodeClick, onPaneClick } = useVueFlow()
 
 const showProperties = ref(false)
@@ -23,6 +26,8 @@ const saveMessage = ref('')
 const saveError = ref(false)
 const isEditing = ref(false)
 const configId = ref(null)
+const showExportModal = ref(false)
+const exportedJson = ref('')
 
 // Menu Flow Metadata
 const flowName = ref("Visual Menu Flow")
@@ -50,10 +55,10 @@ onPaneClick(() => {
 })
 
 const initialNodes = [
-  { id: 'enter_amount', type: 'input', label: 'INPUT: enter_amount', position: { x: 350, y: 50 }, class: 'bg-white border-2 border-vibes-500 rounded-lg shadow-sm font-bold text-center p-3', data: { componentType: 'INPUT', prompt: 'Welcome to {{merchantName}}\nEnter amount:', variable: 'amount' } },
-  { id: 'enter_description', label: 'INPUT: enter_description', position: { x: 350, y: 150 }, class: 'bg-white border-2 border-blue-400 rounded-lg shadow-sm text-center p-3', data: { componentType: 'INPUT', prompt: 'Enter reference:', variable: 'description' } },
+  { id: 'enter_amount', type: 'input', label: 'INPUT: enter_amount', position: { x: 350, y: 50 }, class: 'bg-white border-2 border-vibes-500 rounded-lg shadow-sm font-bold text-center p-3', data: { componentType: 'INPUT', prompt: 'Welcome to {{merchantName}}\nEnter amount:', variable: 'amount', validation: { type: 'AMOUNT', minValue: 0.01, errorMessage: 'Invalid amount. Enter numbers only' } } },
+  { id: 'enter_description', label: 'INPUT: enter_description', position: { x: 350, y: 150 }, class: 'bg-white border-2 border-blue-400 rounded-lg shadow-sm text-center p-3', data: { componentType: 'INPUT', prompt: 'Enter reference:', variable: 'description', validation: { type: 'ALPHANUMERIC' } } },
   { id: 'process_payment', label: 'ACTION: process_payment', position: { x: 350, y: 250 }, class: 'bg-purple-50 border-2 border-purple-400 rounded-lg shadow-sm text-center p-3 font-medium', data: { componentType: 'ACTION', actionName: 'processPaymentToMerchant' } },
-  { id: 'payment_success', type: 'output', label: 'END: payment_success', position: { x: 200, y: 380 }, class: 'bg-green-50 border-2 border-green-500 rounded-lg shadow-sm text-center p-3 font-medium', data: { componentType: 'END', prompt: 'Request submitted successfully.' } },
+  { id: 'payment_success', type: 'output', label: 'END: payment_success', position: { x: 200, y: 380 }, class: 'bg-green-50 border-2 border-green-500 rounded-lg shadow-sm text-center p-3 font-medium', data: { componentType: 'END', prompt: 'Request submitted successfully. You will receive a payment prompt shortly. If prompt delays, dial *170# to approve transaction. Ref: {{transactionReference}}.' } },
   { id: 'payment_failed', type: 'output', label: 'END: payment_failed', position: { x: 500, y: 380 }, class: 'bg-red-50 border-2 border-red-500 rounded-lg shadow-sm text-center p-3 font-medium', data: { componentType: 'END', prompt: 'Transfer failed. Please try again later.' } },
 ]
 
@@ -67,7 +72,10 @@ const initialEdges = [
 const nodes = ref(initialNodes)
 const edges = ref(initialEdges)
 
-onConnect((params) => addEdges([params]))
+onConnect((params) => {
+  addEdges([params])
+  logger.builder.edgeConnected(params.source, params.target)
+})
 
 const onDragOver = (event) => {
   event.preventDefault()
@@ -97,6 +105,7 @@ const onDrop = (event) => {
     classNames = 'bg-purple-50 border-2 border-purple-400 rounded-lg shadow-sm text-center p-3 font-medium'
   } else if (type === 'MENU' || type === 'INPUT') {
     classNames = 'bg-vibes-50 border-2 border-vibes-500 rounded-lg shadow-sm text-center p-3 font-medium'
+    nodeType = 'input'
   } else if (type === 'CONDITION') {
     classNames = 'bg-orange-50 border-2 border-orange-400 rounded-lg shadow-sm text-center p-3 font-medium'
   } else if (type === 'AUTH') {
@@ -120,14 +129,46 @@ const onDrop = (event) => {
       prompt: '',
       variable: '',
       actionName: '',
-      endpoint: ''
+      endpoint: '',
+      validation: { type: 'ALPHANUMERIC' },
+      options: [],
     }
   }
   
   addNodes([newNode])
+  logger.builder.nodeAdded(type, newNode.id)
 }
 
 onMounted(async () => {
+  // Check for preview from JSON builder
+  const previewJson = sessionStorage.getItem('previewFlowJson')
+  if (previewJson) {
+    try {
+      const parsed = JSON.parse(previewJson)
+      flowName.value = parsed.name || 'Preview Flow'
+      flowDescription.value = parsed.description || ''
+      flowType.value = parsed.type || 'STANDARD_NOT_REFERENCED'
+      flowHasReference.value = parsed.type?.includes('REFERENCED') || false
+      
+      if (parsed.menuConfig && parsed.menuConfig.steps) {
+        const { nodes: loadedNodes, edges: loadedEdges } = stepsToNodesEdges(
+          parsed.menuConfig.steps,
+          parsed.menuConfig.entry
+        )
+        nodes.value = loadedNodes
+        edges.value = loadedEdges
+      }
+      sessionStorage.removeItem('previewFlowJson')
+      saveMessage.value = 'Loaded from JSON preview'
+      saveError.value = false
+      logger.builder.flowLoaded(flowName.value)
+      setTimeout(() => { saveMessage.value = '' }, 3000)
+      return
+    } catch (e) {
+      logger.error('Failed to load preview JSON from JSON builder', { category: 'builder', error: e instanceof Error ? e : new Error(String(e)) })
+    }
+  }
+
   if (route.query.id) {
     configId.value = route.query.id
     isEditing.value = true
@@ -144,7 +185,7 @@ onMounted(async () => {
     }
     
     if (!configToEdit) {
-      console.error('Config not found with ID:', configId.value)
+      logger.error(`Config not found with ID: ${configId.value}`, { category: 'builder' })
       saveMessage.value = 'Configuration not found.'
       saveError.value = true
       return
@@ -156,26 +197,37 @@ onMounted(async () => {
     flowType.value = configToEdit.type
     flowHasReference.value = configToEdit.hasReference
     
-    // Load nodes and edges if available
-    if (configToEdit.menuConfig && configToEdit.menuConfig.nodes && configToEdit.menuConfig.edges) {
-      nodes.value = configToEdit.menuConfig.nodes
-      edges.value = configToEdit.menuConfig.edges
+    // Load nodes and edges from menuConfig.steps
+    if (configToEdit.menuConfig && configToEdit.menuConfig.steps) {
+      const { nodes: loadedNodes, edges: loadedEdges } = stepsToNodesEdges(
+        configToEdit.menuConfig.steps,
+        configToEdit.menuConfig.entry
+      )
+      nodes.value = loadedNodes
+      edges.value = loadedEdges
     }
+    logger.builder.flowLoaded(configToEdit.name, configToEdit.id)
   }
 })
 
 const saveFlow = async () => {
-  const flowData = {
-    nodes: nodes.value,
-    edges: edges.value
-  }
+  const { steps, entry } = nodesEdgesToSteps(nodes.value, edges.value)
   
   const requestData = {
     name: flowName.value,
     type: flowType.value,
     hasReference: flowHasReference.value,
     description: flowDescription.value,
-    menuConfig: flowData
+    menuConfig: {
+      entry,
+      steps,
+      version: 1,
+      configId: 'config_v1',
+      metadata: {
+        name: flowName.value,
+        description: flowDescription.value,
+      }
+    }
   }
   
   let result;
@@ -187,8 +239,39 @@ const saveFlow = async () => {
   
   saveMessage.value = result.message
   saveError.value = !result.success
-  
+
+  if (result.success) {
+    logger.builder.flowSaved(flowName.value, configId.value || undefined)
+  } else {
+    logger.error(`Failed to save flow: ${result.message}`, { category: 'builder' })
+  }
+
   setTimeout(() => { saveMessage.value = '' }, 3000)
+}
+
+const exportJson = () => {
+  const { steps, entry } = nodesEdgesToSteps(nodes.value, edges.value)
+  const payload = {
+    name: flowName.value,
+    type: flowType.value,
+    description: flowDescription.value,
+    menuConfig: {
+      entry,
+      steps,
+      version: 1,
+      configId: 'config_v1',
+      metadata: {
+        name: flowName.value,
+        description: flowDescription.value,
+      }
+    }
+  }
+  exportedJson.value = JSON.stringify(payload, null, 2)
+  showExportModal.value = true
+}
+
+const copyToClipboard = () => {
+  navigator.clipboard.writeText(exportedJson.value)
 }
 </script>
 
@@ -226,6 +309,13 @@ const saveFlow = async () => {
           {{ saveMessage }}
         </span>
         <button 
+          @click="exportJson"
+          class="flex-1 sm:flex-none flex justify-center items-center space-x-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors"
+        >
+          <FileJson class="w-4 h-4" />
+          <span>Export JSON</span>
+        </button>
+        <button 
           @click="showProperties = !showProperties"
           class="flex-1 sm:flex-none flex justify-center items-center space-x-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors"
           :class="{ 'bg-vibes-50 dark:bg-vibes-900/30 border-blue-200 dark:border-blue-800 text-vibes-700 dark:text-vibes-400': showProperties }"
@@ -252,7 +342,7 @@ const saveFlow = async () => {
 
       <!-- Canvas -->
       <div class="flex-1 h-full min-h-[400px] bg-gray-50/50 dark:bg-gray-900/50 relative" @drop="onDrop" @dragover="onDragOver">
-        <VueFlow v-model="nodes" :edges="edges" fit-view-on-init class="h-full w-full vue-flow-dark">
+        <VueFlow v-model="nodes" v-model:edges="edges" fit-view-on-init class="h-full w-full vue-flow-dark">
           <Background pattern-color="#94a3b8" :gap="20" />
         </VueFlow>
       </div>
@@ -261,8 +351,29 @@ const saveFlow = async () => {
       <PropertiesPanel 
         :show="showProperties" 
         :selected-node="selectedNode"
+        :all-nodes="nodes"
         @close="showProperties = false"
       />
+    </div>
+
+    <!-- Export JSON Modal -->
+    <div v-if="showExportModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="showExportModal = false"></div>
+      <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col border border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+          <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">Exported JSON</h3>
+          <button @click="showExportModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+            <XCircle class="w-5 h-5" />
+          </button>
+        </div>
+        <div class="flex-1 overflow-auto p-4">
+          <pre class="bg-gray-900 text-green-400 font-mono text-xs p-4 rounded-lg overflow-auto">{{ exportedJson }}</pre>
+        </div>
+        <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3">
+          <button @click="copyToClipboard" class="px-4 py-2 bg-vibes-600 hover:bg-vibes-700 text-white rounded-lg text-sm font-medium transition-colors">Copy to Clipboard</button>
+          <button @click="showExportModal = false" class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Close</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>

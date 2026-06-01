@@ -1,12 +1,14 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { Save, Code, FileJson } from 'lucide-vue-next'
+import { Save, Code, FileJson, Eye } from 'lucide-vue-next'
 import { useMenuConfigsStore } from '~/stores/menuConfigs'
 import Button from '~/components/ui/Button.vue'
-import { useRoute } from '#imports'
+import { useRoute, navigateTo } from '#imports'
+import { useLogger } from '~/composables/useLogger'
 
 const route = useRoute()
 const menuConfigsStore = useMenuConfigsStore()
+const logger = useLogger()
 const saveMessage = ref('')
 const saveError = ref(false)
 const isEditing = ref(false)
@@ -59,7 +61,7 @@ onMounted(async () => {
     }
     
     if (!configToEdit) {
-      console.error('Config not found with ID:', configId.value)
+      logger.error(`Config not found with ID: ${configId.value}`, { category: 'builder' })
       saveMessage.value = 'Configuration not found.'
       saveError.value = true
       return
@@ -76,6 +78,28 @@ onMounted(async () => {
     jsonContent.value = JSON.stringify(jsonToLoad, null, 2)
   }
 })
+
+const previewInVisual = () => {
+  try {
+    const parsed = JSON.parse(jsonContent.value)
+    // Validate basic structure
+    if (!parsed.menuConfig || !parsed.menuConfig.steps || !Array.isArray(parsed.menuConfig.steps)) {
+      saveMessage.value = 'Invalid: menuConfig.steps array is required'
+      saveError.value = true
+      setTimeout(() => { saveMessage.value = '' }, 3000)
+      return
+    }
+    // Store temporarily and navigate
+    sessionStorage.setItem('previewFlowJson', jsonContent.value)
+    logger.info('Previewing JSON flow in visual builder', { category: 'builder' })
+    navigateTo('/builder/visual')
+  } catch (e) {
+    logger.error('Invalid JSON for visual preview', { category: 'builder', error: e instanceof Error ? e : new Error(String(e)) })
+    saveMessage.value = 'Invalid JSON. Please fix errors before previewing.'
+    saveError.value = true
+    setTimeout(() => { saveMessage.value = '' }, 3000)
+  }
+}
 
 const saveConfig = async () => {
   try {
@@ -101,12 +125,19 @@ const saveConfig = async () => {
     
     saveMessage.value = result.message
     saveError.value = !result.success
-    
+
+    if (result.success) {
+      logger.builder.flowSaved(requestData.name, configId.value || undefined)
+    } else {
+      logger.error(`Failed to save JSON config: ${result.message}`, { category: 'builder' })
+    }
+
   } catch (e) {
+    logger.error('Invalid JSON structure on save', { category: 'builder', error: e instanceof Error ? e : new Error(String(e)) })
     saveMessage.value = 'Invalid JSON structure. Please fix errors before saving.'
     saveError.value = true
   }
-  
+
   setTimeout(() => { saveMessage.value = '' }, 3000)
 }
 </script>
@@ -126,6 +157,10 @@ const saveConfig = async () => {
         <button @click="formatJson" class="flex items-center space-x-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors">
           <FileJson class="w-4 h-4" />
           <span>Format</span>
+        </button>
+        <button @click="previewInVisual" class="flex items-center space-x-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors">
+          <Eye class="w-4 h-4" />
+          <span>Preview in Visual</span>
         </button>
         <Button 
           @click="saveConfig"

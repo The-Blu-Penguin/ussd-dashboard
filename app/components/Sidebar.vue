@@ -19,7 +19,8 @@ import {
   ScrollText,
   Hammer,
   FileJson,
-  Network
+  Network,
+  Terminal
 } from 'lucide-vue-next'
 
 import AuthNotification from '~/components/ui/AuthNotification.vue'
@@ -86,6 +87,7 @@ const menuItems = [
       { name: 'Live Sessions', icon: Activity, to: '/live-sessions' },
       { name: 'Transaction Logs', icon: FileText, to: '/transaction-logs' },
       { name: 'Service Logs', icon: ScrollText, to: '/service-logs' },
+      { name: 'Logger', icon: Terminal, to: '/logger' },
     ]
   },
   {

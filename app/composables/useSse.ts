@@ -1,4 +1,5 @@
 import { useAuthStore } from '~/stores/auth'
+import { useLogger } from '~/composables/useLogger'
 
 export interface SseOptions {
   onMessage?: (event: string, data: any) => void
@@ -8,6 +9,7 @@ export interface SseOptions {
 
 export const useSse = () => {
   const authStore = useAuthStore()
+  const logger = useLogger()
 
   const connect = (url: string, options: SseOptions) => {
     let abortController: AbortController | null = null
@@ -30,13 +32,14 @@ export const useSse = () => {
         })
 
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`)
+          throw new Error(`SSE HTTP ${response.status}`)
         }
 
         if (!response.body) {
           throw new Error('No response body')
         }
 
+        logger.sse.connected(url)
         options.onOpen?.()
 
         const reader = response.body.getReader()
@@ -74,8 +77,10 @@ export const useSse = () => {
             if (data) {
               try {
                 const parsed = JSON.parse(data)
+                logger.sse.message(url, eventName)
                 options.onMessage?.(eventName, parsed)
               } catch {
+                logger.sse.message(url, eventName)
                 options.onMessage?.(eventName, data)
               }
             }
@@ -84,7 +89,11 @@ export const useSse = () => {
           }
         }
       } catch (error: any) {
-        if (error.name === 'AbortError') return
+        if (error.name === 'AbortError') {
+          logger.sse.disconnected(url)
+          return
+        }
+        logger.sse.error(url, error)
         options.onError?.(error)
       }
 
@@ -103,6 +112,7 @@ export const useSse = () => {
         reconnectTimeout = null
       }
       abortController?.abort()
+      logger.sse.disconnected(url)
     }
   }
 

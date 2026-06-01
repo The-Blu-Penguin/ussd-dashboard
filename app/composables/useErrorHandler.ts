@@ -1,5 +1,6 @@
 import type { ApiError } from '~/types/api'
 import { useToast } from '~/composables/useToast'
+import { useLogger } from '~/composables/useLogger'
 
 export interface ErrorHandlerOptions {
   showToast?: boolean
@@ -16,6 +17,7 @@ export interface StandardError {
 
 export const useErrorHandler = () => {
   const toast = useToast()
+  const logger = useLogger()
 
   const parseError = (error: any): StandardError => {
     // Default error structure
@@ -94,13 +96,17 @@ export const useErrorHandler = () => {
 
     const standardError = parseError(error)
 
-    // Log error to console in development
-    if (logError && import.meta.dev) {
-      console.error('[Error Handler]', {
-        message: standardError.message,
-        statusCode: standardError.statusCode,
-        errors: standardError.errors,
-        originalError: error,
+    // Log error to structured logger
+    if (logError) {
+      logger.error(standardError.message, {
+        category: 'api',
+        metadata: {
+          statusCode: standardError.statusCode,
+          errors: standardError.errors,
+          isRetryable: standardError.isRetryable,
+        },
+        error: error instanceof Error ? error : new Error(String(error)),
+        silent: !showToast, // if toast is off, also suppress logger toast
       })
     }
 
