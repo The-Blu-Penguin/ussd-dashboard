@@ -101,8 +101,10 @@ export const useApi = () => {
       // Log API error
       logger.api.error(method, url, error || new Error(`HTTP ${response.status}`), { status: response.status })
       
-      // Handle authentication errors
-      if (response.status === 401 || response.status === 403) {
+      // Handle authentication errors - but NOT for login/logout endpoints to avoid loops
+      const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/logout')
+      
+      if ((response.status === 401 || response.status === 403) && !isAuthEndpoint) {
         logger.warn('Authentication token expired or invalid. Logging out...', { category: 'auth' })
         if (import.meta.client) {
           authStore.logout()
