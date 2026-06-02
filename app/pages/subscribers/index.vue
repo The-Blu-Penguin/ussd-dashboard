@@ -41,7 +41,13 @@ export interface MappedMerchant {
 const directoryStore = useDirectoryStore()
 
 onMounted(() => {
-  directoryStore.fetchDirectories()
+  directoryStore.fetchDirectories(false, 0, itemsPerPage.value)
+})
+
+// Watch for itemsPerPage changes and fetch new data from API
+watch(itemsPerPage, (newSize) => {
+  currentPage.value = 1 // Reset to first page when changing page size
+  directoryStore.fetchDirectories(true, 0, newSize)
 })
 
 const mappedSubscribers = computed<MappedMerchant[]>(() => {
@@ -78,9 +84,23 @@ const filteredSubscribers = computed(() => {
 })
 
 const paginatedSubscribers = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return filteredSubscribers.value.slice(start, end)
+  // If searching, use client-side pagination on filtered results
+  if (searchQuery.value) {
+    const start = (currentPage.value - 1) * itemsPerPage.value
+    const end = start + itemsPerPage.value
+    return filteredSubscribers.value.slice(start, end)
+  }
+  // Otherwise, return all subscribers since server already paginated
+  return mappedSubscribers.value
+})
+
+const totalItems = computed(() => {
+  // If searching, use filtered count
+  if (searchQuery.value) {
+    return filteredSubscribers.value.length
+  }
+  // Otherwise use server total
+  return directoryStore.totalElements
 })
 
 const closeModal = () => {
@@ -103,6 +123,10 @@ const isDeleting = ref(false)
 
 const handlePageChange = (page: number) => {
   currentPage.value = page
+  // If not searching, fetch new page from server
+  if (!searchQuery.value) {
+    directoryStore.fetchDirectories(true, page - 1, itemsPerPage.value)
+  }
 }
 
 const toggleMenu = (id: string) => {
@@ -386,7 +410,7 @@ const unsubscribeFromModal = () => {
 
       <Pagination 
         :current-page="currentPage" 
-        :total-items="filteredSubscribers.length" 
+        :total-items="totalItems" 
         :items-per-page="itemsPerPage"
         @page-change="handlePageChange"
         @update:itemsPerPage="itemsPerPage = $event"

@@ -19,8 +19,14 @@ const authStore = useAuthStore()
 const toast = useToast()
 
 onMounted(() => {
-  directoryStore.fetchDirectories()
-  menuConfigsStore.fetchConfigs()
+  directoryStore.fetchDirectories(false, 0, itemsPerPage.value)
+  // Removed: menuConfigsStore.fetchConfigs() - will fetch on-demand when modal opens
+})
+
+// Watch for itemsPerPage changes and fetch new data from API
+watch(itemsPerPage, (newSize) => {
+  currentPage.value = 1 // Reset to first page when changing page size
+  directoryStore.fetchDirectories(true, 0, newSize)
 })
 
 interface App {
@@ -180,14 +186,33 @@ const filteredApps = computed(() => {
   )
 })
 
+// Use directoryStore for server-side pagination
 const paginatedApps = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return filteredApps.value.slice(start, end)
+  // If searching, use client-side pagination on filtered results
+  if (searchQuery.value) {
+    const start = (currentPage.value - 1) * itemsPerPage.value
+    const end = start + itemsPerPage.value
+    return filteredApps.value.slice(start, end)
+  }
+  // Otherwise, return all apps since server already paginated
+  return apps.value
+})
+
+const totalItems = computed(() => {
+  // If searching, use filtered count
+  if (searchQuery.value) {
+    return filteredApps.value.length
+  }
+  // Otherwise use server total
+  return directoryStore.totalElements
 })
 
 const handlePageChange = (page: number) => {
   currentPage.value = page
+  // If not searching, fetch new page from server
+  if (!searchQuery.value) {
+    directoryStore.fetchDirectories(true, page - 1, itemsPerPage.value)
+  }
 }
 
 const openAllocateModal = () => {
@@ -196,6 +221,11 @@ const openAllocateModal = () => {
   newApp.value = { merchant: '', merchantId: '', level: 'Secondary', method: 'Automatic', selectedCode: '', menuFlow: '' }
   showModal.value = true
   fetchAvailableCodes('Secondary') // Fetch codes for default level when opening
+  
+  // Fetch menu configs only when modal opens (lazy loading)
+  if (menuConfigsStore.configs.length === 0) {
+    menuConfigsStore.fetchConfigs()
+  }
 }
 
 const openEditModal = (app: App) => {
@@ -575,7 +605,7 @@ const handleAllocate = async () => {
       <div v-if="filteredApps.length > 0" class="border-t border-gray-100 dark:border-gray-700 p-4">
         <Pagination 
           :current-page="currentPage" 
-          :total-items="filteredApps.length" 
+          :total-items="totalItems" 
           :items-per-page="itemsPerPage"
           @page-change="handlePageChange"
           @update:itemsPerPage="itemsPerPage = $event"

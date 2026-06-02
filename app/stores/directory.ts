@@ -1,12 +1,15 @@
 import { defineStore } from 'pinia'
 import { useApi } from '~/composables/useApi'
-import { useMerchantsStore } from '~/stores/merchants'
 import type { Directory, ApiResponse } from '~/types/api'
 
 interface DirectoryState {
   directories: Directory[]
   isLoading: boolean
   error: string | null
+  totalPages: number
+  totalElements: number
+  currentPage: number
+  pageSize: number
 }
 
 export const useDirectoryStore = defineStore('directory', {
@@ -14,11 +17,16 @@ export const useDirectoryStore = defineStore('directory', {
     directories: [],
     isLoading: false,
     error: null,
+    totalPages: 0,
+    totalElements: 0,
+    currentPage: 0,
+    pageSize: 20,
   }),
   actions: {
-    async fetchDirectories(forceRefresh = false) {
+    async fetchDirectories(forceRefresh = false, page = 0, size = 20) {
       // If we already have data and aren't forcing a refresh, skip the fetch
-      if (this.directories.length > 0 && !forceRefresh) {
+      // But allow refetch if page or size changed
+      if (this.directories.length > 0 && !forceRefresh && page === this.currentPage && size === this.pageSize) {
         return { success: true, message: 'Directories already loaded' }
       }
 
@@ -28,54 +36,46 @@ export const useDirectoryStore = defineStore('directory', {
       try {
         const api = useApi()
 
-        const response = await api<ApiResponse<Directory[]>>('/directory', {
+        // Use the new endpoint with fullResponse=true to get merchant names directly
+        const response = await api<any>(`/directory?page=${page}&size=${size}&fullResponse=true`, {
           method: 'GET',
         })
 
         if (response.success && response.data) {
-          // Normalise: API wraps the array in an object — try every common key
-          const raw = response.data as any
-          const ARRAY_KEYS = ['directories', 'data', 'content', 'items', 'result', 'list', 'records'] as const
-          let resolved: Directory[] = []
-
-          if (Array.isArray(raw)) {
-            resolved = raw
-          } else {
-            for (const key of ARRAY_KEYS) {
-              if (Array.isArray(raw[key])) {
-                resolved = raw[key]
-                break
-              }
-            }
-          }
-
-          this.directories = resolved
-
-          // Mark main loading as complete so UI can show the table incrementally
-          this.isLoading = false
+          // The response has pagination info in data.content
+          const { content, totalPages, totalElements, number, size: pageSize } = response.data
           
-          // Fetch merchant names using the merchant store (with caching and deduplication)
-          const merchantsStore = useMerchantsStore()
-          const merchantCodes = this.directories
-            .map(dir => dir.merchantCode)
-            .filter(Boolean) as string[]
-          
-          if (merchantCodes.length > 0) {
-            // Fetch all merchant names in batch (or parallel with deduplication)
-            const merchantNames = await merchantsStore.fetchMerchantNamesBatch(merchantCodes)
+          if (Array.isArray(content)) {
+            // Map the response to extract merchant names from merchantData
+            this.directories = content.map((item: any) => ({
+              id: item.id,
+              merchantCode: item.merchantData?.merchant?.merchantCode || item.merchantCode,
+              merchantName: item.merchantData?.merchant?.merchantName || 'Unknown',
+              assignedCode: item.assignedCode,
+              ussdCode: item.ussdCode,
+              menuConfig: item.menuConfig,
+              menuConfigFlowId: item.menuConfigFlow?.id || item.menuConfigFlowId,
+              parentDirectoryId: item.parentDirectoryId,
+              parentUssdCode: item.parentUssdCode,
+              path: item.path,
+              level: item.level,
+              status: item.status,
+              createdAt: item.createdAt,
+              updatedAt: item.updatedAt,
+              childrenCount: item.childrenCount || 0,
+              createdBy: item.createdBy,
+            }))
             
-            // Update directories with merchant names
-            this.directories.forEach((dir, index) => {
-              if (dir.merchantCode) {
-                const merchantName = merchantNames[dir.merchantCode]
-                const directory = this.directories[index]
-                if (merchantName && directory) {
-                  directory.merchantName = merchantName
-                }
-              }
-            })
+            // Update pagination info
+            this.totalPages = totalPages || 0
+            this.totalElements = totalElements || 0
+            this.currentPage = number || 0
+            this.pageSize = pageSize || 20
+          } else {
+            this.directories = []
           }
-          
+
+          this.isLoading = false
           return { success: true, message: response.message }
         } else {
           this.error = response.message || 'Failed to fetch directories'
