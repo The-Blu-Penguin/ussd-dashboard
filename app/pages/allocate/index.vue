@@ -187,10 +187,67 @@ const filteredApps = computed(() => {
   )
 })
 
+// State for USSD search
+const ussdSearchResult = ref<App | null>(null)
+const isSearching = ref(false)
+
+// Handle search when user presses Enter
+const handleSearch = async () => {
+  const query = searchQuery.value
+  
+  // Reset USSD search result when query is empty
+  if (!query || query.trim() === '') {
+    ussdSearchResult.value = null
+    return
+  }
+  
+  // Check if query looks like a USSD code (contains * or #)
+  const looksLikeUssdCode = /[*#]/.test(query)
+  
+  if (looksLikeUssdCode) {
+    isSearching.value = true
+    const result = await directoryStore.searchByUssdCode(query)
+    
+    if (result.success && result.data) {
+      // Convert directory to app format
+      ussdSearchResult.value = {
+        id: result.data.id,
+        name: result.data.merchantName || 'Unknown',
+        merchantId: result.data.merchantCode || '-',
+        code: result.data.ussdCode,
+        type: result.data.level,
+        menuFlow: result.data.menuConfig?.metadata?.name || 'Standard Flow',
+        status: result.data.status,
+        traffic: '0'
+      }
+    } else {
+      ussdSearchResult.value = null
+    }
+    
+    isSearching.value = false
+  } else {
+    // For non-USSD searches, just clear any previous USSD result
+    // The filteredApps computed will handle client-side filtering
+    ussdSearchResult.value = null
+  }
+}
+
+// Clear USSD search result when search query is cleared
+watch(searchQuery, (newQuery) => {
+  if (!newQuery || newQuery.trim() === '') {
+    ussdSearchResult.value = null
+  }
+})
+
 // Use directoryStore for server-side pagination
 const paginatedApps = computed(() => {
-  // If searching, use client-side pagination on filtered results
-  if (searchQuery.value) {
+  // If we have a USSD search result, show only that
+  if (ussdSearchResult.value) {
+    return [ussdSearchResult.value]
+  }
+  
+  // If searching (but not USSD code), use client-side pagination on filtered results
+  if (searchQuery.value && !isSearching.value) {
     const start = (currentPage.value - 1) * itemsPerPage.value
     const end = start + itemsPerPage.value
     return filteredApps.value.slice(start, end)
@@ -200,8 +257,13 @@ const paginatedApps = computed(() => {
 })
 
 const totalItems = computed(() => {
-  // If searching, use filtered count
-  if (searchQuery.value) {
+  // If we have a USSD search result, total is 1
+  if (ussdSearchResult.value) {
+    return 1
+  }
+  
+  // If searching (but not USSD), use filtered count
+  if (searchQuery.value && !isSearching.value) {
     return filteredApps.value.length
   }
   // Otherwise use server total
@@ -210,8 +272,8 @@ const totalItems = computed(() => {
 
 const handlePageChange = (page: number) => {
   currentPage.value = page
-  // If not searching, fetch new page from server
-  if (!searchQuery.value) {
+  // If not searching (or USSD search), fetch new page from server
+  if (!searchQuery.value || ussdSearchResult.value) {
     directoryStore.fetchDirectories(true, page - 1, itemsPerPage.value)
   }
 }
@@ -332,7 +394,7 @@ const handleAllocate = async () => {
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage and allocate USSD service codes</p>
       </div>
       <div class="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
-        <SearchInput v-model="searchQuery" placeholder="Search codes..." class="w-full sm:w-auto" />
+        <SearchInput v-model="searchQuery" placeholder="Search codes..." class="w-full sm:w-auto" @search="handleSearch" />
         <button 
           @click="openAllocateModal"
           class="flex items-center justify-center space-x-2 px-6 py-2 bg-vibes-600 hover:bg-vibes-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm h-10 w-full sm:w-auto whitespace-nowrap"

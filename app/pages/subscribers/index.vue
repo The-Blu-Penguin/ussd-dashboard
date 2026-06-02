@@ -84,9 +84,70 @@ const filteredSubscribers = computed(() => {
   )
 })
 
+// State for USSD search
+const ussdSearchResult = ref<MappedMerchant | null>(null)
+const isSearching = ref(false)
+
+// Handle search when user presses Enter
+const handleSearch = async () => {
+  const query = searchQuery.value
+  
+  // Reset USSD search result when query is empty
+  if (!query || query.trim() === '') {
+    ussdSearchResult.value = null
+    return
+  }
+  
+  // Check if query looks like a USSD code (contains * or #)
+  const looksLikeUssdCode = /[*#]/.test(query)
+  
+  if (looksLikeUssdCode) {
+    isSearching.value = true
+    const result = await directoryStore.searchByUssdCode(query)
+    
+    if (result.success && result.data) {
+      // Convert directory to mapped merchant format
+      ussdSearchResult.value = {
+        id: result.data.id,
+        merchantId: result.data.merchantCode,
+        name: result.data.merchantName || 'Unknown',
+        ussdCode: result.data.ussdCode,
+        status: result.data.status === 'ACTIVE' ? 'Active' : result.data.status === 'INACTIVE' ? 'Inactive' : result.data.status === 'SUSPENDED' ? 'Suspended' : 'Unknown',
+        level: result.data.level === 'PRIMARY' ? 'Primary' : result.data.level === 'SECONDARY' ? 'Secondary' : result.data.level,
+        type: result.data.menuConfig?.metadata?.name || 'Standard Flow',
+        lastActive: result.data.updatedAt ? formatDistanceToNow(new Date(result.data.updatedAt), { addSuffix: true }) : 'Unknown',
+        reference: result.data.parentDirectoryId !== null,
+        traffic: '0',
+        menu: null,
+        region: 'N/A'
+      }
+    } else {
+      ussdSearchResult.value = null
+    }
+    
+    isSearching.value = false
+  } else {
+    // For non-USSD searches, just clear any previous USSD result
+    // The filteredSubscribers computed will handle client-side filtering
+    ussdSearchResult.value = null
+  }
+}
+
+// Clear USSD search result when search query is cleared
+watch(searchQuery, (newQuery) => {
+  if (!newQuery || newQuery.trim() === '') {
+    ussdSearchResult.value = null
+  }
+})
+
 const paginatedSubscribers = computed(() => {
-  // If searching, use client-side pagination on filtered results
-  if (searchQuery.value) {
+  // If we have a USSD search result, show only that
+  if (ussdSearchResult.value) {
+    return [ussdSearchResult.value]
+  }
+  
+  // If searching (but not USSD code), use client-side pagination on filtered results
+  if (searchQuery.value && !isSearching.value) {
     const start = (currentPage.value - 1) * itemsPerPage.value
     const end = start + itemsPerPage.value
     return filteredSubscribers.value.slice(start, end)
@@ -96,8 +157,13 @@ const paginatedSubscribers = computed(() => {
 })
 
 const totalItems = computed(() => {
-  // If searching, use filtered count
-  if (searchQuery.value) {
+  // If we have a USSD search result, total is 1
+  if (ussdSearchResult.value) {
+    return 1
+  }
+  
+  // If searching (but not USSD), use filtered count
+  if (searchQuery.value && !isSearching.value) {
     return filteredSubscribers.value.length
   }
   // Otherwise use server total
@@ -124,8 +190,8 @@ const isDeleting = ref(false)
 
 const handlePageChange = (page: number) => {
   currentPage.value = page
-  // If not searching, fetch new page from server
-  if (!searchQuery.value) {
+  // If not searching (or USSD search), fetch new page from server
+  if (!searchQuery.value || ussdSearchResult.value) {
     directoryStore.fetchDirectories(true, page - 1, itemsPerPage.value)
   }
 }
@@ -305,7 +371,7 @@ const unsubscribeFromModal = () => {
       <!-- Controls -->
       <div class="p-5 border-b border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div class="relative w-full sm:w-96">
-          <SearchInput v-model="searchQuery" placeholder="Search by name, MSISDN, or ID..." />
+          <SearchInput v-model="searchQuery" placeholder="Search by name, MSISDN, or ID..." @search="handleSearch" />
         </div>
         
         <div class="flex items-center space-x-3">
