@@ -40,6 +40,13 @@ export interface MappedMerchant {
 
 const directoryStore = useDirectoryStore()
 
+// Declare refs first before using them
+const searchQuery = ref('')
+const currentPage = ref(1)
+const itemsPerPage = ref(10)
+const showModal = ref(false)
+const selectedMerchant = ref<MappedMerchant | null>(null)
+
 onMounted(() => {
   directoryStore.fetchDirectories(false, 0, itemsPerPage.value)
 })
@@ -66,12 +73,6 @@ const mappedSubscribers = computed<MappedMerchant[]>(() => {
     region: 'N/A'
   }))
 })
-
-const searchQuery = ref('')
-const currentPage = ref(1)
-const itemsPerPage = ref(10)
-const showModal = ref(false)
-const selectedMerchant = ref<MappedMerchant | null>(null)
 
 const filteredSubscribers = computed(() => {
   if (!searchQuery.value) return mappedSubscribers.value
@@ -412,6 +413,7 @@ const unsubscribeFromModal = () => {
         :current-page="currentPage" 
         :total-items="totalItems" 
         :items-per-page="itemsPerPage"
+        :items-per-page-options="[10, 20]"
         @page-change="handlePageChange"
         @update:itemsPerPage="itemsPerPage = $event"
       />

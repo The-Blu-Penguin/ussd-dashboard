@@ -24,9 +24,13 @@ export const useDirectoryStore = defineStore('directory', {
   }),
   actions: {
     async fetchDirectories(forceRefresh = false, page = 0, size = 20) {
+      // Backend has a maximum page size of 20
+      const maxPageSize = 20
+      const safeSize = Math.min(size, maxPageSize)
+      
       // If we already have data and aren't forcing a refresh, skip the fetch
       // But allow refetch if page or size changed
-      if (this.directories.length > 0 && !forceRefresh && page === this.currentPage && size === this.pageSize) {
+      if (this.directories.length > 0 && !forceRefresh && page === this.currentPage && safeSize === this.pageSize) {
         return { success: true, message: 'Directories already loaded' }
       }
 
@@ -37,7 +41,7 @@ export const useDirectoryStore = defineStore('directory', {
         const api = useApi()
 
         // Use the new endpoint with fullResponse=true to get merchant names directly
-        const response = await api<any>(`/directory?page=${page}&size=${size}&fullResponse=true`, {
+        const response = await api<any>(`/directory?page=${page}&size=${safeSize}&fullResponse=true`, {
           method: 'GET',
         })
 
@@ -70,7 +74,7 @@ export const useDirectoryStore = defineStore('directory', {
             this.totalPages = totalPages || 0
             this.totalElements = totalElements || 0
             this.currentPage = number || 0
-            this.pageSize = pageSize || 20
+            this.pageSize = safeSize
           } else {
             this.directories = []
           }
@@ -154,6 +158,54 @@ export const useDirectoryStore = defineStore('directory', {
         }
         
         this.error = error.response?._data?.message || error.message || 'Failed to delete directory'
+        this.isLoading = false
+        return { success: false, message: this.error }
+      }
+    },
+    
+    async searchByUssdCode(ussdCode: string) {
+      this.isLoading = true
+      this.error = null
+      
+      try {
+        const api = useApi()
+        
+        // Encode the USSD code for URL (handles special characters like # and *)
+        const encodedCode = encodeURIComponent(ussdCode)
+        const response = await api<any>(`/directory/ussd?code=${encodedCode}`, {
+          method: 'GET',
+        })
+
+        if (response.success && response.data) {
+          // Transform single result to match directory format
+          const directory: Directory = {
+            id: response.data.id,
+            merchantCode: response.data.merchantData?.merchant?.merchantCode || '',
+            merchantName: response.data.merchantData?.merchant?.merchantName || 'Unknown',
+            assignedCode: response.data.assignedCode,
+            ussdCode: response.data.ussdCode,
+            menuConfig: response.data.menuConfig,
+            menuConfigFlowId: response.data.menuConfigFlow?.id || '',
+            parentDirectoryId: response.data.parentDirectoryId,
+            parentUssdCode: response.data.parentUssdCode,
+            path: response.data.path,
+            level: response.data.level,
+            status: response.data.status,
+            createdAt: response.data.createdAt,
+            updatedAt: response.data.updatedAt,
+            childrenCount: 0,
+            createdBy: response.data.menuConfigFlow?.createdBy,
+          }
+          
+          this.isLoading = false
+          return { success: true, data: directory, message: response.message }
+        } else {
+          this.error = response.message || 'USSD code not found'
+          this.isLoading = false
+          return { success: false, message: this.error }
+        }
+      } catch (error: any) {
+        this.error = error.response?._data?.message || error.message || 'Failed to search by USSD code'
         this.isLoading = false
         return { success: false, message: this.error }
       }

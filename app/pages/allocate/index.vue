@@ -18,6 +18,17 @@ const menuConfigsStore = useMenuConfigsStore()
 const authStore = useAuthStore()
 const toast = useToast()
 
+// Declare refs first before using them
+const showModal = ref(false)
+const searchQuery = ref('')
+const currentPage = ref(1)
+const itemsPerPage = ref(10)
+
+// Edit mode state
+const isEditing = ref(false)
+const editingId = ref<string | null>(null)
+const isSubmitting = ref(false)
+
 onMounted(() => {
   directoryStore.fetchDirectories(false, 0, itemsPerPage.value)
   // Removed: menuConfigsStore.fetchConfigs() - will fetch on-demand when modal opens
@@ -39,16 +50,6 @@ interface App {
   status: string
   traffic: string
 }
-
-const showModal = ref(false)
-const searchQuery = ref('')
-const currentPage = ref(1)
-const itemsPerPage = ref(10)
-
-// Edit mode state
-const isEditing = ref(false)
-const editingId = ref<string | null>(null)
-const isSubmitting = ref(false)
 
 const newApp = ref({
   merchant: '',
@@ -607,6 +608,7 @@ const handleAllocate = async () => {
           :current-page="currentPage" 
           :total-items="totalItems" 
           :items-per-page="itemsPerPage"
+          :items-per-page-options="[10, 20]"
           @page-change="handlePageChange"
           @update:itemsPerPage="itemsPerPage = $event"
         />
