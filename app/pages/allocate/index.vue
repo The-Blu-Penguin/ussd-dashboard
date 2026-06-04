@@ -274,7 +274,15 @@ const handlePageChange = (page: number) => {
   currentPage.value = page
   // If not searching (or USSD search), fetch new page from server
   if (!searchQuery.value || ussdSearchResult.value) {
-    directoryStore.fetchDirectories(true, page - 1, itemsPerPage.value)
+    directoryStore.fetchDirectories(true, page - 1, itemsPerPage.value).then(result => {
+      if (!result.success && result.message) {
+        toast.error(result.message)
+        // Reset to page 1 if fetch failed
+        if (page > 1) {
+          currentPage.value = 1
+        }
+      }
+    })
   }
 }
 

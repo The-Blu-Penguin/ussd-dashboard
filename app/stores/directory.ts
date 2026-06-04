@@ -23,7 +23,7 @@ export const useDirectoryStore = defineStore('directory', {
     pageSize: 20,
   }),
   actions: {
-    async fetchDirectories(forceRefresh = false, page = 0, size = 20) {
+    async fetchDirectories(forceRefresh = false, page = 0, size = 20): Promise<{ success: boolean; message: string }> {
       // Backend has a maximum page size of 20
       const maxPageSize = 20
       const safeSize = Math.min(size, maxPageSize)
@@ -80,16 +80,30 @@ export const useDirectoryStore = defineStore('directory', {
           }
 
           this.isLoading = false
-          return { success: true, message: response.message }
+          return { success: true, message: response.message || 'Directories loaded successfully' }
         } else {
-          this.error = response.message || 'Failed to fetch directories'
+          const errorMsg = response.message || 'Failed to fetch directories'
+          this.error = errorMsg
           this.isLoading = false
-          return { success: false, message: this.error }
+          return { success: false, message: errorMsg }
         }
       } catch (error: any) {
-        this.error = error.response?._data?.message || error.message || 'Failed to fetch directories'
+        const errorMessage = error.response?._data?.message || error.message || 'Failed to fetch directories'
+        
+        // If we get a 500 error on a specific page, it might be a backend data issue
+        // Try to fall back to the first page
+        if (error.response?.status === 500 && page > 0) {
+          console.warn(`[Directory Store] Page ${page} failed with 500, falling back to page 0`)
+          this.error = 'Some pages are unavailable. Showing first page instead.'
+          this.isLoading = false
+          
+          // Try fetching page 0 as fallback
+          return await this.fetchDirectories(true, 0, safeSize)
+        }
+        
+        this.error = errorMessage
         this.isLoading = false
-        return { success: false, message: this.error }
+        return { success: false, message: errorMessage }
       }
     },
     
