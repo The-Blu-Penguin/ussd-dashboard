@@ -81,7 +81,11 @@ const handleLimitChange = (event: Event) => {
 </script>
 
 <template>
-  <nav class="px-6 py-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50/30" aria-label="Pagination">
+  <nav 
+    v-if="totalItems > 0"
+    class="px-6 py-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50/30" 
+    aria-label="Pagination"
+  >
     <div class="flex items-center space-x-4">
       <span class="text-xs text-gray-500" role="status" aria-live="polite">
         Showing {{ startItem }} to {{ endItem }} of {{ totalItems }} entries

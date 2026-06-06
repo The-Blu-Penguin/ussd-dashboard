@@ -51,18 +51,34 @@ export interface FlowPayload {
 // ─── Vue Flow → Steps ───
 
 export function nodesEdgesToSteps(nodes: Node[], edges: Edge[]): { steps: FlowStep[]; entry: string } {
-  // Filter out any invalid nodes (edges that got mixed in, or nodes without componentType)
+  // Filter out any invalid nodes more robustly
   const validNodes = nodes.filter(n => {
-    // Exclude edge IDs (they start with 'e-')
-    if (n.id.startsWith('e-')) {
+    // Exclude if missing required structure
+    if (!n || !n.id || !n.data) {
+      console.warn(`[Flow Serializer] Filtering out malformed node:`, n)
+      return false
+    }
+    
+    // Exclude edge IDs (they start with 'e-' AND source/target pattern)
+    // More robust: check if it has edge-like structure
+    if (n.id.startsWith('e-') && n.id.includes('-') && n.id.split('-').length >= 3) {
       console.warn(`[Flow Serializer] Filtering out edge ID from nodes: ${n.id}`)
       return false
     }
+    
     // Exclude nodes without componentType
-    if (!n.data?.componentType) {
+    if (!n.data.componentType) {
       console.warn(`[Flow Serializer] Filtering out node without componentType: ${n.id}`)
       return false
     }
+    
+    // Validate componentType is one of the expected values
+    const validTypes = ['INPUT', 'MENU', 'ACTION', 'END']
+    if (!validTypes.includes(n.data.componentType)) {
+      console.warn(`[Flow Serializer] Filtering out node with invalid componentType: ${n.data.componentType}`)
+      return false
+    }
+    
     return true
   })
 

@@ -31,9 +31,19 @@ const nodeType = computed(() => props.selectedNode?.data?.componentType || 'UNKN
 const validationTypes = ['AMOUNT', 'ALPHANUMERIC', 'NUMERIC', 'PHONE', 'EMAIL']
 
 const ensureValidation = () => {
-  if (!props.selectedNode.data.validation) {
-    props.selectedNode.data.validation = { type: 'ALPHANUMERIC' }
+  if (props.selectedNode && props.selectedNode.data) {
+    if (!props.selectedNode.data.validation) {
+      props.selectedNode.data.validation = { type: 'ALPHANUMERIC' }
+    }
   }
+}
+
+// Ensure validation exists before accessing
+const getValidation = () => {
+  if (!props.selectedNode?.data?.validation) {
+    ensureValidation()
+  }
+  return props.selectedNode?.data?.validation || { type: 'ALPHANUMERIC' }
 }
 
 // Menu options helpers
@@ -48,6 +58,42 @@ const addOption = () => {
     set: {}
   })
 }
+
+// Validation for menu options
+const validateMenuOptions = computed(() => {
+  if (!props.selectedNode?.data?.options || nodeType.value !== 'MENU') {
+    return { isValid: true, errors: [] }
+  }
+  
+  const errors: string[] = []
+  const seenKeys = new Set<string>()
+  
+  props.selectedNode.data.options.forEach((opt: MenuOption, index: number) => {
+    // Check for duplicate keys
+    if (opt.input && seenKeys.has(opt.input)) {
+      errors.push(`Option ${index + 1}: Duplicate key "${opt.input}"`)
+    } else if (opt.input) {
+      seenKeys.add(opt.input)
+    }
+    
+    // Check for empty key
+    if (!opt.input || opt.input.trim() === '') {
+      errors.push(`Option ${index + 1}: Key cannot be empty`)
+    }
+    
+    // Check for empty value
+    if (!opt.value || opt.value.trim() === '') {
+      errors.push(`Option ${index + 1}: Value cannot be empty`)
+    }
+    
+    // Check for valid target node
+    if (opt.next && !props.allNodes.find(n => n.id === opt.next)) {
+      errors.push(`Option ${index + 1}: Target node "${opt.next}" does not exist`)
+    }
+  })
+  
+  return { isValid: errors.length === 0, errors }
+})
 
 const removeOption = (index) => {
   props.selectedNode.data.options.splice(index, 1)
@@ -142,19 +188,20 @@ const targetNodes = computed(() => {
         <div>
           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Validation Type</label>
           <select
-            v-model="selectedNode.data.validation.type"
-            @change="ensureValidation"
+            :value="getValidation().type"
+            @change="(e) => { ensureValidation(); selectedNode.data.validation.type = e.target.value }"
             class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:border-vibes-500 transition-colors"
           >
             <option v-for="vt in validationTypes" :key="vt" :value="vt">{{ vt }}</option>
           </select>
         </div>
 
-        <div v-if="selectedNode.data.validation?.type === 'AMOUNT'">
+        <div v-if="getValidation().type === 'AMOUNT'">
           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Min Value</label>
           <input 
             type="number" 
-            v-model="selectedNode.data.validation.minValue"
+            :value="getValidation().minValue"
+            @input="(e) => { ensureValidation(); selectedNode.data.validation.minValue = parseFloat(e.target.value) }"
             step="0.01"
             class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:border-vibes-500 transition-colors"
             placeholder="0.01"
@@ -165,7 +212,8 @@ const targetNodes = computed(() => {
           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Error Message</label>
           <input 
             type="text" 
-            v-model="selectedNode.data.validation.errorMessage"
+            :value="getValidation().errorMessage"
+            @input="(e) => { ensureValidation(); selectedNode.data.validation.errorMessage = e.target.value }"
             class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:border-vibes-500 transition-colors"
             placeholder="Invalid input. Please try again."
           />
@@ -183,6 +231,17 @@ const targetNodes = computed(() => {
             <Plus class="w-3 h-3" />
             <span>Add</span>
           </button>
+        </div>
+
+        <!-- Validation Errors -->
+        <div v-if="!validateMenuOptions.isValid" class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+          <p class="text-xs font-medium text-red-800 dark:text-red-300 mb-2">Validation Errors:</p>
+          <ul class="text-xs text-red-700 dark:text-red-400 space-y-1">
+            <li v-for="(error, idx) in validateMenuOptions.errors" :key="idx" class="flex items-start">
+              <span class="mr-1">•</span>
+              <span>{{ error }}</span>
+            </li>
+          </ul>
         </div>
 
         <div v-if="!selectedNode.data.options || selectedNode.data.options.length === 0" class="text-xs text-gray-400 italic">

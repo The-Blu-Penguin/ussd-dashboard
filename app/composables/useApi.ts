@@ -10,7 +10,7 @@ export const useApi = () => {
   const authStore = useAuthStore()
   const logger = useLogger()
 
-  return $fetch.create({
+  const fetcher = $fetch.create({
     baseURL: config.public.apiBaseUrl as string,
     
     // Add retry logic for failed requests
@@ -38,17 +38,6 @@ export const useApi = () => {
       
       // Log API request
       logger.api.request(method, url, { body: options.body })
-      
-      // Request deduplication for GET requests
-      if (method === 'GET') {
-        const key = `${method}-${request}`
-        const pending = pendingRequests.get(key)
-        
-        if (pending) {
-          // Return existing promise instead of making new request
-          return pending
-        }
-      }
     },
     
     onResponse({ request, options, response }) {
@@ -57,7 +46,7 @@ export const useApi = () => {
 
       // Clean up pending request
       if (method === 'GET') {
-        const key = `${method}-${request}`
+        const key = `${method}-${url}`
         pendingRequests.delete(key)
       }
       
@@ -94,7 +83,7 @@ export const useApi = () => {
 
       // Clean up pending request
       if (method === 'GET') {
-        const key = `${method}-${request}`
+        const key = `${method}-${url}`
         pendingRequests.delete(key)
       }
       
@@ -112,4 +101,43 @@ export const useApi = () => {
       }
     }
   })
+
+  // Wrapper with request deduplication for GET requests
+  return new Proxy(fetcher, {
+    apply(target, thisArg, args: any[]) {
+      // Ensure we have at least the URL argument
+      if (args.length === 0) {
+        throw new Error('URL is required for API calls')
+      }
+      
+      const [url, options = {}] = args as [string, any]
+      const method = (options.method?.toUpperCase() || 'GET')
+      
+      // Only deduplicate GET requests
+      if (method === 'GET') {
+        const key = `${method}-${url}`
+        const pending = pendingRequests.get(key)
+        
+        if (pending) {
+          logger.api.request(method, url as string, { cached: true })
+          return pending
+        }
+        
+        // Store the promise for deduplication
+        const promise = Reflect.apply(target, thisArg, args)
+        pendingRequests.set(key, promise)
+        
+        // Clean up on completion (success or error)
+        promise
+          .finally(() => {
+            pendingRequests.delete(key)
+          })
+        
+        return promise
+      }
+      
+      // For non-GET requests, just call through
+      return Reflect.apply(target, thisArg, args)
+    }
+  }) as typeof fetcher
 }

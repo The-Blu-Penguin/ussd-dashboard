@@ -455,6 +455,10 @@ const onDrop = (event) => {
   logger.builder.nodeAdded(type, newNode.id)
 }
 
+// Watch cleanup
+let templateWatchStop: (() => void) | undefined
+let searchQueryWatchStop: (() => void) | undefined
+
 onMounted(async () => {
   // Load default template
   loadTemplate('payment')
@@ -527,6 +531,12 @@ onMounted(async () => {
     }
     logger.builder.flowLoaded(configToEdit.name, configToEdit.id)
   }
+})
+
+onBeforeUnmount(() => {
+  // Clean up watchers if they exist
+  if (templateWatchStop) templateWatchStop()
+  if (searchQueryWatchStop) searchQueryWatchStop()
 })
 
 const saveFlow = async () => {

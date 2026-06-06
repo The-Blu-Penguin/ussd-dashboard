@@ -10,6 +10,7 @@ interface DirectoryState {
   totalElements: number
   currentPage: number
   pageSize: number
+  fallbackAttempts: number // Track fallback attempts to prevent infinite loops
 }
 
 export const useDirectoryStore = defineStore('directory', {
@@ -21,6 +22,7 @@ export const useDirectoryStore = defineStore('directory', {
     totalElements: 0,
     currentPage: 0,
     pageSize: 20,
+    fallbackAttempts: 0,
   }),
   actions: {
     async fetchDirectories(forceRefresh = false, page = 0, size = 20): Promise<{ success: boolean; message: string }> {
@@ -91,18 +93,22 @@ export const useDirectoryStore = defineStore('directory', {
         const errorMessage = error.response?._data?.message || error.message || 'Failed to fetch directories'
         
         // If we get a 500 error on a specific page, it might be a backend data issue
-        // Try to fall back to the first page
-        if (error.response?.status === 500 && page > 0) {
+        // Try to fall back to the first page (but only once to prevent infinite loops)
+        if (error.response?.status === 500 && page > 0 && this.fallbackAttempts < 1) {
           console.warn(`[Directory Store] Page ${page} failed with 500, falling back to page 0`)
+          this.fallbackAttempts++
           this.error = 'Some pages are unavailable. Showing first page instead.'
           this.isLoading = false
           
           // Try fetching page 0 as fallback
-          return await this.fetchDirectories(true, 0, safeSize)
+          const result = await this.fetchDirectories(true, 0, safeSize)
+          this.fallbackAttempts = 0 // Reset after attempt
+          return result
         }
         
         this.error = errorMessage
         this.isLoading = false
+        this.fallbackAttempts = 0 // Reset on regular error
         return { success: false, message: errorMessage }
       }
     },

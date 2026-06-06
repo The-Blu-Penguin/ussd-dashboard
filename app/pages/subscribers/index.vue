@@ -46,15 +46,25 @@ const currentPage = ref(1)
 const itemsPerPage = ref(10)
 const showModal = ref(false)
 const selectedMerchant = ref<MappedMerchant | null>(null)
+let searchTimeout: NodeJS.Timeout | null = null
 
 onMounted(() => {
   directoryStore.fetchDirectories(false, 0, itemsPerPage.value)
 })
 
 // Watch for itemsPerPage changes and fetch new data from API
-watch(itemsPerPage, (newSize) => {
+const stopItemsPerPageWatch = watch(itemsPerPage, (newSize) => {
   currentPage.value = 1 // Reset to first page when changing page size
   directoryStore.fetchDirectories(true, 0, newSize)
+})
+
+// Cleanup watchers on unmount
+onBeforeUnmount(() => {
+  stopItemsPerPageWatch()
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+    searchTimeout = null
+  }
 })
 
 const mappedSubscribers = computed<MappedMerchant[]>(() => {
@@ -190,6 +200,10 @@ const isDeleting = ref(false)
 
 const handlePageChange = (page: number) => {
   currentPage.value = page
+  
+  // Clear USSD search result when changing pages
+  ussdSearchResult.value = null
+  
   // If not searching (or USSD search), fetch new page from server
   if (!searchQuery.value || ussdSearchResult.value) {
     directoryStore.fetchDirectories(true, page - 1, itemsPerPage.value).then(result => {
