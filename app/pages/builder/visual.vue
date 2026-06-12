@@ -456,8 +456,8 @@ const onDrop = (event) => {
 }
 
 // Watch cleanup
-let templateWatchStop: (() => void) | undefined
-let searchQueryWatchStop: (() => void) | undefined
+let templateWatchStop
+let searchQueryWatchStop
 
 onMounted(async () => {
   // Load default template

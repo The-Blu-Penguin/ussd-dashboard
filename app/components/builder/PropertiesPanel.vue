@@ -65,10 +65,10 @@ const validateMenuOptions = computed(() => {
     return { isValid: true, errors: [] }
   }
   
-  const errors: string[] = []
-  const seenKeys = new Set<string>()
+  const errors = []
+  const seenKeys = new Set()
   
-  props.selectedNode.data.options.forEach((opt: MenuOption, index: number) => {
+  props.selectedNode.data.options.forEach((opt, index) => {
     // Check for duplicate keys
     if (opt.input && seenKeys.has(opt.input)) {
       errors.push(`Option ${index + 1}: Duplicate key "${opt.input}"`)
@@ -347,3 +347,19 @@ const targetNodes = computed(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #e5e7eb;
+  border-radius: 20px;
+}
+:deep(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #374151;
+}
+</style>
