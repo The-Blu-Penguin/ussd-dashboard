@@ -691,7 +691,7 @@ const handleAllocate = async () => {
           :current-page="currentPage" 
           :total-items="totalItems" 
           :items-per-page="itemsPerPage"
-          :items-per-page-options="[10, 20]"
+          :items-per-page-options="[10, 20, 50, 100, 200]"
           @page-change="handlePageChange"
           @update:itemsPerPage="itemsPerPage = $event"
         />
