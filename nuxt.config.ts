@@ -11,6 +11,9 @@ export default defineNuxtConfig({
   },
   nitro: {
     routeRules: {
+      '/api/sandbox/**': {
+        proxy: 'https://ussd.blupayafrica.com/ussd/sandbox/**',
+      },
       '/api/**': {
         proxy: process.env.API_TARGET_URL ? `${process.env.API_TARGET_URL}/**` : 'https://ussd.blupayafrica.com/api/v1/**',
       },
