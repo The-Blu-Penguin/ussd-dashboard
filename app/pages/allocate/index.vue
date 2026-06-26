@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { Plus, Smartphone, PlayCircle, X, Pencil } from 'lucide-vue-next'
+import { Plus, Smartphone, X, Pencil } from 'lucide-vue-next'
 import SearchInput from '~/components/ui/SearchInput.vue'
 import Pagination from '~/components/ui/Pagination.vue'
 import Button from '~/components/ui/Button.vue'
@@ -584,7 +584,6 @@ const handleAllocate = async () => {
               <th class="px-6 py-4 font-bold">USSD Code</th>
               <th class="px-6 py-4 font-bold">Menu Flow</th>
               <th class="px-6 py-4 font-bold">Level</th>
-              <th class="px-6 py-4 font-bold">Traffic</th>
               <th class="px-6 py-4 font-bold">Status</th>
               <th class="px-6 py-4 text-right font-bold">Actions</th>
             </tr>
@@ -601,7 +600,6 @@ const handleAllocate = async () => {
                 <td class="px-6 py-4"><Shimmer width="6rem" height="1.75rem" /></td>
                 <td class="px-6 py-4"><Shimmer width="8rem" height="1.25rem" /></td>
                 <td class="px-6 py-4"><Shimmer width="5rem" height="1.25rem" /></td>
-                <td class="px-6 py-4"><Shimmer width="3rem" height="1.25rem" /></td>
                 <td class="px-6 py-4"><Shimmer width="5rem" height="1.5rem" circle class="!rounded-full" /></td>
                 <td class="px-6 py-4 text-right">
                   <div class="flex justify-end">
@@ -611,10 +609,10 @@ const handleAllocate = async () => {
               </tr>
             </template>
             <tr v-else-if="directoryStore.error">
-              <td colspan="7" class="px-6 py-8 text-center text-red-500">{{ directoryStore.error }}</td>
+              <td colspan="6" class="px-6 py-8 text-center text-red-500">{{ directoryStore.error }}</td>
             </tr>
             <tr v-else-if="paginatedApps.length === 0">
-              <td colspan="7" class="px-6 py-8 text-center text-gray-500">No directories found.</td>
+              <td colspan="6" class="px-6 py-8 text-center text-gray-500">No directories found.</td>
             </tr>
             <tr v-else v-for="app in paginatedApps" :key="app.id" class="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors group">
               <td class="px-6 py-4">
@@ -638,12 +636,6 @@ const handleAllocate = async () => {
               </td>
               <td class="px-6 py-4">
                 <span class="text-sm text-gray-600 dark:text-gray-300">{{ app.type }}</span>
-              </td>
-              <td class="px-6 py-4">
-                <div class="flex items-center text-sm font-medium text-gray-900 dark:text-gray-100">
-                  <PlayCircle class="w-4 h-4 text-green-500 dark:text-green-400 mr-1.5" />
-                  {{ app.traffic }}
-                </div>
               </td>
               <td class="px-6 py-4">
                 <span 

@@ -15,7 +15,6 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  ScrollText,
   Hammer,
   FileJson,
   Network
@@ -83,7 +82,6 @@ const menuItems = [
     items: [
       { name: 'Live Sessions', icon: Activity, to: '/live-sessions' },
       { name: 'Transaction Logs', icon: FileText, to: '/transaction-logs' },
-      { name: 'Service Logs', icon: ScrollText, to: '/service-logs' },
     ]
   },
   {
