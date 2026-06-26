@@ -5,7 +5,7 @@ import Button from '~/components/ui/Button.vue'
 import Shimmer from '~/components/ui/Shimmer.vue'
 import { useAuthStore } from '~/stores/auth'
 import { useUsersStore } from '~/stores/users'
-import type { User } from '~/types/api'
+import type { User, UserRole } from '~/types/api'
 import { useToast } from '~/composables/useToast'
 
 const authStore = useAuthStore()
@@ -37,7 +37,7 @@ const newUser = ref({
 const editingUser = ref<User | null>(null)
 const editUserForm = ref({
   fullName: '',
-  role: 'ADMIN' as 'ADMIN' | 'USER' | 'MERCHANT'
+  role: 'ADMIN' as UserRole
 })
 const isUpdatingUser = ref(false)
 
@@ -102,20 +102,40 @@ const handlePasswordChange = async () => {
   isUpdatingPassword.value = false
 }
 
+// Map form's display role labels to the API's UserRole values
+const mapFormRoleToApiRole = (formRole: string): UserRole => {
+  switch (formRole) {
+    case 'Admin': return 'ADMIN'
+    case 'Editor': return 'EDITOR'
+    case 'Viewer': return 'VIEWER'
+    default: return 'VIEWER'
+  }
+}
+
 const handleAddUser = async () => {
   if (!newUser.value.name || !newUser.value.email || !newUser.value.password) {
     toast.warning('Please fill in all required fields.')
     return
   }
-  
+
   isAddingUser.value = true
-  await new Promise(resolve => setTimeout(resolve, 800))
-  
-  // TODO: Add API endpoint for creating user when available
-  toast.success('User added successfully')
-  
-  newUser.value = { name: '', email: '', password: '', role: 'Viewer' }
-  isAddingUser.value = false
+  try {
+    const result = await usersStore.registerUser({
+      email: newUser.value.email,
+      fullName: newUser.value.name,
+      password: newUser.value.password,
+      role: mapFormRoleToApiRole(newUser.value.role),
+    })
+
+    if (result.success) {
+      toast.success(result.message || 'User added successfully')
+      newUser.value = { name: '', email: '', password: '', role: 'Viewer' }
+    } else {
+      toast.error(result.message || 'Failed to add user')
+    }
+  } finally {
+    isAddingUser.value = false
+  }
 }
 
 const openEditModal = (user: User) => {
@@ -468,8 +488,8 @@ const removeUser = async (id: string) => {
               class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-vibes-500 text-gray-900 dark:text-gray-100"
             >
               <option value="ADMIN">ADMIN</option>
-              <option value="MERCHANT">MERCHANT</option>
-              <option value="USER">USER</option>
+              <option value="EDITOR">EDITOR</option>
+              <option value="VIEWER">VIEWER</option>
             </select>
           </div>
 

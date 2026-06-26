@@ -163,7 +163,7 @@ export interface MappedMerchant {
 // Union Types for Status Values
 export type TransactionStatus = 'Success' | 'Failed' | 'Pending'
 export type LogLevel = 'Info' | 'Warning' | 'Error' | 'Critical'
-export type UserRole = 'ADMIN' | 'USER' | 'MERCHANT'
+export type UserRole = 'ADMIN' | 'EDITOR' | 'VIEWER'
 export type DirectoryStatus = 'Active' | 'Inactive' | 'Suspended'
 
 // Error Response Interface

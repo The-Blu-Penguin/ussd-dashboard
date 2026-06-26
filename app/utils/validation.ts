@@ -59,8 +59,8 @@ export function validateUser(data: unknown): data is User {
     }
   }
   
-  if (!['ADMIN', 'USER', 'MERCHANT'].includes(data.role)) {
-    throw new ValidationError('User role must be ADMIN, USER, or MERCHANT', 'role')
+  if (!['ADMIN', 'EDITOR', 'VIEWER'].includes(data.role)) {
+    throw new ValidationError('User role must be ADMIN, EDITOR, or VIEWER', 'role')
   }
   
   return true

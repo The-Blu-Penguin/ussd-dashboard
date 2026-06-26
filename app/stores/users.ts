@@ -1,6 +1,15 @@
 import { defineStore } from 'pinia'
 import { useApi } from '~/composables/useApi'
-import type { User, ApiResponse, DeleteUserResponseData, UpdateUserRequest } from '~/types/api'
+import { validatePassword } from '~/utils/passwordValidation'
+import type { User, ApiResponse, DeleteUserResponseData, UpdateUserRequest, UserRole } from '~/types/api'
+
+export interface RegisterUserRequest {
+  email: string
+  fullName: string
+  password: string
+  avatarUrl?: string
+  role: UserRole
+}
 
 interface UsersState {
   users: User[]
@@ -22,7 +31,7 @@ export const useUsersStore = defineStore('users', {
 
       this.isLoading = true
       this.error = null
-      
+
       try {
         const api = useApi()
 
@@ -44,11 +53,47 @@ export const useUsersStore = defineStore('users', {
         this.isLoading = false
       }
     },
-    
+
+    async registerUser(data: RegisterUserRequest) {
+      this.isLoading = true
+      this.error = null
+
+      const validation = validatePassword(data.password)
+      if (!validation.isValid) {
+        this.isLoading = false
+        return {
+          success: false,
+          message: 'Password does not meet requirements',
+          errors: validation.errors,
+        }
+      }
+
+      try {
+        const api = useApi()
+
+        const response = await api<ApiResponse<User>>('/auth/register', {
+          method: 'POST',
+          body: data,
+        })
+
+        if (response.success && response.data) {
+          this.users.push(response.data)
+          return { success: true, message: response.message || 'User added successfully', data: response.data }
+        }
+        return { success: false, message: response.message || 'Failed to add user' }
+      } catch (error: any) {
+        const message = error.response?._data?.message || error.message || 'Failed to add user'
+        this.error = message
+        return { success: false, message }
+      } finally {
+        this.isLoading = false
+      }
+    },
+
     async deleteUser(userId: string) {
       this.isLoading = true
       this.error = null
-      
+
       try {
         const api = useApi()
 
@@ -74,7 +119,7 @@ export const useUsersStore = defineStore('users', {
     async updateUser(userId: string, data: UpdateUserRequest, onCurrentUserUpdate?: (user: User) => void) {
       this.isLoading = true
       this.error = null
-      
+
       try {
         const api = useApi()
 
@@ -89,12 +134,12 @@ export const useUsersStore = defineStore('users', {
           if (index !== -1) {
             this.users[index] = response.data
           }
-          
+
           // Notify caller if this is the current user (via callback)
           if (onCurrentUserUpdate) {
             onCurrentUserUpdate(response.data)
           }
-          
+
           return { success: true, message: response.message || 'User updated successfully' }
         } else {
           return { success: false, message: response.message || 'Failed to update user' }
@@ -106,5 +151,5 @@ export const useUsersStore = defineStore('users', {
         this.isLoading = false
       }
     }
-  }
+  },
 })
