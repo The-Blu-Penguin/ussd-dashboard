@@ -52,8 +52,8 @@ const toggleMobileSidebar = () => {
         <div class="flex items-center space-x-2 sm:space-x-3">
           <div class="w-8 h-8 rounded-full bg-vibes-100 dark:bg-vibes-900/50 overflow-hidden ring-2 ring-transparent group-hover:ring-blue-200 dark:group-hover:ring-blue-800 transition-all shrink-0">
             <img 
-              v-if="user?.avatar" 
-              :src="user.avatar" 
+              v-if="user?.avatarUrl"
+              :src="user.avatarUrl"
               :alt="`${user.fullName} avatar`" 
               class="w-full h-full object-cover" 
             />

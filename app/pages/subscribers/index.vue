@@ -39,6 +39,7 @@ export interface MappedMerchant {
 }
 
 const directoryStore = useDirectoryStore()
+const toast = useToast()
 
 // Declare refs first before using them
 const searchQuery = ref('')
@@ -122,7 +123,7 @@ const handleSearch = async () => {
         merchantId: result.data.merchantCode,
         name: result.data.merchantName || 'Unknown',
         ussdCode: result.data.ussdCode,
-        status: result.data.status === 'ACTIVE' ? 'Active' : result.data.status === 'INACTIVE' ? 'Inactive' : result.data.status === 'SUSPENDED' ? 'Suspended' : 'Unknown',
+        status: result.data.status === 'Active' ? 'Active' : result.data.status === 'Inactive' ? 'Inactive' : result.data.status === 'Suspended' ? 'Suspended' : 'Unknown',
         level: result.data.level === 'PRIMARY' ? 'Primary' : result.data.level === 'SECONDARY' ? 'Secondary' : result.data.level,
         type: result.data.menuConfig?.metadata?.name || 'Standard Flow',
         lastActive: result.data.updatedAt ? formatDistanceToNow(new Date(result.data.updatedAt), { addSuffix: true }) : 'Unknown',
@@ -208,7 +209,6 @@ const handlePageChange = (page: number) => {
   if (!searchQuery.value || ussdSearchResult.value) {
     directoryStore.fetchDirectories(true, page - 1, itemsPerPage.value).then(result => {
       if (!result.success && result.message) {
-        const toast = useToast()
         toast.error(result.message)
         // Reset to page 1 if fetch failed
         if (page > 1) {
@@ -265,7 +265,6 @@ const unsubscribeMerchant = async () => {
   if (!merchantToDelete.value) return
   
   isDeleting.value = true
-  const toast = useToast()
   const merchantId = merchantToDelete.value.id
   const merchantName = merchantToDelete.value.name
   
@@ -297,6 +296,49 @@ const unsubscribeFromModal = () => {
     confirmUnsubscribe(selectedMerchant.value)
   }
 }
+
+const escapeCsvField = (val: any): string => {
+  const str = val == null ? '' : String(val)
+  if (/[",\r\n]/.test(str)) {
+    return '"' + str.replace(/"/g, '""') + '"'
+  }
+  return str
+}
+
+const handleExportCsv = () => {
+  const data = filteredSubscribers.value
+  if (!data.length) return
+
+  const headers = ['Merchant Name', 'Merchant ID', 'USSD Code', 'Level', 'Type', 'Status', 'Last Active']
+  const rows = data.map(m => [
+    m.name,
+    m.merchantId,
+    m.ussdCode,
+    m.level,
+    m.type,
+    m.status,
+    m.lastActive,
+  ])
+
+  const csv = [headers, ...rows]
+    .map(row => row.map(escapeCsvField).join(','))
+    .join('\r\n')
+
+  // Prepend BOM so Excel detects UTF-8 correctly
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+
+  const date = new Date().toISOString().slice(0, 10)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `merchants-export-${date}.csv`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+
+  toast.success(`Exported ${data.length} merchant${data.length === 1 ? '' : 's'} to CSV`)
+}
 </script>
 
 <template>
@@ -307,7 +349,11 @@ const unsubscribeFromModal = () => {
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage and monitor B2B merchant base</p>
       </div>
       <div class="flex items-center space-x-3 w-full sm:w-auto">
-        <button class="flex-1 sm:flex-none flex justify-center items-center space-x-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors shadow-sm">
+        <button
+          @click="handleExportCsv"
+          :disabled="filteredSubscribers.length === 0"
+          class="flex-1 sm:flex-none flex justify-center items-center space-x-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        >
           <Download class="w-4 h-4" />
           <span>Export CSV</span>
         </button>
