@@ -1,25 +1,70 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Play, RotateCcw, Terminal, Code, Send, RefreshCw } from 'lucide-vue-next'
-import { useApi } from '~/composables/useApi'
+import { useAuthStore } from '~/stores/auth'
 import { useToast } from '~/composables/useToast'
 
-const code = ref('{\n  "type": "menu",\n  "message": "Welcome to Sandbox",\n  "options": [\n    "Option 1",\n    "Option 2"\n  ]\n}')
 interface LogEntry {
   type: string
   message: string
   time: string
 }
 
+const code = ref('{\n  "type": "menu",\n  "message": "Welcome to Sandbox",\n  "options": [\n    "Option 1",\n    "Option 2"\n  ]\n}')
 const output = ref<LogEntry[]>([])
 const isRunning = ref(false)
 const sessionId = ref<string | null>(null)
 const userInput = ref('')
 
+const authStore = useAuthStore()
 const toast = useToast()
 
 const log = (type: string, message: string) => {
   output.value.push({ type, message, time: new Date().toLocaleTimeString() })
+}
+
+const sandboxFetch = async <T = any>(
+  path: string,
+  options: { method?: 'GET' | 'POST' | 'PUT' | 'DELETE'; body?: any } = {}
+): Promise<T> => {
+  const headers: Record<string, string> = {
+    'Accept': 'application/json',
+  }
+  if (authStore.accessToken) {
+    headers['Authorization'] = `Bearer ${authStore.accessToken}`
+  }
+  if (options.body) {
+    headers['Content-Type'] = 'application/json'
+  }
+
+  const url = `/ussd/sandbox${path}`
+  const fetchOptions: RequestInit = {
+    method: options.method || 'GET',
+    headers,
+  }
+  if (options.body) {
+    fetchOptions.body = JSON.stringify(options.body)
+  }
+
+  const response = await fetch(url, fetchOptions)
+  const text = await response.text()
+  let parsed: any = null
+  if (text) {
+    try {
+      parsed = JSON.parse(text)
+    } catch {
+      parsed = text
+    }
+  }
+
+  if (!response.ok) {
+    const message =
+      (parsed && typeof parsed === 'object' && (parsed.message || parsed.error)) ||
+      `HTTP ${response.status}`
+    throw new Error(typeof message === 'string' ? message : JSON.stringify(message))
+  }
+
+  return parsed as T
 }
 
 const extractSessionId = (payload: any): string | null => {
@@ -51,9 +96,7 @@ const startSession = async () => {
   isRunning.value = true
   log('system', 'Starting sandbox session...')
   try {
-    const api = useApi()
-    const response: any = await api('/sandbox/start', { method: 'POST' })
-    const payload = response?.data ?? response
+    const payload = await sandboxFetch<any>('/start', { method: 'POST' })
 
     const newSessionId = extractSessionId(payload)
     if (newSessionId) {
@@ -61,12 +104,12 @@ const startSession = async () => {
       log('success', `Session started: ${newSessionId}`)
       renderResponse(payload, 'No message in response')
     } else {
-      const message = response?.message || 'Failed to start session (no sessionId returned)'
+      const message = 'Failed to start session (no sessionId returned)'
       log('error', message)
       toast.error(message)
     }
   } catch (error: any) {
-    const message = error.response?._data?.message || error.message || 'Failed to start session'
+    const message = error.message || 'Failed to start session'
     log('error', message)
     toast.error(message)
   } finally {
@@ -84,23 +127,21 @@ const sendInput = async () => {
   isRunning.value = true
 
   try {
-    const api = useApi()
-    const response: any = await api('/sandbox/input', {
+    const payload = await sandboxFetch<any>('/input', {
       method: 'POST',
       body: { sessionId: sessionId.value, input: trimmed },
     })
-    const payload = response?.data ?? response
 
     if (payload && (extractMessage(payload) || extractOptions(payload) || extractSessionId(payload))) {
       renderResponse(payload, 'OK')
     } else {
-      const message = response?.message || 'No response from server'
+      const message = 'No response from server'
       log('error', message)
       // Restore the user's input so they can retry
       userInput.value = sent
     }
   } catch (error: any) {
-    const message = error.response?._data?.message || error.message || 'Failed to send input'
+    const message = error.message || 'Failed to send input'
     log('error', message)
     userInput.value = sent
     toast.error(message)
@@ -115,9 +156,7 @@ const getSession = async () => {
   log('system', `Fetching session ${sessionId.value}...`)
   isRunning.value = true
   try {
-    const api = useApi()
-    const response: any = await api(`/sandbox/${sessionId.value}`, { method: 'GET' })
-    const payload = response?.data ?? response
+    const payload = await sandboxFetch<any>(`/${sessionId.value}`, { method: 'GET' })
 
     if (payload) {
       log('success', 'Session state:')
@@ -127,10 +166,10 @@ const getSession = async () => {
         log('output', String(payload))
       }
     } else {
-      log('error', response?.message || 'Failed to fetch session')
+      log('error', 'Empty response')
     }
   } catch (error: any) {
-    const message = error.response?._data?.message || error.message || 'Failed to fetch session'
+    const message = error.message || 'Failed to fetch session'
     log('error', message)
   } finally {
     isRunning.value = false
