@@ -42,7 +42,7 @@ const retry = () => {
 }
 
 const goHome = () => {
-  navigateTo('/')
+  navigateTo('/live-sessions')
 }
 </script>
 

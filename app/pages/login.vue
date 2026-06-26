@@ -51,7 +51,7 @@ const handleLogin = async () => {
   if (result.success) {
     showSuccessModal.value = true
     setTimeout(() => {
-      navigateTo('/')
+      navigateTo('/live-sessions')
     }, 1500)
   } else {
     error.value = result.message || 'Login failed'

@@ -14,6 +14,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   if (authStore.isLoggedIn && publicRoutes.includes(to.path)) {
-    return navigateTo('/')
+    return navigateTo('/live-sessions')
   }
 })

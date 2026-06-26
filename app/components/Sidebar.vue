@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRoute, useState } from '#imports'
-import { 
-  Rocket, 
-  LayoutDashboard, 
-  Smartphone, 
-  ListTree, 
-  Activity, 
-  Users, 
-  Settings, 
+import {
+  Rocket,
+  Smartphone,
+  ListTree,
+  Activity,
+  Users,
+  Settings,
   FileText,
   PlayCircle,
   TestTube,
@@ -58,7 +57,6 @@ const menuItems = [
   {
     header: 'MAIN',
     items: [
-      { name: 'Dashboard', icon: LayoutDashboard, to: '/' },
       { name: 'Merchants', icon: Users, to: '/subscribers' },
       { name: 'Allocate', icon: Smartphone, to: '/allocate' },
       { name: 'Menus & Flows', icon: ListTree, to: '/menus-flows' },

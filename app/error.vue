@@ -5,7 +5,7 @@ const props = defineProps({
   error: Object
 })
 
-const handleError = () => clearError({ redirect: '/' })
+const handleError = () => clearError({ redirect: '/live-sessions' })
 </script>
 
 <template>
@@ -29,7 +29,7 @@ const handleError = () => clearError({ redirect: '/' })
         class="flex items-center justify-center space-x-2 w-full px-6 py-3 bg-vibes-600 hover:bg-vibes-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-blue-600/20"
       >
         <ArrowLeft class="w-4 h-4" />
-        <span>Return to Dashboard</span>
+        <span>Return to Live Sessions</span>
       </button>
     </div>
     
