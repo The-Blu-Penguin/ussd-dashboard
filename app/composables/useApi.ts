@@ -9,6 +9,7 @@ export const useApi = () => {
   const config = useRuntimeConfig()
   const authStore = useAuthStore()
   const logger = useLogger()
+  const nuxtApp = useNuxtApp()
 
   const fetcher = $fetch.create({
     baseURL: config.public.apiBaseUrl as string,
@@ -96,7 +97,9 @@ export const useApi = () => {
       if ((response.status === 401 || response.status === 403) && !isAuthEndpoint) {
         logger.warn('Authentication token expired or invalid. Logging out...', { category: 'auth' })
         if (import.meta.client) {
-          authStore.logout()
+          nuxtApp.runWithContext(() => {
+            authStore.logout(true)
+          })
         }
       }
     }

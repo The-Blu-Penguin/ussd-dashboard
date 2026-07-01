@@ -85,13 +85,15 @@ export const useAuthStore = defineStore('auth', {
         this.isLoading = false
       }
     },
-    async logout() {
+    async logout(skipApiCall = false) {
       try {
-        const api = useApi()
+        if (!skipApiCall) {
+          const api = useApi()
 
-        await api('/auth/logout', {
-          method: 'POST',
-        })
+          await api('/auth/logout', {
+            method: 'POST',
+          })
+        }
       } catch (error) {
         // Continue with logout even if API call fails
       } finally {
@@ -121,7 +123,7 @@ export const useAuthStore = defineStore('auth', {
       // Check if token is expired and logout if needed
       if (this.isTokenExpired && this.accessToken) {
         console.warn('Token expired, logging out...')
-        await this.logout()
+        await this.logout(true)
       }
     },
     async changePassword(data: ChangePasswordRequest) {

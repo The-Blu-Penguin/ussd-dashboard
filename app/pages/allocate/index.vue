@@ -66,8 +66,11 @@ const newApp = ref({
   level: 'Secondary',
   method: 'Automatic',
   selectedCode: '',
-  menuFlow: ''
+  menuFlow: '',
+  parentCode: 1
 })
+
+const parentCodeOptions = Array.from({ length: 20 }, (_, i) => i + 1)
 
 const merchants = computed(() => {
   const uniqueMerchants = new Set<string>()
@@ -90,18 +93,18 @@ const availableCodes = ref<number[]>([])
 const isFetchingCodes = ref(false)
 const autoSelectedCode = ref<number | null>(null)
 
-const fetchAvailableCodes = async (level: string) => {
+const fetchAvailableCodes = async (level: string, parentCode: number) => {
   isFetchingCodes.value = true
   autoSelectedCode.value = null
-  
+
   try {
     const api = useApi()
-    
+
     // Map 'Primary' -> 'PRIMARY', 'Secondary' -> 'SECONDARY'
     const levelQuery = level.toUpperCase()
-    // parentCode is 1 for SECONDARY, empty for PRIMARY
-    const parentCodeQuery = levelQuery === 'SECONDARY' ? '&parentCode=1' : ''
-    
+    // parentCode is required for SECONDARY, omitted for PRIMARY
+    const parentCodeQuery = levelQuery === 'SECONDARY' ? `&parentCode=${parentCode}` : ''
+
     const response = await api<any>(`/directory/available-codes?level=${levelQuery}${parentCodeQuery}&limit=100`, {
       method: 'GET',
     })
@@ -126,7 +129,13 @@ const fetchAvailableCodes = async (level: string) => {
 
 watch(() => newApp.value.level, (newLevel) => {
   if (!isEditing.value) {
-    fetchAvailableCodes(newLevel)
+    fetchAvailableCodes(newLevel, newApp.value.parentCode)
+  }
+})
+
+watch(() => newApp.value.parentCode, (newParentCode) => {
+  if (!isEditing.value && newApp.value.level === 'Secondary') {
+    fetchAvailableCodes(newApp.value.level, newParentCode)
   }
 })
 
@@ -302,9 +311,9 @@ const handlePageChange = (page: number) => {
 const openAllocateModal = () => {
   isEditing.value = false
   editingId.value = null
-  newApp.value = { merchant: '', merchantId: '', level: 'Secondary', method: 'Automatic', selectedCode: '', menuFlow: '' }
+  newApp.value = { merchant: '', merchantId: '', level: 'Secondary', method: 'Automatic', selectedCode: '', menuFlow: '', parentCode: 1 }
   showModal.value = true
-  fetchAvailableCodes('Secondary') // Fetch codes for default level when opening
+  fetchAvailableCodes('Secondary', 1) // Fetch codes for default level when opening
   
   // Fetch menu configs only when modal opens (lazy loading)
   if (menuConfigsStore.configs.length === 0) {
@@ -333,10 +342,11 @@ const openEditModal = (app: App) => {
   newApp.value = {
     merchant: app.name,
     merchantId: app.merchantId || '',
-    level: app.type, 
+    level: app.type,
     method: 'Manual',
     selectedCode: codeSuffix,
-    menuFlow: app.menuFlow
+    menuFlow: app.menuFlow,
+    parentCode: 1
   }
   
   showModal.value = true
@@ -487,8 +497,8 @@ const handleAllocate = async () => {
             <div>
               <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Level</label>
               <div class="flex bg-gray-50 dark:bg-gray-900/50 p-1 rounded-lg border border-gray-200 dark:border-gray-700">
-                <button 
-                  v-for="level in ['Primary', 'Secondary']" 
+                <button
+                  v-for="level in ['Primary', 'Secondary']"
                   :key="level"
                   @click="newApp.level = level"
                   class="flex-1 py-1.5 text-xs font-medium rounded-md transition-all"
@@ -498,10 +508,10 @@ const handleAllocate = async () => {
                 </button>
               </div>
             </div>
-            
+
             <div>
               <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Allocation Method</label>
-              <select 
+              <select
                 v-model="newApp.method"
                 class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:bg-white dark:focus:bg-gray-800 transition-all h-[38px] dark:text-gray-200"
                 :disabled="isEditing"
@@ -510,6 +520,19 @@ const handleAllocate = async () => {
                 <option>Manual</option>
               </select>
             </div>
+          </div>
+
+          <!-- Parent Code (only for Secondary) -->
+          <div v-if="newApp.level === 'Secondary'">
+            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Parent Code</label>
+            <select
+              v-model.number="newApp.parentCode"
+              class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:bg-white dark:focus:bg-gray-800 transition-all dark:text-gray-200"
+              :disabled="isEditing"
+            >
+              <option v-for="code in parentCodeOptions" :key="code" :value="code">Parent code {{ code }} (*820*{{ code }}*)</option>
+            </select>
+            <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Choose which primary code this secondary code should be linked under</p>
           </div>
           
           <!-- USSD Code Allocation -->
@@ -529,7 +552,7 @@ const handleAllocate = async () => {
             <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">{{ isEditing ? 'Assigned Code' : 'Select Available Code' }}</label>
             <div v-if="isEditing" class="relative">
                  <div class="flex items-center w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus-within:ring-2 focus-within:ring-vibes-500 focus-within:bg-white dark:focus-within:bg-gray-800 transition-all font-mono">
-                    <span class="text-gray-500 dark:text-gray-400 mr-1">*820*<span v-if="newApp.level === 'Secondary'">1*</span></span>
+                    <span class="text-gray-500 dark:text-gray-400 mr-1">*820*<span v-if="newApp.level === 'Secondary'">{{ newApp.parentCode }}*</span></span>
                     <input 
                       v-model="newApp.selectedCode" 
                       type="text" 
@@ -546,7 +569,7 @@ const handleAllocate = async () => {
                 :disabled="isFetchingCodes"
               >
                 <option value="" disabled>{{ isFetchingCodes ? 'Loading codes...' : 'Choose a code...' }}</option>
-                <option v-for="code in availableCodes" :key="code" :value="code">*820*<template v-if="newApp.level === 'Secondary'">1*</template>{{ code }}#</option>
+                <option v-for="code in availableCodes" :key="code" :value="code">*820*<template v-if="newApp.level === 'Secondary'">{{ newApp.parentCode }}*</template>{{ code }}#</option>
               </select>
               <div v-if="isFetchingCodes" class="absolute right-8 top-1/2 -translate-y-1/2">
                 <Spinner size="sm" color="primary" />
