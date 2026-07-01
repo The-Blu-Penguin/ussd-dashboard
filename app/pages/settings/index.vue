@@ -296,7 +296,7 @@ const removeUser = async (id: string) => {
         </form>
       </div>
       <!-- User Management Section -->
-      <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm md:col-span-2 border border-transparent dark:border-gray-700">
+      <div v-if="authStore.user?.role !== 'EDITOR'" class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm md:col-span-2 border border-transparent dark:border-gray-700">
         <div class="flex items-center mb-6">
           <UserPlus class="w-5 h-5 text-gray-400 dark:text-gray-500 mr-2" />
           <h2 class="text-lg font-bold text-gray-800 dark:text-gray-100">Team Members</h2>

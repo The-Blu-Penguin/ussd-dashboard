@@ -140,7 +140,7 @@ export const useApi = () => {
       }
       
       // For non-GET requests, just call through
-      return Reflect.apply(target, thisArg, args)
+      return Reflect.apply(target, thisArg, args) as ReturnType<typeof fetcher>
     }
-  }) as typeof fetcher
+  }) as unknown as typeof fetcher
 }
