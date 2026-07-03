@@ -1,9 +1,32 @@
 import { useAuthStore } from '~/stores/auth'
 import { validateApiResponse, ValidationError } from '~/utils/validation'
 import { useLogger } from '~/composables/useLogger'
+import { API_CACHE_TTL } from '~/constants/api'
 
 // Request deduplication cache
 const pendingRequests = new Map<string, Promise<any>>()
+
+// Response cache for GET requests
+const responseCache = new Map<string, { data: any; timestamp: number }>()
+
+/**
+ * Invalidate cached response for a specific URL
+ */
+export const invalidateCache = (url: string) => {
+  // Delete exact match and any URLs that start with the given path
+  for (const key of responseCache.keys()) {
+    if (key === url || key.startsWith(url)) {
+      responseCache.delete(key)
+    }
+  }
+}
+
+/**
+ * Clear all cached responses
+ */
+export const clearCache = () => {
+  responseCache.clear()
+}
 
 export const useApi = () => {
   const config = useRuntimeConfig()
@@ -49,6 +72,12 @@ export const useApi = () => {
       if (method === 'GET') {
         const key = `${method}-${url}`
         pendingRequests.delete(key)
+      }
+
+      // Cache successful GET responses
+      if (method === 'GET' && response._data && response.status >= 200 && response.status < 300) {
+        const key = url
+        responseCache.set(key, { data: response._data, timestamp: Date.now() })
       }
       
       // Log API response
@@ -105,7 +134,7 @@ export const useApi = () => {
     }
   })
 
-  // Wrapper with request deduplication for GET requests
+  // Wrapper with request deduplication and caching
   return new Proxy(fetcher, {
     apply(target, thisArg, args: any[]) {
       // Ensure we have at least the URL argument
@@ -115,31 +144,54 @@ export const useApi = () => {
       
       const [url, options = {}] = args as [string, any]
       const method = (options.method?.toUpperCase() || 'GET')
+      const useCache = options.cache !== false // Cache enabled by default for GET
+      const useDedup = options.deduplicate !== false // Dedup enabled by default for GET
+      const cacheTtl = options.cacheTtl || API_CACHE_TTL
       
-      // Only deduplicate GET requests
+      // Only apply deduplication and caching for GET requests
       if (method === 'GET') {
         const key = `${method}-${url}`
-        const pending = pendingRequests.get(key)
-        
-        if (pending) {
-          logger.api.request(method, url as string, { cached: true })
-          return pending
+
+        // Check response cache first
+        if (useCache) {
+          const cached = responseCache.get(url as string)
+          if (cached && (Date.now() - cached.timestamp) < cacheTtl) {
+            logger.api.request(method, url as string, { cached: true, source: 'cache' })
+            return Promise.resolve(cached.data)
+          }
+          // Remove stale cache entry
+          if (cached) {
+            responseCache.delete(url as string)
+          }
+        }
+
+        // Check for in-flight deduplication
+        if (useDedup) {
+          const pending = pendingRequests.get(key)
+          if (pending) {
+            logger.api.request(method, url as string, { cached: true, source: 'dedup' })
+            return pending
+          }
         }
         
         // Store the promise for deduplication
         const promise = Reflect.apply(target, thisArg, args)
-        pendingRequests.set(key, promise)
-        
-        // Clean up on completion (success or error)
-        promise
-          .finally(() => {
-            pendingRequests.delete(key)
-          })
+        if (useDedup) {
+          pendingRequests.set(key, promise)
+          // Clean up on completion (success or error)
+          promise
+            .finally(() => {
+              pendingRequests.delete(key)
+            })
+        }
         
         return promise
       }
       
-      // For non-GET requests, just call through
+      // For non-GET requests, invalidate related cache and call through
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+        invalidateCache(url as string)
+      }
       return Reflect.apply(target, thisArg, args) as ReturnType<typeof fetcher>
     }
   }) as unknown as typeof fetcher

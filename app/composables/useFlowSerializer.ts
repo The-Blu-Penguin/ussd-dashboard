@@ -3,7 +3,7 @@ import { Position } from '@vue-flow/core'
 
 // ─── Types matching the backend JSON schema ───
 
-export interface ValidationRule {
+export interface FlowValidationRule {
   type: string
   minValue?: number
   errorMessage?: string
@@ -11,7 +11,7 @@ export interface ValidationRule {
 
 export interface InputConfig {
   variable: string
-  validation?: ValidationRule
+  validation?: FlowValidationRule
 }
 
 export interface MenuOption {
@@ -164,7 +164,7 @@ function nodeToStep(node: Node, outEdges: Edge[]): FlowStep {
       }
       
       if (node.data?.validation && node.data.validation.type) {
-        const validation: ValidationRule = {
+        const validation: FlowValidationRule = {
           type: node.data.validation.type
         }
         

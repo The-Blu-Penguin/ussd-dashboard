@@ -10,13 +10,13 @@ import { useDirectoryStore } from '~/stores/directory'
 import { useMenuConfigsStore } from '~/stores/menuConfigs'
 import { useAuthStore } from '~/stores/auth'
 import { useApi } from '~/composables/useApi'
-import { useToast } from '~/composables/useToast'
+import { useAllocateErrorHandler } from '~/composables/useAllocateErrorHandler'
 import type { MerchantApiResponse } from '~/types/api'
 
 const directoryStore = useDirectoryStore()
 const menuConfigsStore = useMenuConfigsStore()
 const authStore = useAuthStore()
-const toast = useToast()
+const allocateHandler = useAllocateErrorHandler()
 
 // Declare refs first before using them
 const showModal = ref(false)
@@ -298,7 +298,7 @@ const handlePageChange = (page: number) => {
   if (!searchQuery.value || ussdSearchResult.value) {
     directoryStore.fetchDirectories(true, page - 1, itemsPerPage.value).then(result => {
       if (!result.success && result.message) {
-        toast.error(result.message)
+        allocateHandler.handleAllocationError(new Error(result.message))
         // Reset to page 1 if fetch failed
         if (page > 1) {
           currentPage.value = 1
@@ -354,7 +354,7 @@ const openEditModal = (app: App) => {
 
 const handleAllocate = async () => {
   if (!newApp.value.merchant || !newApp.value.merchantId || !newApp.value.menuFlow) {
-    toast.error('Please fill in all required fields.')
+    allocateHandler.handleValidationError('Please fill in all required fields.')
     return
   }
 
@@ -370,7 +370,7 @@ const handleAllocate = async () => {
     }
   } else {
     if (!newApp.value.selectedCode || newApp.value.selectedCode === '') {
-        toast.error('Please select a code.')
+        allocateHandler.handleValidationError('Please select a code.')
         isSubmitting.value = false
         return
     }
@@ -381,7 +381,7 @@ const handleAllocate = async () => {
     // This will be updated to use actual API call later
     const index = apps.value.findIndex(a => a.id === editingId.value)
     // For now we just close the modal since we can't mutate computed properties directly
-    toast.success('Code allocation updated successfully')
+    allocateHandler.handleSuccess('Code allocation updated successfully')
     showModal.value = false
     isSubmitting.value = false
   } else {
@@ -390,7 +390,7 @@ const handleAllocate = async () => {
     const menuConfigFlowId = selectedFlow ? selectedFlow.id : ''
 
     if (!menuConfigFlowId) {
-        toast.error('Invalid Menu Flow selected.')
+        allocateHandler.handleValidationError('Invalid Menu Flow selected.')
         isSubmitting.value = false
         return
     }
@@ -407,10 +407,10 @@ const handleAllocate = async () => {
     const response = await directoryStore.allocateCode(payload)
 
     if (response.success) {
-      toast.success(response.message || 'Code allocated successfully')
+      allocateHandler.handleSuccess(response.message || 'Code allocated successfully')
       showModal.value = false
     } else {
-      toast.error(`Allocation Failed: ${response.message}`)
+      allocateHandler.handleAllocationError(new Error(`Allocation Failed: ${response.message}`))
     }
     isSubmitting.value = false
   }

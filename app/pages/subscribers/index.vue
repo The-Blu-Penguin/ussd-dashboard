@@ -6,7 +6,7 @@ import Pagination from '~/components/ui/Pagination.vue'
 import FilterButton from '~/components/ui/FilterButton.vue'
 import Spinner from '~/components/ui/Spinner.vue'
 import { useDirectoryStore } from '~/stores/directory'
-import { useToast } from '~/composables/useToast'
+import { useSubscribersErrorHandler } from '~/composables/useSubscribersErrorHandler'
 import type { Directory } from '~/types/api'
 import { formatDistanceToNow } from 'date-fns'
 import { 
@@ -39,7 +39,7 @@ export interface MappedMerchant {
 }
 
 const directoryStore = useDirectoryStore()
-const toast = useToast()
+const subscribersHandler = useSubscribersErrorHandler()
 
 // Declare refs first before using them
 const searchQuery = ref('')
@@ -209,7 +209,7 @@ const handlePageChange = (page: number) => {
   if (!searchQuery.value || ussdSearchResult.value) {
     directoryStore.fetchDirectories(true, page - 1, itemsPerPage.value).then(result => {
       if (!result.success && result.message) {
-        toast.error(result.message)
+        subscribersHandler.handleFetchError(new Error(result.message))
         // Reset to page 1 if fetch failed
         if (page > 1) {
           currentPage.value = 1
@@ -272,7 +272,7 @@ const unsubscribeMerchant = async () => {
     const result = await directoryStore.deleteDirectory(merchantId)
     
     if (result.success) {
-      toast.success(`${merchantName} unsubscribed successfully`)
+      subscribersHandler.handleSuccess(`${merchantName} unsubscribed successfully`)
       showDeleteConfirm.value = false
       merchantToDelete.value = null
       
@@ -281,11 +281,11 @@ const unsubscribeMerchant = async () => {
         closeModal()
       }
     } else {
-      toast.error(result.message || 'Failed to unsubscribe merchant')
+      subscribersHandler.handleUnsubscribeError(new Error(result.message || 'Failed to unsubscribe merchant'))
     }
   } catch (error: any) {
     const errorMessage = error.response?._data?.message || error.message || 'Failed to unsubscribe merchant'
-    toast.error(errorMessage)
+    subscribersHandler.handleUnsubscribeError(new Error(errorMessage))
   } finally {
     isDeleting.value = false
   }
@@ -337,7 +337,7 @@ const handleExportCsv = () => {
   document.body.removeChild(link)
   URL.revokeObjectURL(url)
 
-  toast.success(`Exported ${data.length} merchant${data.length === 1 ? '' : 's'} to CSV`)
+  subscribersHandler.handleSuccess(`Exported ${data.length} merchant${data.length === 1 ? '' : 's'} to CSV`)
 }
 </script>
 

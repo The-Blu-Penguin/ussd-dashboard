@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import type { LogEntry, LogLevel } from '~/composables/useLogger'
+import { PAGINATION } from '~/constants/ui'
 
 export type LogCategory =
   | 'app'
@@ -17,16 +18,20 @@ interface LoggerState {
   filterCategory: LogCategory | 'all'
   searchQuery: string
   isAutoScroll: boolean
+  currentPage: number
+  pageSize: number
 }
 
 export const useLoggerStore = defineStore('logger', {
   state: (): LoggerState => ({
     logs: [],
-    maxLogs: 2000,
+    maxLogs: PAGINATION.MAX_LOGS_IN_MEMORY,
     filterLevel: 'all',
     filterCategory: 'all',
     searchQuery: '',
     isAutoScroll: true,
+    currentPage: 1,
+    pageSize: PAGINATION.LOG_PAGE_SIZE,
   }),
 
   getters: {
@@ -53,6 +58,18 @@ export const useLoggerStore = defineStore('logger', {
       }
 
       return result
+    },
+
+    paginatedLogs(state): LogEntry[] {
+      const filtered = (this as any).filteredLogs as LogEntry[]
+      const start = (state.currentPage - 1) * state.pageSize
+      const end = start + state.pageSize
+      return filtered.slice(start, end)
+    },
+
+    totalPages(): number {
+      const filtered = (this as any).filteredLogs as LogEntry[]
+      return Math.ceil(filtered.length / (this as any).pageSize)
     },
 
     stats: (state) => {
@@ -82,22 +99,43 @@ export const useLoggerStore = defineStore('logger', {
 
     clearLogs() {
       this.logs = []
+      this.currentPage = 1
     },
 
     setFilterLevel(level: LogLevel | 'all') {
       this.filterLevel = level
+      this.currentPage = 1 // Reset to first page on filter change
     },
 
     setFilterCategory(category: LogCategory | 'all') {
       this.filterCategory = category
+      this.currentPage = 1
     },
 
     setSearchQuery(query: string) {
       this.searchQuery = query
+      this.currentPage = 1
     },
 
     toggleAutoScroll() {
       this.isAutoScroll = !this.isAutoScroll
+    },
+
+    nextPage() {
+      if (this.currentPage < this.totalPages) {
+        this.currentPage++
+      }
+    },
+
+    previousPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--
+      }
+    },
+
+    setPageSize(size: number) {
+      this.pageSize = size
+      this.currentPage = 1
     },
 
     exportLogs(): string {

@@ -174,6 +174,68 @@ export interface ApiError {
   statusCode: number
 }
 
+// Error Type Hierarchy
+export interface StandardApiError {
+  message: string
+  code?: string
+  status?: number
+  details?: Record<string, any>
+}
+
+export class AuthenticationError extends Error implements StandardApiError {
+  code: string
+  status: number
+  details?: Record<string, any>
+
+  constructor(message: string = 'Authentication failed', details?: Record<string, any>) {
+    super(message)
+    this.name = 'AuthenticationError'
+    this.code = 'AUTH_ERROR'
+    this.status = 401
+    this.details = details
+  }
+}
+
+export class ValidationErrorClass extends Error implements StandardApiError {
+  code: string
+  status: number
+  details?: Record<string, any>
+
+  constructor(message: string = 'Validation failed', details?: Record<string, any>) {
+    super(message)
+    this.name = 'ValidationError'
+    this.code = 'VALIDATION_ERROR'
+    this.status = 422
+    this.details = details
+  }
+}
+
+export class NetworkError extends Error implements StandardApiError {
+  code: string
+  status: number
+  details?: Record<string, any>
+
+  constructor(message: string = 'Network error occurred', details?: Record<string, any>) {
+    super(message)
+    this.name = 'NetworkError'
+    this.code = 'NETWORK_ERROR'
+    this.status = 0
+    this.details = details
+  }
+}
+
+// Type guard for API errors
+export function isApiError(error: unknown): error is ApiError {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'success' in error &&
+    (error as any).success === false &&
+    'message' in error &&
+    'statusCode' in error
+  )
+}
+
 // Password Validation
 export interface PasswordValidation {
   isValid: boolean

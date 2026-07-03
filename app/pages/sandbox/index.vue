@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { Play, RotateCcw, Terminal, Code, Send, RefreshCw } from 'lucide-vue-next'
 import { useAuthStore } from '~/stores/auth'
-import { useToast } from '~/composables/useToast'
+import { useSandboxErrorHandler } from '~/composables/useSandboxErrorHandler'
 
 interface LogEntry {
   type: string
@@ -17,7 +17,7 @@ const sessionId = ref<string | null>(null)
 const userInput = ref('')
 
 const authStore = useAuthStore()
-const toast = useToast()
+const sandboxHandler = useSandboxErrorHandler()
 
 const log = (type: string, message: string) => {
   output.value.push({ type, message, time: new Date().toLocaleTimeString() })
@@ -106,12 +106,12 @@ const startSession = async () => {
     } else {
       const message = 'Failed to start session (no sessionId returned)'
       log('error', message)
-      toast.error(message)
+      sandboxHandler.handleSessionError(new Error(message))
     }
   } catch (error: any) {
     const message = error.message || 'Failed to start session'
     log('error', message)
-    toast.error(message)
+    sandboxHandler.handleSessionError(new Error(message))
   } finally {
     isRunning.value = false
   }
@@ -144,7 +144,7 @@ const sendInput = async () => {
     const message = error.message || 'Failed to send input'
     log('error', message)
     userInput.value = sent
-    toast.error(message)
+    sandboxHandler.handleInputError(new Error(message))
   } finally {
     isRunning.value = false
   }
