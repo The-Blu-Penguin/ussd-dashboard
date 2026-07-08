@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Play, RotateCcw, Terminal, Code, Send, RefreshCw } from 'lucide-vue-next'
+import { ref, computed } from 'vue'
+import { Play, RotateCcw, Terminal, Code, Send, StopCircle } from 'lucide-vue-next'
 import { useAuthStore } from '~/stores/auth'
 import { useSandboxErrorHandler } from '~/composables/useSandboxErrorHandler'
+import type { SandboxResponse } from '~/types/api'
 
 interface LogEntry {
   type: string
@@ -10,14 +11,81 @@ interface LogEntry {
   time: string
 }
 
-const code = ref('{\n  "type": "menu",\n  "message": "Welcome to Sandbox",\n  "options": [\n    "Option 1",\n    "Option 2"\n  ]\n}')
+const defaultConfig = {
+  entry: 'enter_amount',
+  steps: [
+    {
+      id: 'enter_amount',
+      next: 'enter_description',
+      type: 'INPUT',
+      input: {
+        variable: 'amount',
+        validation: {
+          type: 'AMOUNT',
+          minValue: 0.01,
+          errorMessage: 'Invalid amount. Enter numbers only',
+        },
+      },
+      prompt: 'Welcome to merchantName\nEnter amount:',
+    },
+    {
+      id: 'enter_description',
+      next: 'process_payment',
+      type: 'INPUT',
+      input: {
+        variable: 'description',
+        validation: { type: 'ALPHANUMERIC' },
+      },
+      prompt: 'Enter reference:',
+    },
+    {
+      id: 'process_payment',
+      type: 'ACTION',
+      onFailure: 'payment_failed',
+      onSuccess: 'payment_success',
+      actionName: 'processPaymentToMerchant',
+    },
+    {
+      id: 'payment_success',
+      type: 'END',
+      prompt:
+        'Request submitted successfully. You will receive a payment prompt shortly. If prompt delays, dial *170# to approve transaction. Ref: transactionReference.',
+    },
+    {
+      id: 'payment_failed',
+      type: 'END',
+      prompt: 'Transfer failed. Please try again later.',
+    },
+  ],
+  version: 1,
+  configId: 'config_v1',
+  metadata: {
+    name: 'MENU CONFIG',
+    description: 'BLU PAY USSD MENU FLOW',
+  },
+}
+
+// Form state
+const code = ref(JSON.stringify(defaultConfig, null, 2))
+const msisdn = ref('23385264217')
+const network = ref('mtn')
+const ussdCode = ref('820*1*170')
+const simulateFailure = ref(false)
+
+// Session state
 const output = ref<LogEntry[]>([])
 const isRunning = ref(false)
 const sessionId = ref<string | null>(null)
+const currentScreen = ref<string | null>(null)
+const currentStep = ref<string | null>(null)
 const userInput = ref('')
 
 const authStore = useAuthStore()
 const sandboxHandler = useSandboxErrorHandler()
+
+const isSessionEnded = computed(() => {
+  return sessionId.value !== null && output.value.some(e => e.type === 'ended')
+})
 
 const log = (type: string, message: string) => {
   output.value.push({ type, message, time: new Date().toLocaleTimeString() })
@@ -67,42 +135,52 @@ const sandboxFetch = async <T = any>(
   return parsed as T
 }
 
-const extractSessionId = (payload: any): string | null => {
-  if (!payload) return null
-  return payload.sessionId || payload.session_id || payload.id || null
-}
+const renderSandboxResponse = (response: SandboxResponse) => {
+  // Update session state
+  if (response.sessionId) {
+    sessionId.value = response.sessionId
+  }
+  if (response.screen) {
+    currentScreen.value = response.screen
+  }
+  if (response.currentStep) {
+    currentStep.value = response.currentStep
+  }
 
-const extractMessage = (payload: any): string | null => {
-  if (!payload) return null
-  return payload.message || payload.text || payload.response || null
-}
+  // Render console entries
+  if (response.consoleEntries && response.consoleEntries.length > 0) {
+    for (const entry of response.consoleEntries) {
+      log(entry.type || 'output', entry.message)
+    }
+  } else if (response.screen) {
+    // Fallback to screen if no console entries
+    log('output', response.screen)
+  }
 
-const extractOptions = (payload: any): string[] | null => {
-  if (!payload) return null
-  if (Array.isArray(payload.options)) return payload.options
-  if (Array.isArray(payload.choices)) return payload.choices
-  return null
-}
-
-const renderResponse = (payload: any, fallbackMsg: string) => {
-  const message = extractMessage(payload)
-  const options = extractOptions(payload)
-  if (message) log('output', message)
-  else if (fallbackMsg) log('output', fallbackMsg)
-  if (options?.length) log('output', 'Options: ' + options.join(' | '))
+  // Handle session end
+  if (response.isEnded) {
+    log('ended', 'Session ended')
+  }
 }
 
 const startSession = async () => {
   isRunning.value = true
   log('system', 'Starting sandbox session...')
   try {
-    const payload = await sandboxFetch<any>('/start', { method: 'POST' })
+    const payload = await sandboxFetch<SandboxResponse>('/start', {
+      method: 'POST',
+      body: {
+        configJson: code.value, // Send as JSON string
+        msisdn: msisdn.value,
+        network: network.value,
+        ussdCode: ussdCode.value,
+        simulateFailure: simulateFailure.value,
+      },
+    })
 
-    const newSessionId = extractSessionId(payload)
-    if (newSessionId) {
-      sessionId.value = newSessionId
-      log('success', `Session started: ${newSessionId}`)
-      renderResponse(payload, 'No message in response')
+    if (payload && payload.sessionId) {
+      renderSandboxResponse(payload)
+      log('success', `Session started: ${payload.sessionId}`)
     } else {
       const message = 'Failed to start session (no sessionId returned)'
       log('error', message)
@@ -127,17 +205,19 @@ const sendInput = async () => {
   isRunning.value = true
 
   try {
-    const payload = await sandboxFetch<any>('/input', {
+    const payload = await sandboxFetch<SandboxResponse>('/input', {
       method: 'POST',
-      body: { sessionId: sessionId.value, input: trimmed },
+      body: {
+        sessionId: sessionId.value,
+        userInput: trimmed, // Use userInput not input
+      },
     })
 
-    if (payload && (extractMessage(payload) || extractOptions(payload) || extractSessionId(payload))) {
-      renderResponse(payload, 'OK')
+    if (payload) {
+      renderSandboxResponse(payload)
     } else {
       const message = 'No response from server'
       log('error', message)
-      // Restore the user's input so they can retry
       userInput.value = sent
     }
   } catch (error: any) {
@@ -150,35 +230,20 @@ const sendInput = async () => {
   }
 }
 
-const getSession = async () => {
-  if (!sessionId.value) return
-
-  log('system', `Fetching session ${sessionId.value}...`)
-  isRunning.value = true
-  try {
-    const payload = await sandboxFetch<any>(`/${sessionId.value}`, { method: 'GET' })
-
-    if (payload) {
-      log('success', 'Session state:')
-      try {
-        log('output', JSON.stringify(payload, null, 2))
-      } catch {
-        log('output', String(payload))
-      }
-    } else {
-      log('error', 'Empty response')
-    }
-  } catch (error: any) {
-    const message = error.message || 'Failed to fetch session'
-    log('error', message)
-  } finally {
-    isRunning.value = false
-  }
-}
-
 const clearConsole = () => {
   output.value = []
   sessionId.value = null
+  currentScreen.value = null
+  currentStep.value = null
+}
+
+const endSession = () => {
+  if (sessionId.value) {
+    log('ended', `Session ${sessionId.value} manually ended`)
+    sessionId.value = null
+    currentScreen.value = null
+    currentStep.value = null
+  }
 }
 </script>
 
@@ -190,21 +255,79 @@ const clearConsole = () => {
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-180px)]">
-      <!-- Code Editor -->
-      <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm flex flex-col overflow-hidden border border-gray-100 dark:border-gray-700">
-        <div class="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700 p-3 flex items-center justify-between">
-          <div class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300 font-medium">
-            <Code class="w-4 h-4 text-vibes-500 dark:text-vibes-400" />
-            <span>logic.json</span>
-            <span v-if="sessionId" class="ml-2 text-[10px] text-gray-400 font-mono">session: {{ sessionId }}</span>
+      <!-- Left Panel: Code Editor + Config -->
+      <div class="lg:col-span-2 flex flex-col gap-4 overflow-hidden">
+        <!-- Session Config -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
+          <div class="flex items-center space-x-2 text-sm font-medium text-gray-600 dark:text-gray-300 mb-3">
+            <Terminal class="w-4 h-4 text-vibes-500 dark:text-vibes-400" />
+            <span>Session Configuration</span>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">MSISDN</label>
+              <input
+                v-model="msisdn"
+                type="text"
+                placeholder="23385264217"
+                class="w-full bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 text-xs font-mono px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 focus:outline-none focus:border-vibes-500"
+                :disabled="!!sessionId && !isSessionEnded"
+              >
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Network</label>
+              <select
+                v-model="network"
+                class="w-full bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 text-xs font-mono px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 focus:outline-none focus:border-vibes-500"
+                :disabled="!!sessionId && !isSessionEnded"
+              >
+                <option value="mtn">MTN</option>
+                <option value="telecel">Telecel</option>
+                <option value="airtel">Airtel</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">USSD Code</label>
+              <input
+                v-model="ussdCode"
+                type="text"
+                placeholder="820*1*170"
+                class="w-full bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 text-xs font-mono px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 focus:outline-none focus:border-vibes-500"
+                :disabled="!!sessionId && !isSessionEnded"
+              >
+            </div>
+            <div class="flex items-end">
+              <label class="flex items-center space-x-2 cursor-pointer">
+                <input
+                  v-model="simulateFailure"
+                  type="checkbox"
+                  class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-vibes-600 focus:ring-vibes-500"
+                  :disabled="!!sessionId && !isSessionEnded"
+                >
+                <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Simulate Failure</span>
+              </label>
+            </div>
           </div>
         </div>
-        <div class="flex-1 relative">
-          <textarea
-            v-model="code"
-            class="w-full h-full p-4 font-mono text-sm text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-800 resize-none focus:outline-none"
-            spellcheck="false"
-          ></textarea>
+
+        <!-- Code Editor -->
+        <div class="flex-1 bg-white dark:bg-gray-800 rounded-2xl shadow-sm flex flex-col overflow-hidden border border-gray-100 dark:border-gray-700 min-h-0">
+          <div class="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700 p-3 flex items-center justify-between">
+            <div class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300 font-medium">
+              <Code class="w-4 h-4 text-vibes-500 dark:text-vibes-400" />
+              <span>configJson</span>
+              <span v-if="sessionId" class="ml-2 text-[10px] text-gray-400 font-mono">session: {{ sessionId }}</span>
+              <span v-if="currentStep" class="ml-2 text-[10px] text-vibes-500 font-mono">step: {{ currentStep }}</span>
+            </div>
+          </div>
+          <div class="flex-1 relative min-h-0">
+            <textarea
+              v-model="code"
+              class="w-full h-full p-4 font-mono text-sm text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-800 resize-none focus:outline-none"
+              spellcheck="false"
+              :disabled="!!sessionId && !isSessionEnded"
+            ></textarea>
+          </div>
         </div>
       </div>
 
@@ -214,17 +337,10 @@ const clearConsole = () => {
           <div class="flex items-center space-x-2 text-sm font-medium text-gray-200">
             <Terminal class="w-4 h-4 text-green-400" />
             <span>Console</span>
+            <span v-if="isSessionEnded" class="text-[10px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded">ENDED</span>
+            <span v-else-if="sessionId" class="text-[10px] bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded">ACTIVE</span>
           </div>
           <div class="flex items-center space-x-2">
-            <button
-              v-if="sessionId"
-              @click="getSession"
-              class="p-1.5 hover:bg-gray-700 rounded-md text-gray-400 transition-colors"
-              title="Fetch session state"
-              :disabled="isRunning"
-            >
-              <RefreshCw class="w-4 h-4" :class="{ 'animate-spin': isRunning }" />
-            </button>
             <button
               @click="clearConsole"
               class="p-1.5 hover:bg-gray-700 rounded-md text-gray-400 transition-colors"
@@ -233,19 +349,28 @@ const clearConsole = () => {
               <RotateCcw class="w-4 h-4" />
             </button>
             <button
+              v-if="sessionId && !isSessionEnded"
+              @click="endSession"
+              class="flex items-center space-x-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-md text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              :disabled="isRunning"
+            >
+              <StopCircle class="w-3 h-3 fill-current" />
+              <span>End Session</span>
+            </button>
+            <button
               @click="startSession"
               class="flex items-center space-x-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-md text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               :disabled="isRunning"
             >
               <Play class="w-3 h-3 fill-current" />
-              <span>{{ sessionId ? 'Restart' : 'Start Session' }}</span>
+              <span>{{ !sessionId || isSessionEnded ? 'Start' : 'Restart' }}</span>
             </button>
           </div>
         </div>
 
         <div class="flex-1 p-4 font-mono text-xs overflow-y-auto custom-scrollbar space-y-2">
           <div v-if="output.length === 0" class="text-gray-600 italic mt-10 text-center">
-            Click "Start Session" to begin...
+            Click "Start" to begin...
           </div>
           <div v-for="(logEntry, idx) in output" :key="idx" class="border-l-2 pl-2"
             :class="{
@@ -253,7 +378,8 @@ const clearConsole = () => {
               'border-green-500 text-green-400': logEntry.type === 'success',
               'border-vibes-500 text-vibes-300': logEntry.type === 'output',
               'border-blue-500 text-blue-400': logEntry.type === 'sent',
-              'border-red-500 text-red-400': logEntry.type === 'error'
+              'border-red-500 text-red-400': logEntry.type === 'error',
+              'border-yellow-500 text-yellow-400': logEntry.type === 'ended'
             }"
           >
             <div class="flex justify-between opacity-50 mb-0.5">
@@ -269,14 +395,14 @@ const clearConsole = () => {
           <input
             v-model="userInput"
             type="text"
-            :disabled="!sessionId || isRunning"
-            :placeholder="sessionId ? 'Send input to session...' : 'Start a session first'"
+            :disabled="!sessionId || isRunning || isSessionEnded"
+            :placeholder="!sessionId ? 'Start a session first' : isSessionEnded ? 'Session ended' : 'Send input to session...'"
             class="flex-1 bg-gray-800 text-gray-100 placeholder-gray-500 text-xs font-mono px-3 py-2 rounded border border-gray-700 focus:outline-none focus:border-vibes-500 disabled:opacity-50"
             @keydown.enter="sendInput"
           >
           <button
             @click="sendInput"
-            :disabled="!sessionId || !userInput.trim() || isRunning"
+            :disabled="!sessionId || !userInput.trim() || isRunning || isSessionEnded"
             class="flex items-center space-x-1 bg-vibes-600 hover:bg-vibes-700 text-white px-3 py-2 rounded text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Send class="w-3 h-3" />

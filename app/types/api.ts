@@ -252,3 +252,31 @@ export interface PasswordRequirements {
   requireNumbers: boolean
   requireSpecialChars: boolean
 }
+
+// Sandbox Types
+export interface SandboxStartRequest {
+  configJson: string
+  msisdn: string
+  network: string
+  ussdCode: string
+  simulateFailure: boolean
+}
+
+export interface SandboxInputRequest {
+  sessionId: string
+  userInput: string
+}
+
+export interface ConsoleEntry {
+  type: string
+  message: string
+  timestamp: string
+}
+
+export interface SandboxResponse {
+  sessionId: string
+  screen: string
+  currentStep: string
+  consoleEntries: ConsoleEntry[]
+  isEnded: boolean
+}
