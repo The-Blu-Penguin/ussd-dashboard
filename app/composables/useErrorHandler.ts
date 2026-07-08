@@ -1,4 +1,5 @@
 import type { ApiError } from '~/types/api'
+import { isApiError } from '~/types/api'
 import { useToast } from '~/composables/useToast'
 import { useLogger } from '~/composables/useLogger'
 
@@ -15,24 +16,32 @@ export interface StandardError {
   isRetryable: boolean
 }
 
-export const useErrorHandler = () => {
+export interface UseErrorHandlerReturn {
+  handleError: (error: unknown, options?: ErrorHandlerOptions) => StandardError
+  parseError: (error: unknown) => StandardError
+  getValidationErrors: (error: StandardError) => string[]
+}
+
+export const useErrorHandler = (): UseErrorHandlerReturn => {
   const toast = useToast()
   const logger = useLogger()
 
-  const parseError = (error: any): StandardError => {
+  const parseError = (error: unknown): StandardError => {
     // Default error structure
     const standardError: StandardError = {
       message: 'An unexpected error occurred',
       isRetryable: false,
     }
 
+    const err = error as any
+
     // Handle API response errors
-    if (error.response) {
-      const status = error.response.status
+    if (err.response) {
+      const status = err.response.status
       standardError.statusCode = status
 
       // Extract message from response
-      const responseData = error.response._data
+      const responseData = err.response._data
       if (responseData?.message) {
         standardError.message = responseData.message
       }
@@ -79,7 +88,7 @@ export const useErrorHandler = () => {
           standardError.message = 'Gateway timeout. Please try again.'
           break
       }
-    } else if (error.message) {
+    } else if (err.message) {
       // Handle network errors
       standardError.message = 'Unable to connect. Please check your internet connection.'
       standardError.isRetryable = true
@@ -89,7 +98,7 @@ export const useErrorHandler = () => {
   }
 
   const handleError = (
-    error: any,
+    error: unknown,
     options: ErrorHandlerOptions = {}
   ): StandardError => {
     const { showToast = true, logError = true } = options

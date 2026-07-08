@@ -2,15 +2,14 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import Button from '~/components/ui/Button.vue'
 import AuthNotification from '~/components/ui/AuthNotification.vue'
-import { useToast } from '~/composables/useToast'
-import { validateEmailWithError } from '~/utils/validation'
+import { useValidation } from '~/composables/useValidation'
 
 definePageMeta({
   layout: 'auth'
 })
 
 const { login } = useAuth()
-const toast = useToast()
+const { validateEmail, validateRequired } = useValidation()
 
 const email = ref('')
 const password = ref('')
@@ -27,21 +26,23 @@ const handleLogin = async () => {
   error.value = ''
   loading.value = true
 
-  if (!email.value) {
-    error.value = 'Email is required'
+  const emailCheck = validateRequired(email.value, 'Email')
+  if (!emailCheck.valid) {
+    error.value = emailCheck.error || 'Email is required'
     loading.value = false
     return
   }
   
-  const emailValidation = validateEmailWithError(email.value)
+  const emailValidation = validateEmail(email.value)
   if (!emailValidation.valid) {
     error.value = emailValidation.error || 'Invalid email'
     loading.value = false
     return
   }
   
-  if (!password.value) {
-    error.value = 'Password is required'
+  const passwordCheck = validateRequired(password.value, 'Password')
+  if (!passwordCheck.valid) {
+    error.value = passwordCheck.error || 'Password is required'
     loading.value = false
     return
   }
@@ -55,7 +56,6 @@ const handleLogin = async () => {
     }, 1500)
   } else {
     error.value = result.message || 'Login failed'
-    toast.error(error.value)
     loading.value = false
   }
 }

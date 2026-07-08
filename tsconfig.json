@@ -1,7 +1,10 @@
 {
   // https://nuxt.com/docs/guide/concepts/typescript
   "compilerOptions": {
-    "types": ["node"]
+    "types": ["node"],
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true
   },
   "files": [],
   "references": [

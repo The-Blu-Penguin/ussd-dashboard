@@ -40,7 +40,6 @@ function shouldLog(level: LogLevel): boolean {
  */
 export const useLogger = () => {
   const store = useLoggerStore()
-  const toast = useToast()
 
   const log = (level: LogLevel, message: string, options: LogOptions = {}) => {
     if (!shouldLog(level)) return
@@ -78,14 +77,8 @@ export const useLogger = () => {
       }
     }
 
-    // Toast for user-facing errors/warnings (unless silent)
-    if (import.meta.client && !options.silent) {
-      if (level === 'error') {
-        toast.error(message)
-      } else if (level === 'warn') {
-        toast.warning(message)
-      }
-    }
+    // Toasts are NOT shown by the logger.
+    // All user-facing error toasts are centralized in useErrorHandler.
   }
 
   return {
