@@ -337,6 +337,73 @@ const targetNodes = computed(() => {
           </select>
         </div>
       </div>
+
+      <!-- API_CONNECTOR: HTTP Method, URLs, Headers -->
+      <div v-if="nodeType === 'API_CONNECTOR'" class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">HTTP Method</label>
+          <select
+            v-model="selectedNode.data.httpMethod"
+            class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:border-vibes-500 transition-colors"
+          >
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Base URL</label>
+          <input 
+            type="text" 
+            v-model="selectedNode.data.baseUrl"
+            class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:border-vibes-500 transition-colors"
+            placeholder="https://api.example.com"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Endpoint</label>
+          <input 
+            type="text" 
+            v-model="selectedNode.data.endpoint"
+            class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:border-vibes-500 transition-colors"
+            placeholder="/v1/users"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Request Headers (JSON)</label>
+          <textarea 
+            v-model="selectedNode.data.headers"
+            rows="4"
+            class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:border-vibes-500 transition-colors resize-none font-mono"
+            placeholder='{"Authorization": "Bearer token", "Content-Type": "application/json"}'
+          ></textarea>
+          <p class="text-xs text-gray-400 mt-1">Enter headers as JSON object</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">On Success →</label>
+          <select
+            v-model="selectedNode.data.onSuccess"
+            class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:border-vibes-500 transition-colors"
+          >
+            <option value="">Select target node...</option>
+            <option v-for="target in targetNodes" :key="target.id" :value="target.id">{{ target.label }}</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">On Failure →</label>
+          <select
+            v-model="selectedNode.data.onFailure"
+            class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:border-vibes-500 transition-colors"
+          >
+            <option value="">Select target node...</option>
+            <option v-for="target in targetNodes" :key="target.id" :value="target.id">{{ target.label }}</option>
+          </select>
+        </div>
+      </div>
     </div>
     
     <div v-else class="flex-1 flex flex-col items-center justify-center text-center px-4">
