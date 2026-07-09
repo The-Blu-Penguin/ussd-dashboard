@@ -1,10 +1,11 @@
 <script setup>
-import { List, Type, Globe, GitBranch, XCircle, Lock, Database, Route, Code } from 'lucide-vue-next'
+import { List, Type, Globe, GitBranch, XCircle, Lock, Database, Route, Code, Plug } from 'lucide-vue-next'
 
 const components = [
   { type: 'MENU', label: 'Menu Screen', icon: List, color: 'blue' },
   { type: 'INPUT', label: 'User Input', icon: Type, color: 'blue' },
   { type: 'ACTION', label: 'Action', icon: Globe, color: 'purple' },
+  { type: 'API_CONNECTOR', label: 'API Connector', icon: Plug, color: 'cyan' },
   { type: 'END', label: 'End Session', icon: XCircle, color: 'red' },
   { type: 'CONDITION', label: 'Logic / IF', icon: GitBranch, color: 'orange' },
   { type: 'AUTH', label: 'PIN / Auth', icon: Lock, color: 'slate', disabled: true },
@@ -50,6 +51,7 @@ const onDragStart = (event, type, disabled) => {
           comp.color === 'orange' ? 'bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400' :
           comp.color === 'yellow' ? 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400' :
           comp.color === 'indigo' ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' :
+          comp.color === 'cyan' ? 'bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400' :
           'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400'
         }`">
           <component :is="comp.icon" class="w-4 h-4" />

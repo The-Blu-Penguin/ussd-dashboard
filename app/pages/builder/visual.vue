@@ -416,6 +416,8 @@ const onDrop = (event) => {
     classNames = 'bg-red-50 border-2 border-red-500 rounded-lg shadow-sm text-center p-3 font-medium'
   } else if (type === 'ACTION') {
     classNames = 'bg-purple-50 border-2 border-purple-400 rounded-lg shadow-sm text-center p-3 font-medium'
+  } else if (type === 'API_CONNECTOR') {
+    classNames = 'bg-cyan-50 border-2 border-cyan-500 rounded-lg shadow-sm text-center p-3 font-medium'
   } else if (type === 'MENU' || type === 'INPUT') {
     classNames = 'bg-vibes-50 border-2 border-vibes-500 rounded-lg shadow-sm text-center p-3 font-medium'
   } else if (type === 'CONDITION') {
@@ -627,7 +629,6 @@ const copyToClipboard = () => {
       <div class="flex-1 flex flex-col md:flex-row items-start md:items-center gap-4">
         <div>
           <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Menu Builder</h1>
-          <p class="text-sm text-gray-500 dark:text-gray-400">Design USSD flows visually</p>
         </div>
         
         <!-- Template Selector -->
