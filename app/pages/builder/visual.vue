@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import { Save, Settings, FileJson } from 'lucide-vue-next'
+import { Save, Settings, FileJson, Download } from 'lucide-vue-next'
 import { VueFlow, useVueFlow, Handle, Position } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import ComponentsSidebar from '~/components/builder/ComponentsSidebar.vue'
@@ -670,10 +670,10 @@ const copyToClipboard = () => {
         </span>
         <button 
           @click="exportJson"
-          class="flex-1 sm:flex-none flex justify-center items-center space-x-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors"
+          class="p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-colors"
+          title="Export JSON"
         >
-          <FileJson class="w-4 h-4" />
-          <span>Export JSON</span>
+          <Download class="w-4 h-4" />
         </button>
         <button 
           @click="showProperties = !showProperties"
