@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Menu, Moon, Sun, Bell, ChevronDown } from 'lucide-vue-next'
 import { useState } from '#imports'
 import { useTheme } from '~/composables/useTheme'
@@ -11,6 +12,35 @@ const isMobileSidebarOpen = useState('mobileSidebarOpen', () => false)
 const toggleMobileSidebar = () => {
   isMobileSidebarOpen.value = !isMobileSidebarOpen.value
 }
+
+const userInitials = computed(() => {
+  const name = user.value?.fullName || ''
+  return name
+    .split(' ')
+    .map(part => part.charAt(0))
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+})
+
+const avatarColor = computed(() => {
+  const name = user.value?.fullName || 'User'
+  const colors = [
+    'bg-blue-500',
+    'bg-green-500',
+    'bg-purple-500',
+    'bg-pink-500',
+    'bg-indigo-500',
+    'bg-teal-500',
+    'bg-orange-500',
+    'bg-cyan-500',
+  ]
+  let hash = 0
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  return colors[Math.abs(hash) % colors.length]
+})
 </script>
 
 <template>
@@ -50,13 +80,14 @@ const toggleMobileSidebar = () => {
         @keydown.space="$event.preventDefault()"
       >
         <div class="flex items-center space-x-2 sm:space-x-3">
-          <div class="w-8 h-8 rounded-full bg-vibes-100 dark:bg-vibes-900/50 overflow-hidden ring-2 ring-transparent group-hover:ring-blue-200 dark:group-hover:ring-blue-800 transition-all shrink-0">
+          <div class="w-8 h-8 rounded-full overflow-hidden ring-2 ring-transparent group-hover:ring-blue-200 dark:group-hover:ring-blue-800 transition-all shrink-0 flex items-center justify-center" :class="user?.avatarUrl ? '' : avatarColor">
             <img 
               v-if="user?.avatarUrl"
               :src="user.avatarUrl"
               :alt="`${user.fullName} avatar`" 
               class="w-full h-full object-cover" 
             />
+            <span v-else class="text-xs font-bold text-white select-none">{{ userInitials }}</span>
           </div>
           <div class="hidden md:block text-left">
             <p class="text-sm font-semibold text-gray-700 dark:text-gray-200 group-hover:text-vibes-600 dark:group-hover:text-vibes-400">{{ user?.fullName || 'User' }}</p>

@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { Save, Code, FileJson, Eye } from 'lucide-vue-next'
+import { Save, Code, FileJson, Eye, Download } from 'lucide-vue-next'
 import { useMenuConfigsStore } from '~/stores/menuConfigs'
 import Button from '~/components/ui/Button.vue'
 import { useRoute, navigateTo } from '#imports'
@@ -101,6 +101,29 @@ const previewInVisual = () => {
   }
 }
 
+const exportJson = () => {
+  try {
+    const parsed = JSON.parse(jsonContent.value)
+    const formatted = JSON.stringify(parsed, null, 2)
+    const blob = new Blob([formatted], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'config.json'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+    saveMessage.value = 'JSON exported successfully'
+    saveError.value = false
+    setTimeout(() => { saveMessage.value = '' }, 3000)
+  } catch (e) {
+    saveMessage.value = 'Invalid JSON structure'
+    saveError.value = true
+    setTimeout(() => { saveMessage.value = '' }, 3000)
+  }
+}
+
 const saveConfig = async () => {
   try {
     const parsed = JSON.parse(jsonContent.value)
@@ -161,6 +184,9 @@ const saveConfig = async () => {
         <button @click="previewInVisual" class="flex items-center space-x-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors">
           <Eye class="w-4 h-4" />
           <span>Preview in Visual</span>
+        </button>
+        <button @click="exportJson" class="p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-colors" title="Export JSON">
+          <Download class="w-4 h-4" />
         </button>
         <Button 
           @click="saveConfig"
