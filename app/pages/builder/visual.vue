@@ -449,6 +449,7 @@ const onDrop = (event) => {
       httpMethod: 'GET',
       baseUrl: '',
       headers: '',
+      responseMapping: [],
       validation: type === 'INPUT' ? { type: 'ALPHANUMERIC' } : undefined,
       options: type === 'MENU' ? [] : undefined,
       onSuccess: '',

@@ -115,6 +115,21 @@ const targetNodes = computed(() => {
     .filter(n => n.id !== props.selectedNode?.id)
     .map(n => ({ id: n.id, label: n.label || n.id }))
 })
+
+// Response mapping helpers for API_CONNECTOR
+const addResponseMapping = () => {
+  if (!props.selectedNode.data.responseMapping) {
+    props.selectedNode.data.responseMapping = []
+  }
+  props.selectedNode.data.responseMapping.push({
+    jsonPath: '',
+    variableName: ''
+  })
+}
+
+const removeResponseMapping = (index) => {
+  props.selectedNode.data.responseMapping.splice(index, 1)
+}
 </script>
 
 <template>
@@ -338,7 +353,7 @@ const targetNodes = computed(() => {
         </div>
       </div>
 
-      <!-- API_CONNECTOR: HTTP Method, URLs, Headers -->
+      <!-- API_CONNECTOR: HTTP Method, URLs, Headers, Response Mapping -->
       <div v-if="nodeType === 'API_CONNECTOR'" class="space-y-4">
         <div>
           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">HTTP Method</label>
@@ -381,6 +396,55 @@ const targetNodes = computed(() => {
           ></textarea>
           <p class="text-xs text-gray-400 mt-1">Enter headers as JSON object</p>
         </div>
+
+        <hr class="border-gray-100 dark:border-gray-700 my-4" />
+
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300">Response Mapping</label>
+            <button 
+              @click="addResponseMapping"
+              class="flex items-center space-x-1 px-2 py-1 text-xs bg-vibes-50 dark:bg-vibes-900/30 text-vibes-600 dark:text-vibes-400 rounded-md border border-vibes-200 dark:border-vibes-800 hover:bg-vibes-100 transition-colors"
+            >
+              <Plus class="w-3 h-3" />
+              <span>Add</span>
+            </button>
+          </div>
+          <p class="text-xs text-gray-400 mb-3">Map response fields to variables for use in subsequent nodes</p>
+
+          <div v-if="!selectedNode.data.responseMapping || selectedNode.data.responseMapping.length === 0" class="text-xs text-gray-400 italic py-2">
+            No response mappings yet. Click Add to create one.
+          </div>
+
+          <div v-for="(mapping, index) in selectedNode.data.responseMapping" :key="index" class="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Mapping {{ index + 1 }}</span>
+              <button @click="removeResponseMapping(index)" class="text-gray-400 hover:text-red-500 transition-colors">
+                <Trash2 class="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div>
+              <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">JSON Path</label>
+              <input 
+                v-model="mapping.jsonPath"
+                placeholder="e.g. data.balance or response.status"
+                class="w-full px-2 py-1.5 text-xs bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-vibes-500 font-mono"
+              />
+            </div>
+
+            <div>
+              <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Variable Name</label>
+              <input 
+                v-model="mapping.variableName"
+                placeholder="e.g. accountBalance"
+                class="w-full px-2 py-1.5 text-xs bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-vibes-500"
+              />
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-gray-100 dark:border-gray-700 my-4" />
 
         <div>
           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">On Success →</label>
