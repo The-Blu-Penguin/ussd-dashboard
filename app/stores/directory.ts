@@ -130,6 +130,33 @@ export const useDirectoryStore = defineStore('directory', {
       }
     },
     
+    async updateDirectory(id: string, payload: { merchantCode: string; menuConfigFlowId: string }) {
+      this.isLoading = true
+      this.error = null
+
+      try {
+        const api = useApi()
+
+        const response = await api<any>(`/directory/${id}`, {
+          method: 'PATCH',
+          body: payload,
+        })
+
+        if (response.success) {
+          await this.fetchDirectories(true)
+          return { success: true, message: response.message || 'Directory updated successfully' }
+        } else {
+          this.error = response.message || 'Failed to update directory'
+          this.isLoading = false
+          return { success: false, message: this.error }
+        }
+      } catch (error: any) {
+        this.error = error.response?._data?.message || error.message || 'Failed to update directory'
+        this.isLoading = false
+        return { success: false, message: this.error }
+      }
+    },
+
     async deleteDirectory(id: string) {
       this.isLoading = true
       this.error = null

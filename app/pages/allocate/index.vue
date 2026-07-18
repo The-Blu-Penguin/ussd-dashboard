@@ -217,32 +217,33 @@ const apps = computed<App[]>(() => {
 
 // Handle search when user presses Enter or clears search
 const isSearching = ref(false)
+const hasSearchedBefore = ref(false)
 
 const handleSearch = async () => {
   const query = searchQuery.value.trim()
   
   if (!query) {
-    // Clear search - reload original data
+    // Only reload if a search was previously active — avoids redundant fetch when clearing an empty field
+    if (!hasSearchedBefore.value) return
+    hasSearchedBefore.value = false
     currentPage.value = 1
     await directoryStore.fetchDirectories(true, 0, itemsPerPage.value)
     return
   }
   
+  hasSearchedBefore.value = true
   isSearching.value = true
   currentPage.value = 1
   await directoryStore.searchDirectories(query, 0, itemsPerPage.value)
   isSearching.value = false
 }
 
-// Clear search when query is emptied
+// Clear search when query is emptied — { immediate: false } prevents spurious mount-time trigger
 watch(searchQuery, (newQuery) => {
   if (!newQuery || newQuery.trim() === '') {
     handleSearch()
   }
-})
-
-// All apps come from the store (works for both normal and search results)
-const paginatedApps = computed(() => apps.value)
+}, { immediate: false })
 
 const totalItems = computed(() => directoryStore.totalElements)
 
@@ -315,6 +316,11 @@ const openEditModal = (app: App) => {
   }
   
   showModal.value = true
+
+  // Ensure menu configs are loaded so the dropdown can pre-select the current flow
+  if (menuConfigsStore.configs.length === 0) {
+    menuConfigsStore.fetchConfigs()
+  }
 }
 
 const handleAllocate = async () => {
@@ -325,39 +331,45 @@ const handleAllocate = async () => {
 
   isSubmitting.value = true
 
-  let codeToAssignNumber = 0
-  
-  if (newApp.value.method === 'Automatic' && !isEditing.value) {
-    if (autoSelectedCode.value !== null) {
-        codeToAssignNumber = autoSelectedCode.value
-    } else {
-        codeToAssignNumber = Math.floor(100 + Math.random() * 900)
-    }
-  } else {
-    if (!newApp.value.selectedCode || newApp.value.selectedCode === '') {
-        allocateHandler.handleValidationError('Please select a code.')
-        isSubmitting.value = false
-        return
-    }
-    codeToAssignNumber = parseInt(newApp.value.selectedCode, 10)
+  // Resolve the selected flow's ID from its name (shared by both edit and create paths)
+  const selectedFlow = menuConfigsStore.configs.find(c => c.name === newApp.value.menuFlow)
+  const menuConfigFlowId = selectedFlow ? selectedFlow.id : ''
+
+  if (!menuConfigFlowId) {
+    allocateHandler.handleValidationError('Invalid Menu Flow selected.')
+    isSubmitting.value = false
+    return
   }
 
   if (isEditing.value && editingId.value) {
-    // This will be updated to use actual API call later
-    const index = apps.value.findIndex(a => a.id === editingId.value)
-    // For now we just close the modal since we can't mutate computed properties directly
-    allocateHandler.handleSuccess('Code allocation updated successfully')
-    showModal.value = false
+    // Edit path — PATCH /directory/{id}
+    const response = await directoryStore.updateDirectory(editingId.value, {
+      merchantCode: newApp.value.merchantId,
+      menuConfigFlowId,
+    })
+
+    if (response.success) {
+      allocateHandler.handleSuccess(response.message || 'Allocation updated successfully')
+      showModal.value = false
+    } else {
+      allocateHandler.handleAllocationError(new Error(`Update Failed: ${response.message}`))
+    }
     isSubmitting.value = false
   } else {
-    // Find the corresponding menuConfigFlowId based on the selected name
-    const selectedFlow = menuConfigsStore.configs.find(c => c.name === newApp.value.menuFlow)
-    const menuConfigFlowId = selectedFlow ? selectedFlow.id : ''
+    // Create path — POST /directory
+    let codeToAssignNumber = 0
 
-    if (!menuConfigFlowId) {
-        allocateHandler.handleValidationError('Invalid Menu Flow selected.')
+    if (newApp.value.method === 'Automatic') {
+      codeToAssignNumber = autoSelectedCode.value !== null
+        ? autoSelectedCode.value
+        : Math.floor(100 + Math.random() * 900)
+    } else {
+      if (!newApp.value.selectedCode || newApp.value.selectedCode === '') {
+        allocateHandler.handleValidationError('Please select a code.')
         isSubmitting.value = false
         return
+      }
+      codeToAssignNumber = parseInt(newApp.value.selectedCode, 10)
     }
 
     const payload = {
@@ -365,8 +377,8 @@ const handleAllocate = async () => {
       codeToAssign: codeToAssignNumber,
       level: newApp.value.level.toUpperCase(),
       methodOfAllocation: newApp.value.method === 'Automatic' ? 'AUTO' : 'MANUAL',
-      menuConfigFlowId: menuConfigFlowId,
-      ...(newApp.value.level === 'Secondary' ? { parentCode: 1 } : {})
+      menuConfigFlowId,
+      ...(newApp.value.level === 'Secondary' ? { parentCode: newApp.value.parentCode } : {})
     }
 
     const response = await directoryStore.allocateCode(payload)
@@ -508,7 +520,7 @@ const handleAllocate = async () => {
               <span v-if="isFetchingCodes" class="flex items-center gap-2">
                 <Spinner size="sm" color="primary" /> Fetching...
               </span>
-              <span v-else>*820*<span v-if="newApp.level === 'Secondary'">1*</span><span class="font-bold text-blue-800 dark:text-vibes-300">{{ autoSelectedCode !== null ? autoSelectedCode : 'XXX' }}</span>#</span>
+              <span v-else>*820*<span v-if="newApp.level === 'Secondary'">{{ newApp.parentCode }}*</span><span class="font-bold text-blue-800 dark:text-vibes-300">{{ autoSelectedCode !== null ? autoSelectedCode : 'XXX' }}</span>#</span>
               <span class="text-xs bg-vibes-100 dark:bg-vibes-800 px-2 py-0.5 rounded text-vibes-700 dark:text-vibes-300 font-bold">Auto</span>
             </div>
             <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">System will automatically assign an available code</p>
@@ -600,10 +612,7 @@ const handleAllocate = async () => {
             <tr v-else-if="directoryStore.error">
               <td colspan="6" class="px-6 py-8 text-center text-red-500">{{ directoryStore.error }}</td>
             </tr>
-            <tr v-else-if="paginatedApps.length === 0">
-              <td colspan="6" class="px-6 py-8 text-center text-gray-500">No directories found.</td>
-            </tr>
-            <tr v-else v-for="app in paginatedApps" :key="app.id" class="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors group">
+            <tr v-else v-for="app in apps" :key="app.id" class="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors group">
               <td class="px-6 py-4">
                 <div class="flex items-center">
                   <div class="w-full">
@@ -652,7 +661,7 @@ const handleAllocate = async () => {
       </div>
       
       <!-- Empty State -->
-      <div v-if="paginatedApps.length === 0 && !directoryStore.isLoading && !directoryStore.error" class="p-12 text-center">
+      <div v-if="apps.length === 0 && !directoryStore.isLoading && !directoryStore.error" class="p-12 text-center">
         <div class="w-16 h-16 bg-gray-50 dark:bg-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
           <Smartphone class="w-8 h-8 text-gray-400 dark:text-gray-500" />
         </div>
@@ -667,7 +676,7 @@ const handleAllocate = async () => {
       </div>
 
       <!-- Pagination -->
-      <div v-if="paginatedApps.length > 0" class="border-t border-gray-100 dark:border-gray-700 p-4">
+      <div v-if="apps.length > 0" class="border-t border-gray-100 dark:border-gray-700 p-4">
         <Pagination 
           :current-page="currentPage" 
           :total-items="totalItems" 
