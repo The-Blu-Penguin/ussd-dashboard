@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { useApi } from '~/composables/useApi'
+import { useMerchantsStore } from '~/stores/merchants'
 import type { Directory, ApiResponse } from '~/types/api'
 
 interface DirectoryState {
@@ -40,8 +41,8 @@ export const useDirectoryStore = defineStore('directory', {
       try {
         const api = useApi()
 
-        // Use the new endpoint with fullResponse=true to get merchant names directly
-        const response = await api<any>(`/directory?page=${page}&size=${safeSize}&fullResponse=true`, {
+        // Fetch directories without fullResponse=true to prevent backend NPE
+        const response = await api<any>(`/directory?page=${page}&size=${safeSize}`, {
           method: 'GET',
         })
 
@@ -50,7 +51,11 @@ export const useDirectoryStore = defineStore('directory', {
           const { content, totalPages, totalElements, number, size: pageSize } = response.data
 
           if (Array.isArray(content)) {
-            // Map the response to extract merchant names from merchantData
+            // Log the first item to debug the exact structure returned by the API
+            if (content.length > 0) {
+              console.log('[DEBUG] First raw directory item from API:', JSON.stringify(content[0], null, 2))
+            }
+            // Map the response
             this.directories = content.map((item: any) => ({
               id: item.id,
               merchantCode: item.merchantData?.merchant?.merchantCode || item.merchantCode,
@@ -69,6 +74,21 @@ export const useDirectoryStore = defineStore('directory', {
               childrenCount: item.childrenCount || 0,
               createdBy: item.createdBy,
             }))
+
+            // Fetch merchant names in batch to populate names correctly
+            const merchantsStore = useMerchantsStore()
+            const merchantCodes = this.directories
+              .map(dir => dir.merchantCode)
+              .filter(Boolean) as string[]
+
+            if (merchantCodes.length > 0) {
+              const merchantNames = await merchantsStore.fetchMerchantNamesBatch(merchantCodes)
+              this.directories.forEach(dir => {
+                if (dir.merchantCode && merchantNames[dir.merchantCode]) {
+                  dir.merchantName = merchantNames[dir.merchantCode]
+                }
+              })
+            }
 
             // Update pagination info
             this.totalPages = totalPages || 0
@@ -201,7 +221,7 @@ export const useDirectoryStore = defineStore('directory', {
 
         const safeSize = Math.min(size, 100)
         const encodedQuery = encodeURIComponent(query)
-        const response = await api<any>(`/directory?search=${encodedQuery}&page=${page}&size=${safeSize}&fullResponse=true`, {
+        const response = await api<any>(`/directory?search=${encodedQuery}&page=${page}&size=${safeSize}`, {
           method: 'GET',
         })
 
@@ -228,10 +248,25 @@ export const useDirectoryStore = defineStore('directory', {
               createdBy: item.createdBy,
             }))
 
+            // Fetch merchant names in batch
+            const merchantsStore = useMerchantsStore()
+            const merchantCodes = this.directories
+              .map(dir => dir.merchantCode)
+              .filter(Boolean) as string[]
+
+            if (merchantCodes.length > 0) {
+              const merchantNames = await merchantsStore.fetchMerchantNamesBatch(merchantCodes)
+              this.directories.forEach(dir => {
+                if (dir.merchantCode && merchantNames[dir.merchantCode]) {
+                  dir.merchantName = merchantNames[dir.merchantCode]
+                }
+              })
+            }
+
             this.totalPages = totalPages || 0
             this.totalElements = totalElements || 0
             this.currentPage = number || 0
-            this.pageSize = pageSize || size
+            this.pageSize = safeSize
           } else {
             this.directories = []
             this.totalElements = 0
@@ -262,7 +297,7 @@ export const useDirectoryStore = defineStore('directory', {
 
       try {
         // First request — get total count and first batch
-        const first = await api<any>(`/directory?page=0&size=${PAGE_SIZE}&fullResponse=true`, { method: 'GET' })
+        const first = await api<any>(`/directory?page=0&size=${PAGE_SIZE}`, { method: 'GET' })
         if (!first.success || !first.data?.content) return []
 
         const totalPages: number = first.data.totalPages ?? 1
@@ -290,10 +325,25 @@ export const useDirectoryStore = defineStore('directory', {
 
         // Fetch remaining pages in parallel (batches of 5 to be polite)
         for (let page = 1; page < totalPages; page++) {
-          const res = await api<any>(`/directory?page=${page}&size=${PAGE_SIZE}&fullResponse=true`, { method: 'GET' })
+          const res = await api<any>(`/directory?page=${page}&size=${PAGE_SIZE}`, { method: 'GET' })
           if (res.success && res.data?.content) {
             allItems.push(...res.data.content.map(mapItem))
           }
+        }
+
+        // Batch fetch merchant names for all export items
+        const merchantsStore = useMerchantsStore()
+        const merchantCodes = allItems
+          .map(dir => dir.merchantCode)
+          .filter(Boolean) as string[]
+
+        if (merchantCodes.length > 0) {
+          const merchantNames = await merchantsStore.fetchMerchantNamesBatch(merchantCodes)
+          allItems.forEach(dir => {
+            if (dir.merchantCode && merchantNames[dir.merchantCode]) {
+              dir.merchantName = merchantNames[dir.merchantCode]
+            }
+          })
         }
 
         return allItems
