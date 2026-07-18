@@ -11,6 +11,11 @@ interface DirectoryState {
   totalElements: number
   currentPage: number
   pageSize: number
+  /** The query that produced the current `directories`, or null when they
+   *  come from the unfiltered list. Both the Merchants and Allocate pages
+   *  share this store, so this lets a page detect that the data belongs to
+   *  a search made on the other page and refetch instead of reusing it. */
+  activeSearchQuery: string | null
 }
 
 export const useDirectoryStore = defineStore('directory', {
@@ -22,6 +27,7 @@ export const useDirectoryStore = defineStore('directory', {
     totalElements: 0,
     currentPage: 0,
     pageSize: 20,
+    activeSearchQuery: null,
   }),
   actions: {
     async fetchDirectories(forceRefresh = false, page = 0, size = 20): Promise<{ success: boolean; message: string }> {
@@ -30,8 +36,9 @@ export const useDirectoryStore = defineStore('directory', {
       const safeSize = Math.min(size, maxPageSize)
 
       // If we already have data and aren't forcing a refresh, skip the fetch
-      // But allow refetch if page or size changed
-      if (this.directories.length > 0 && !forceRefresh && page === this.currentPage && safeSize === this.pageSize) {
+      // But allow refetch if page or size changed, or if the current data was
+      // produced by a search (it belongs to another page's search, not this list)
+      if (this.directories.length > 0 && !forceRefresh && !this.activeSearchQuery && page === this.currentPage && safeSize === this.pageSize) {
         return { success: true, message: 'Directories already loaded' }
       }
 
@@ -99,6 +106,8 @@ export const useDirectoryStore = defineStore('directory', {
             this.directories = []
           }
 
+          // Data now comes from the unfiltered list, not a search
+          this.activeSearchQuery = null
           this.isLoading = false
           return { success: true, message: response.message || 'Directories loaded successfully' }
         } else {
@@ -272,6 +281,9 @@ export const useDirectoryStore = defineStore('directory', {
             this.totalElements = 0
           }
 
+          // Remember which query produced these results so that pages sharing
+          // this store don't mistake search results for the full list
+          this.activeSearchQuery = query
           this.isLoading = false
           return { success: true, message: response.message || 'Search completed' }
         } else {
