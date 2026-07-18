@@ -24,10 +24,10 @@ export const useDirectoryStore = defineStore('directory', {
   }),
   actions: {
     async fetchDirectories(forceRefresh = false, page = 0, size = 20): Promise<{ success: boolean; message: string }> {
-      // Backend now supports larger page sizes
-      const maxPageSize = 200
+      // Backend enforces a max page size of 100
+      const maxPageSize = 100
       const safeSize = Math.min(size, maxPageSize)
-      
+
       // If we already have data and aren't forcing a refresh, skip the fetch
       // But allow refetch if page or size changed
       if (this.directories.length > 0 && !forceRefresh && page === this.currentPage && safeSize === this.pageSize) {
@@ -36,7 +36,7 @@ export const useDirectoryStore = defineStore('directory', {
 
       this.isLoading = true
       this.error = null
-      
+
       try {
         const api = useApi()
 
@@ -48,7 +48,7 @@ export const useDirectoryStore = defineStore('directory', {
         if (response.success && response.data) {
           // The response has pagination info in data.content
           const { content, totalPages, totalElements, number, size: pageSize } = response.data
-          
+
           if (Array.isArray(content)) {
             // Map the response to extract merchant names from merchantData
             this.directories = content.map((item: any) => ({
@@ -69,7 +69,7 @@ export const useDirectoryStore = defineStore('directory', {
               childrenCount: item.childrenCount || 0,
               createdBy: item.createdBy,
             }))
-            
+
             // Update pagination info
             this.totalPages = totalPages || 0
             this.totalElements = totalElements || 0
@@ -94,7 +94,7 @@ export const useDirectoryStore = defineStore('directory', {
         return { success: false, message: errorMessage }
       }
     },
-    
+
     async allocateCode(payload: {
       merchantCode: string
       codeToAssign: number
@@ -105,7 +105,7 @@ export const useDirectoryStore = defineStore('directory', {
     }) {
       this.isLoading = true
       this.error = null
-      
+
       try {
         const api = useApi()
 
@@ -129,7 +129,7 @@ export const useDirectoryStore = defineStore('directory', {
         return { success: false, message: this.error }
       }
     },
-    
+
     async updateDirectory(id: string, payload: { merchantCode: string; menuConfigFlowId: string }) {
       this.isLoading = true
       this.error = null
@@ -160,7 +160,7 @@ export const useDirectoryStore = defineStore('directory', {
     async deleteDirectory(id: string) {
       this.isLoading = true
       this.error = null
-      
+
       try {
         const api = useApi()
 
@@ -185,28 +185,29 @@ export const useDirectoryStore = defineStore('directory', {
           this.isLoading = false
           return { success: true, message: 'Directory deleted successfully' }
         }
-        
+
         this.error = error.response?._data?.message || error.message || 'Failed to delete directory'
         this.isLoading = false
         return { success: false, message: this.error }
       }
     },
-    
+
     async searchDirectories(query: string, page = 0, size = 20) {
       this.isLoading = true
       this.error = null
-      
+
       try {
         const api = useApi()
-        
+
+        const safeSize = Math.min(size, 100)
         const encodedQuery = encodeURIComponent(query)
-        const response = await api<any>(`/directory?search=${encodedQuery}&page=${page}&size=${size}&fullResponse=true`, {
+        const response = await api<any>(`/directory?search=${encodedQuery}&page=${page}&size=${safeSize}&fullResponse=true`, {
           method: 'GET',
         })
 
         if (response.success && response.data) {
           const { content, totalPages, totalElements, number, size: pageSize } = response.data
-          
+
           if (Array.isArray(content)) {
             this.directories = content.map((item: any) => ({
               id: item.id,
@@ -226,7 +227,7 @@ export const useDirectoryStore = defineStore('directory', {
               childrenCount: item.childrenCount || 0,
               createdBy: item.createdBy,
             }))
-            
+
             this.totalPages = totalPages || 0
             this.totalElements = totalElements || 0
             this.currentPage = number || 0
@@ -247,6 +248,58 @@ export const useDirectoryStore = defineStore('directory', {
         this.error = error.response?._data?.message || error.message || 'Failed to search directories'
         this.isLoading = false
         return { success: false, message: this.error }
+      }
+    },
+
+    /**
+     * Fetches ALL directories across all pages (200 per request) without
+     * modifying store state. Used exclusively for full-data CSV exports.
+     */
+    async fetchAllForExport(): Promise<Directory[]> {
+      const PAGE_SIZE = 100
+      const api = useApi()
+      const allItems: Directory[] = []
+
+      try {
+        // First request — get total count and first batch
+        const first = await api<any>(`/directory?page=0&size=${PAGE_SIZE}&fullResponse=true`, { method: 'GET' })
+        if (!first.success || !first.data?.content) return []
+
+        const totalPages: number = first.data.totalPages ?? 1
+
+        const mapItem = (item: any): Directory => ({
+          id: item.id,
+          merchantCode: item.merchantData?.merchant?.merchantCode || item.merchantCode,
+          merchantName: item.merchantData?.merchant?.merchantName || 'Unknown',
+          assignedCode: item.assignedCode,
+          ussdCode: item.ussdCode,
+          menuConfig: item.menuConfig,
+          menuConfigFlowId: item.menuConfigFlow?.id || item.menuConfigFlowId,
+          parentDirectoryId: item.parentDirectoryId,
+          parentUssdCode: item.parentUssdCode,
+          path: item.path,
+          level: item.level,
+          status: item.status,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
+          childrenCount: item.childrenCount || 0,
+          createdBy: item.createdBy,
+        })
+
+        allItems.push(...first.data.content.map(mapItem))
+
+        // Fetch remaining pages in parallel (batches of 5 to be polite)
+        for (let page = 1; page < totalPages; page++) {
+          const res = await api<any>(`/directory?page=${page}&size=${PAGE_SIZE}&fullResponse=true`, { method: 'GET' })
+          if (res.success && res.data?.content) {
+            allItems.push(...res.data.content.map(mapItem))
+          }
+        }
+
+        return allItems
+      } catch (error: any) {
+        console.error('fetchAllForExport failed:', error)
+        return []
       }
     }
   }

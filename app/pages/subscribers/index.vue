@@ -3,7 +3,6 @@ import { ref, computed, onMounted } from 'vue'
 import { useState } from '#imports'
 import SearchInput from '~/components/ui/SearchInput.vue'
 import Pagination from '~/components/ui/Pagination.vue'
-import FilterButton from '~/components/ui/FilterButton.vue'
 import Spinner from '~/components/ui/Spinner.vue'
 import { useDirectoryStore } from '~/stores/directory'
 import { useSubscribersErrorHandler } from '~/composables/useSubscribersErrorHandler'
@@ -47,7 +46,6 @@ const currentPage = ref(1)
 const itemsPerPage = ref(10)
 const showModal = ref(false)
 const selectedMerchant = ref<MappedMerchant | null>(null)
-let searchTimeout: NodeJS.Timeout | null = null
 
 onMounted(() => {
   directoryStore.fetchDirectories(false, 0, itemsPerPage.value)
@@ -62,10 +60,6 @@ const stopItemsPerPageWatch = watch(itemsPerPage, (newSize) => {
 // Cleanup watchers on unmount
 onBeforeUnmount(() => {
   stopItemsPerPageWatch()
-  if (searchTimeout) {
-    clearTimeout(searchTimeout)
-    searchTimeout = null
-  }
 })
 
 const mappedSubscribers = computed<MappedMerchant[]>(() => {
@@ -85,101 +79,37 @@ const mappedSubscribers = computed<MappedMerchant[]>(() => {
   }))
 })
 
-const filteredSubscribers = computed(() => {
-  if (!searchQuery.value) return mappedSubscribers.value
-  const query = searchQuery.value.toLowerCase()
-  return mappedSubscribers.value.filter(sub => 
-    sub.name.toLowerCase().includes(query) || 
-    sub.ussdCode.toLowerCase().includes(query) ||
-    sub.merchantId.toLowerCase().includes(query)
-  )
-})
-
-// State for USSD search
-const ussdSearchResult = ref<MappedMerchant | null>(null)
+// Server-side search (same pattern as allocate page)
 const isSearching = ref(false)
+const hasSearchedBefore = ref(false)
 
-// Handle search when user presses Enter
 const handleSearch = async () => {
-  const query = searchQuery.value
-  
-  // Reset USSD search result when query is empty
-  if (!query || query.trim() === '') {
-    ussdSearchResult.value = null
+  const query = searchQuery.value.trim()
+
+  if (!query) {
+    // Only reload if a search was previously active
+    if (!hasSearchedBefore.value) return
+    hasSearchedBefore.value = false
+    currentPage.value = 1
+    await directoryStore.fetchDirectories(true, 0, itemsPerPage.value)
     return
   }
-  
-  // Check if query looks like a USSD code (contains * or #)
-  const looksLikeUssdCode = /[*#]/.test(query)
-  
-  if (looksLikeUssdCode) {
-    isSearching.value = true
-    const result = await directoryStore.searchByUssdCode(query)
-    
-    if (result.success && result.data) {
-      // Convert directory to mapped merchant format
-      ussdSearchResult.value = {
-        id: result.data.id,
-        merchantId: result.data.merchantCode,
-        name: result.data.merchantName || 'Unknown',
-        ussdCode: result.data.ussdCode,
-        status: result.data.status === 'Active' ? 'Active' : result.data.status === 'Inactive' ? 'Inactive' : result.data.status === 'Suspended' ? 'Suspended' : 'Unknown',
-        level: result.data.level === 'PRIMARY' ? 'Primary' : result.data.level === 'SECONDARY' ? 'Secondary' : result.data.level,
-        type: result.data.menuConfig?.metadata?.name || 'Standard Flow',
-        lastActive: result.data.updatedAt ? formatDistanceToNow(new Date(result.data.updatedAt), { addSuffix: true }) : 'Unknown',
-        reference: result.data.parentDirectoryId !== null,
-        traffic: '0',
-        menu: null,
-        region: 'N/A'
-      }
-    } else {
-      ussdSearchResult.value = null
-    }
-    
-    isSearching.value = false
-  } else {
-    // For non-USSD searches, just clear any previous USSD result
-    // The filteredSubscribers computed will handle client-side filtering
-    ussdSearchResult.value = null
-  }
+
+  hasSearchedBefore.value = true
+  isSearching.value = true
+  currentPage.value = 1
+  await directoryStore.searchDirectories(query, 0, itemsPerPage.value)
+  isSearching.value = false
 }
 
-// Clear USSD search result when search query is cleared
+// Clear search when query is emptied — immediate: false prevents spurious mount-time trigger
 watch(searchQuery, (newQuery) => {
   if (!newQuery || newQuery.trim() === '') {
-    ussdSearchResult.value = null
+    handleSearch()
   }
-})
+}, { immediate: false })
 
-const paginatedSubscribers = computed(() => {
-  // If we have a USSD search result, show only that
-  if (ussdSearchResult.value) {
-    return [ussdSearchResult.value]
-  }
-  
-  // If searching (but not USSD code), use client-side pagination on filtered results
-  if (searchQuery.value && !isSearching.value) {
-    const start = (currentPage.value - 1) * itemsPerPage.value
-    const end = start + itemsPerPage.value
-    return filteredSubscribers.value.slice(start, end)
-  }
-  // Otherwise, return all subscribers since server already paginated
-  return mappedSubscribers.value
-})
-
-const totalItems = computed(() => {
-  // If we have a USSD search result, total is 1
-  if (ussdSearchResult.value) {
-    return 1
-  }
-  
-  // If searching (but not USSD), use filtered count
-  if (searchQuery.value && !isSearching.value) {
-    return filteredSubscribers.value.length
-  }
-  // Otherwise use server total
-  return directoryStore.totalElements
-})
+const totalItems = computed(() => directoryStore.totalElements)
 
 const closeModal = () => {
   showModal.value = false
@@ -201,19 +131,19 @@ const isDeleting = ref(false)
 
 const handlePageChange = (page: number) => {
   currentPage.value = page
-  
-  // Clear USSD search result when changing pages
-  ussdSearchResult.value = null
-  
-  // If not searching (or USSD search), fetch new page from server
-  if (!searchQuery.value || ussdSearchResult.value) {
+
+  if (searchQuery.value.trim()) {
+    directoryStore.searchDirectories(searchQuery.value.trim(), page - 1, itemsPerPage.value).then(result => {
+      if (!result.success && result.message) {
+        subscribersHandler.handleFetchError(new Error(result.message))
+        if (page > 1) currentPage.value = 1
+      }
+    })
+  } else {
     directoryStore.fetchDirectories(true, page - 1, itemsPerPage.value).then(result => {
       if (!result.success && result.message) {
         subscribersHandler.handleFetchError(new Error(result.message))
-        // Reset to page 1 if fetch failed
-        if (page > 1) {
-          currentPage.value = 1
-        }
+        if (page > 1) currentPage.value = 1
       }
     })
   }
@@ -305,39 +235,67 @@ const escapeCsvField = (val: any): string => {
   return str
 }
 
-const handleExportCsv = () => {
-  const data = filteredSubscribers.value
-  if (!data.length) return
+const isExporting = ref(false)
 
-  const headers = ['Merchant Name', 'Merchant ID', 'USSD Code', 'Level', 'Type', 'Status', 'Last Active']
-  const rows = data.map(m => [
-    m.name,
-    m.merchantId,
-    m.ussdCode,
-    m.level,
-    m.type,
-    m.status,
-    m.lastActive,
-  ])
+const handleExportCsv = async () => {
+  isExporting.value = true
 
-  const csv = [headers, ...rows]
-    .map(row => row.map(escapeCsvField).join(','))
-    .join('\r\n')
+  try {
+    // Fetch ALL records across all pages — not limited to the current view
+    const allDirs = await directoryStore.fetchAllForExport()
 
-  // Prepend BOM so Excel detects UTF-8 correctly
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
-  const url = URL.createObjectURL(blob)
+    if (!allDirs.length) {
+      subscribersHandler.handleFetchError(new Error('No data to export'))
+      return
+    }
 
-  const date = new Date().toISOString().slice(0, 10)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `merchants-export-${date}.csv`
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  URL.revokeObjectURL(url)
+    const data: MappedMerchant[] = allDirs.map(dir => ({
+      id: dir.id,
+      merchantId: dir.merchantCode,
+      name: dir.merchantName || dir.createdBy?.fullName || 'Unknown',
+      ussdCode: dir.ussdCode,
+      status: dir.status === 'Active' ? 'Active' : dir.status === 'Inactive' ? 'Inactive' : dir.status === 'Suspended' ? 'Suspended' : 'Unknown',
+      level: dir.level === 'PRIMARY' ? 'Primary' : dir.level === 'SECONDARY' ? 'Secondary' : dir.level,
+      type: dir.menuConfig?.metadata?.name || 'Standard Flow',
+      lastActive: dir.updatedAt ? formatDistanceToNow(new Date(dir.updatedAt), { addSuffix: true }) : 'Unknown',
+      reference: dir.parentDirectoryId !== null,
+      traffic: '0',
+      menu: null,
+      region: 'N/A'
+    }))
 
-  subscribersHandler.handleSuccess(`Exported ${data.length} merchant${data.length === 1 ? '' : 's'} to CSV`)
+    const headers = ['Merchant Name', 'Merchant ID', 'USSD Code', 'Level', 'Type', 'Status', 'Last Active']
+    const rows = data.map(m => [
+      m.name,
+      m.merchantId,
+      m.ussdCode,
+      m.level,
+      m.type,
+      m.status,
+      m.lastActive,
+    ])
+
+    const csv = [headers, ...rows]
+      .map(row => row.map(escapeCsvField).join(','))
+      .join('\r\n')
+
+    // Prepend BOM so Excel detects UTF-8 correctly
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+
+    const date = new Date().toISOString().slice(0, 10)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `merchants-export-${date}.csv`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+
+    subscribersHandler.handleSuccess(`Exported ${data.length} merchant${data.length === 1 ? '' : 's'} to CSV`)
+  } finally {
+    isExporting.value = false
+  }
 }
 </script>
 
@@ -351,11 +309,15 @@ const handleExportCsv = () => {
       <div class="flex items-center space-x-3 w-full sm:w-auto">
         <button
           @click="handleExportCsv"
-          :disabled="filteredSubscribers.length === 0"
+          :disabled="isExporting || directoryStore.totalElements === 0"
           class="flex-1 sm:flex-none flex justify-center items-center space-x-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Download class="w-4 h-4" />
-          <span>Export CSV</span>
+          <svg v-if="isExporting" class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+          </svg>
+          <Download v-else class="w-4 h-4" />
+          <span>{{ isExporting ? 'Exporting...' : 'Export CSV' }}</span>
         </button>
       </div>
     </div>
@@ -440,11 +402,7 @@ const handleExportCsv = () => {
       <!-- Controls -->
       <div class="p-5 border-b border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div class="relative w-full sm:w-96">
-          <SearchInput v-model="searchQuery" placeholder="Search by name, MSISDN, or ID..." @search="handleSearch" />
-        </div>
-        
-        <div class="flex items-center space-x-3">
-          <FilterButton label="Filter" />
+          <SearchInput v-model="searchQuery" placeholder="Search by name, USSD code, or merchant ID..." @search="handleSearch" />
         </div>
       </div>
 
@@ -468,12 +426,12 @@ const handleExportCsv = () => {
                 <p class="mt-2 text-sm">Loading merchants...</p>
               </td>
             </tr>
-            <tr v-else-if="filteredSubscribers.length === 0">
+            <tr v-else-if="mappedSubscribers.length === 0">
               <td colspan="7" class="px-6 py-8 text-center text-gray-500">
                 <p class="text-sm">No merchants found.</p>
               </td>
             </tr>
-            <tr v-else v-for="sub in paginatedSubscribers" :key="sub.id" class="hover:bg-vibes-50/30 dark:hover:bg-gray-700/50 transition-colors group">
+            <tr v-else v-for="sub in mappedSubscribers" :key="sub.id" class="hover:bg-vibes-50/30 dark:hover:bg-gray-700/50 transition-colors group">
               <td class="px-6 py-4">
                 <div class="flex items-center">
                   <div class="h-9 w-9 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 text-xs font-bold mr-3">
@@ -548,7 +506,7 @@ const handleExportCsv = () => {
         :current-page="currentPage" 
         :total-items="totalItems" 
         :items-per-page="itemsPerPage"
-        :items-per-page-options="[10, 20, 50, 100, 200]"
+        :items-per-page-options="[10, 20, 50, 100]"
         @page-change="handlePageChange"
         @update:itemsPerPage="itemsPerPage = $event"
       />
