@@ -165,49 +165,59 @@ export const useDirectoryStore = defineStore('directory', {
       }
     },
     
-    async searchByUssdCode(ussdCode: string) {
+    async searchDirectories(query: string, page = 0, size = 20) {
       this.isLoading = true
       this.error = null
       
       try {
         const api = useApi()
         
-        // Encode the USSD code for URL (handles special characters like # and *)
-        const encodedCode = encodeURIComponent(ussdCode)
-        const response = await api<any>(`/directory/ussd?code=${encodedCode}`, {
+        const encodedQuery = encodeURIComponent(query)
+        const response = await api<any>(`/directory?search=${encodedQuery}&page=${page}&size=${size}&fullResponse=true`, {
           method: 'GET',
         })
 
         if (response.success && response.data) {
-          // Transform single result to match directory format
-          const directory: Directory = {
-            id: response.data.id,
-            merchantCode: response.data.merchantData?.merchant?.merchantCode || '',
-            merchantName: response.data.merchantData?.merchant?.merchantName || 'Unknown',
-            assignedCode: response.data.assignedCode,
-            ussdCode: response.data.ussdCode,
-            menuConfig: response.data.menuConfig,
-            menuConfigFlowId: response.data.menuConfigFlow?.id || '',
-            parentDirectoryId: response.data.parentDirectoryId,
-            parentUssdCode: response.data.parentUssdCode,
-            path: response.data.path,
-            level: response.data.level,
-            status: response.data.status,
-            createdAt: response.data.createdAt,
-            updatedAt: response.data.updatedAt,
-            childrenCount: 0,
-            createdBy: response.data.menuConfigFlow?.createdBy,
-          }
+          const { content, totalPages, totalElements, number, size: pageSize } = response.data
           
+          if (Array.isArray(content)) {
+            this.directories = content.map((item: any) => ({
+              id: item.id,
+              merchantCode: item.merchantData?.merchant?.merchantCode || item.merchantCode,
+              merchantName: item.merchantData?.merchant?.merchantName || 'Unknown',
+              assignedCode: item.assignedCode,
+              ussdCode: item.ussdCode,
+              menuConfig: item.menuConfig,
+              menuConfigFlowId: item.menuConfigFlow?.id || item.menuConfigFlowId,
+              parentDirectoryId: item.parentDirectoryId,
+              parentUssdCode: item.parentUssdCode,
+              path: item.path,
+              level: item.level,
+              status: item.status,
+              createdAt: item.createdAt,
+              updatedAt: item.updatedAt,
+              childrenCount: item.childrenCount || 0,
+              createdBy: item.createdBy,
+            }))
+            
+            this.totalPages = totalPages || 0
+            this.totalElements = totalElements || 0
+            this.currentPage = number || 0
+            this.pageSize = pageSize || size
+          } else {
+            this.directories = []
+            this.totalElements = 0
+          }
+
           this.isLoading = false
-          return { success: true, data: directory, message: response.message }
+          return { success: true, message: response.message || 'Search completed' }
         } else {
-          this.error = response.message || 'USSD code not found'
+          this.error = response.message || 'Search failed'
           this.isLoading = false
           return { success: false, message: this.error }
         }
       } catch (error: any) {
-        this.error = error.response?._data?.message || error.message || 'Failed to search by USSD code'
+        this.error = error.response?._data?.message || error.message || 'Failed to search directories'
         this.isLoading = false
         return { success: false, message: this.error }
       }

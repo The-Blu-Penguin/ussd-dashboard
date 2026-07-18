@@ -70,7 +70,26 @@ const newApp = ref({
   parentCode: 1
 })
 
-const parentCodeOptions = Array.from({ length: 20 }, (_, i) => i + 1)
+// Active primary codes (fetched from backend)
+const activePrimaryCodes = ref<number[]>([])
+
+const fetchActivePrimaryCodes = async () => {
+  try {
+    const api = useApi()
+    const response = await api<any>(`/directory/available-codes?level=PRIMARY`, {
+      method: 'GET',
+    })
+
+    if (response.success && response.data?.assignedCodes) {
+      activePrimaryCodes.value = response.data.assignedCodes
+    } else {
+      activePrimaryCodes.value = []
+    }
+  } catch (e) {
+    console.error('Failed to fetch active primary codes:', e)
+    activePrimaryCodes.value = []
+  }
+}
 
 const merchants = computed(() => {
   const uniqueMerchants = new Set<string>()
@@ -196,106 +215,51 @@ const apps = computed<App[]>(() => {
   }))
 })
 
-const filteredApps = computed(() => {
-  if (!searchQuery.value) return apps.value
-  const query = searchQuery.value.toLowerCase()
-  return apps.value.filter(app => 
-    app.name.toLowerCase().includes(query) || 
-    app.code.toLowerCase().includes(query)
-  )
-})
-
-// State for USSD search
-const ussdSearchResult = ref<App | null>(null)
+// Handle search when user presses Enter or clears search
 const isSearching = ref(false)
 
-// Handle search when user presses Enter
 const handleSearch = async () => {
-  const query = searchQuery.value
+  const query = searchQuery.value.trim()
   
-  // Reset USSD search result when query is empty
-  if (!query || query.trim() === '') {
-    ussdSearchResult.value = null
+  if (!query) {
+    // Clear search - reload original data
+    currentPage.value = 1
+    await directoryStore.fetchDirectories(true, 0, itemsPerPage.value)
     return
   }
   
-  // Check if query looks like a USSD code (contains * or #)
-  const looksLikeUssdCode = /[*#]/.test(query)
-  
-  if (looksLikeUssdCode) {
-    isSearching.value = true
-    const result = await directoryStore.searchByUssdCode(query)
-    
-    if (result.success && result.data) {
-      // Convert directory to app format
-      ussdSearchResult.value = {
-        id: result.data.id,
-        name: result.data.merchantName || 'Unknown',
-        merchantId: result.data.merchantCode || '-',
-        code: result.data.ussdCode,
-        type: result.data.level,
-        menuFlow: result.data.menuConfig?.metadata?.name || 'Standard Flow',
-        status: result.data.status,
-        traffic: '0'
-      }
-    } else {
-      ussdSearchResult.value = null
-    }
-    
-    isSearching.value = false
-  } else {
-    // For non-USSD searches, just clear any previous USSD result
-    // The filteredApps computed will handle client-side filtering
-    ussdSearchResult.value = null
-  }
+  isSearching.value = true
+  currentPage.value = 1
+  await directoryStore.searchDirectories(query, 0, itemsPerPage.value)
+  isSearching.value = false
 }
 
-// Clear USSD search result when search query is cleared
+// Clear search when query is emptied
 watch(searchQuery, (newQuery) => {
   if (!newQuery || newQuery.trim() === '') {
-    ussdSearchResult.value = null
+    handleSearch()
   }
 })
 
-// Use directoryStore for server-side pagination
-const paginatedApps = computed(() => {
-  // If we have a USSD search result, show only that
-  if (ussdSearchResult.value) {
-    return [ussdSearchResult.value]
-  }
-  
-  // If searching (but not USSD code), use client-side pagination on filtered results
-  if (searchQuery.value && !isSearching.value) {
-    const start = (currentPage.value - 1) * itemsPerPage.value
-    const end = start + itemsPerPage.value
-    return filteredApps.value.slice(start, end)
-  }
-  // Otherwise, return all apps since server already paginated
-  return apps.value
-})
+// All apps come from the store (works for both normal and search results)
+const paginatedApps = computed(() => apps.value)
 
-const totalItems = computed(() => {
-  // If we have a USSD search result, total is 1
-  if (ussdSearchResult.value) {
-    return 1
-  }
-  
-  // If searching (but not USSD), use filtered count
-  if (searchQuery.value && !isSearching.value) {
-    return filteredApps.value.length
-  }
-  // Otherwise use server total
-  return directoryStore.totalElements
-})
+const totalItems = computed(() => directoryStore.totalElements)
 
 const handlePageChange = (page: number) => {
   currentPage.value = page
   
-  // Clear USSD search result when changing pages
-  ussdSearchResult.value = null
-  
-  // If not searching (or USSD search), fetch new page from server
-  if (!searchQuery.value || ussdSearchResult.value) {
+  // Fetch new page from server (works for both normal and search)
+  if (searchQuery.value.trim()) {
+    directoryStore.searchDirectories(searchQuery.value.trim(), page - 1, itemsPerPage.value).then(result => {
+      if (!result.success && result.message) {
+        allocateHandler.handleAllocationError(new Error(result.message))
+        if (page > 1) {
+          currentPage.value = 1
+        }
+      }
+    })
+  } else {
     directoryStore.fetchDirectories(true, page - 1, itemsPerPage.value).then(result => {
       if (!result.success && result.message) {
         allocateHandler.handleAllocationError(new Error(result.message))
@@ -314,6 +278,7 @@ const openAllocateModal = () => {
   newApp.value = { merchant: '', merchantId: '', level: 'Secondary', method: 'Automatic', selectedCode: '', menuFlow: '', parentCode: 1 }
   showModal.value = true
   fetchAvailableCodes('Secondary', 1) // Fetch codes for default level when opening
+  fetchActivePrimaryCodes() // Fetch active primary codes for parent code dropdown
   
   // Fetch menu configs only when modal opens (lazy loading)
   if (menuConfigsStore.configs.length === 0) {
@@ -425,7 +390,7 @@ const handleAllocate = async () => {
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage and allocate USSD service codes</p>
       </div>
       <div class="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
-        <SearchInput v-model="searchQuery" placeholder="Search codes..." class="w-full sm:w-auto" @search="handleSearch" />
+        <SearchInput v-model="searchQuery" placeholder="Search by USSD code or merchant code..." class="w-full sm:w-auto" @search="handleSearch" />
         <button 
           @click="openAllocateModal"
           class="flex items-center justify-center space-x-2 px-6 py-2 bg-vibes-600 hover:bg-vibes-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm h-10 w-full sm:w-auto whitespace-nowrap"
@@ -530,7 +495,8 @@ const handleAllocate = async () => {
               class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-vibes-500 focus:bg-white dark:focus:bg-gray-800 transition-all dark:text-gray-200"
               :disabled="isEditing"
             >
-              <option v-for="code in parentCodeOptions" :key="code" :value="code">Parent code {{ code }} (*820*{{ code }}*)</option>
+              <option v-if="activePrimaryCodes.length === 0" value="" disabled>No active primary codes</option>
+              <option v-for="code in activePrimaryCodes" :key="code" :value="code">Parent code {{ code }} (*820*{{ code }}*)</option>
             </select>
             <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Choose which primary code this secondary code should be linked under</p>
           </div>
@@ -686,7 +652,7 @@ const handleAllocate = async () => {
       </div>
       
       <!-- Empty State -->
-      <div v-if="filteredApps.length === 0 && !directoryStore.isLoading && !directoryStore.error" class="p-12 text-center">
+      <div v-if="paginatedApps.length === 0 && !directoryStore.isLoading && !directoryStore.error" class="p-12 text-center">
         <div class="w-16 h-16 bg-gray-50 dark:bg-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
           <Smartphone class="w-8 h-8 text-gray-400 dark:text-gray-500" />
         </div>
@@ -701,7 +667,7 @@ const handleAllocate = async () => {
       </div>
 
       <!-- Pagination -->
-      <div v-if="filteredApps.length > 0" class="border-t border-gray-100 dark:border-gray-700 p-4">
+      <div v-if="paginatedApps.length > 0" class="border-t border-gray-100 dark:border-gray-700 p-4">
         <Pagination 
           :current-page="currentPage" 
           :total-items="totalItems" 
