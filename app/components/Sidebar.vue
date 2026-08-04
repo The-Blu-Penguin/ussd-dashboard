@@ -21,11 +21,12 @@ import {
 } from 'lucide-vue-next'
 
 import AuthNotification from '~/components/ui/AuthNotification.vue'
+import { useAuthStore } from '~/stores/auth'
 
 const route = useRoute()
 const isCollapsed = useState('sidebarCollapsed', () => false)
 const isMobileSidebarOpen = useState('mobileSidebarOpen', () => false)
-const { user, logout } = useAuth()
+const authStore = useAuthStore()
 const openMenus = ref<Record<string, boolean>>({})
 
 const showLogoutNotification = ref(false)
@@ -33,7 +34,7 @@ const showLogoutNotification = ref(false)
 const handleLogout = async () => {
   showLogoutNotification.value = true
   setTimeout(() => {
-    logout()
+    authStore.logout()
   }, 1000)
 }
 
@@ -275,21 +276,21 @@ const closeMobileSidebar = () => {
         :class="isCollapsed ? 'p-2 justify-center' : 'p-3 justify-between'"
         role="button"
         tabindex="0"
-        :aria-label="`User profile: ${user?.fullName || 'User'}`"
+        :aria-label="`User profile: ${authStore.user?.fullName || 'User'}`"
         @keydown.enter="handleLogout"
         @keydown.space.prevent="handleLogout"
       >
         <div class="flex items-center overflow-hidden">
           <div class="w-8 h-8 min-w-[32px] rounded-full bg-blue-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden" :class="isCollapsed ? '' : 'mr-3'">
-             <img v-if="user?.avatarUrl" :src="user.avatarUrl" :alt="`${user?.fullName || 'User'} avatar`" class="w-full h-full object-cover" />
-             <span v-else class="text-xs font-bold text-vibes-700 dark:text-vibes-300" aria-hidden="true">{{ user?.fullName?.charAt(0) || 'U' }}</span>
+             <img v-if="authStore.user?.avatarUrl" :src="authStore.user.avatarUrl" :alt="`${authStore.user?.fullName || 'User'} avatar`" class="w-full h-full object-cover" />
+             <span v-else class="text-xs font-bold text-vibes-700 dark:text-vibes-300" aria-hidden="true">{{ authStore.user?.fullName?.charAt(0) || 'U' }}</span>
           </div>
           <div 
             class="transition-all duration-200 whitespace-nowrap"
             :class="isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'"
           >
-            <h4 class="text-sm font-bold text-gray-800 dark:text-gray-200 group-hover:text-vibes-700 dark:group-hover:text-vibes-400">{{ user?.fullName || 'User' }}</h4>
-            <p class="text-xs text-gray-500 dark:text-gray-400">{{ user?.role || 'Guest' }}</p>
+            <h4 class="text-sm font-bold text-gray-800 dark:text-gray-200 group-hover:text-vibes-700 dark:group-hover:text-vibes-400">{{ authStore.user?.fullName || 'User' }}</h4>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ authStore.user?.role || 'Guest' }}</p>
           </div>
         </div>
         <button
