@@ -544,10 +544,6 @@ const saveFlow = async () => {
   const currentNodes = getNodes.value
   const currentEdges = getEdges.value
   
-  // Debug: Check what's in the nodes array
-  console.log('[Visual Builder] Nodes array before serialization:', currentNodes.map(n => ({ id: n.id, type: n.type, componentType: n.data?.componentType })))
-  console.log('[Visual Builder] Edges array before serialization:', currentEdges.map(e => ({ id: e.id, source: e.source, target: e.target })))
-  
   const { steps, entry } = nodesEdgesToSteps(currentNodes, currentEdges)
   
   const requestData = {
@@ -567,9 +563,6 @@ const saveFlow = async () => {
     }
   }
   
-  // Log the payload for debugging
-  console.log('[Visual Builder] Saving flow with payload:', JSON.stringify(requestData, null, 2))
-  
   let result;
   if (isEditing.value && configId.value) {
     result = await menuConfigsStore.updateConfig(configId.value, requestData)
@@ -584,7 +577,6 @@ const saveFlow = async () => {
     logger.builder.flowSaved(flowName.value, configId.value || undefined)
   } else {
     logger.error(`Failed to save flow: ${result.message}`, { category: 'builder' })
-    console.error('[Visual Builder] Save failed. Request data:', requestData)
   }
 
   setTimeout(() => { saveMessage.value = '' }, 3000)
