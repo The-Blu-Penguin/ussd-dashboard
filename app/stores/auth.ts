@@ -49,14 +49,10 @@ export const useAuthStore = defineStore('auth', {
       try {
         const api = useApi()
 
-        console.log(`[Auth Store] Attempting login for ${email}`)
-
         const response = await api<ApiResponse<LoginResponseData>>('/auth/login', {
           method: 'POST',
           body: { email, password },
         })
-
-        console.log(`[Auth Store] Login response:`, response)
 
         if (response.success && response.data) {
           this.user = response.data.user
@@ -79,11 +75,9 @@ export const useAuthStore = defineStore('auth', {
 
           return { success: true, message: response.message }
         } else {
-          console.warn(`[Auth Store] Login returned false success flag`, response)
           return { success: false, message: response.message }
         }
       } catch (error: any) {
-        console.error(`[Auth Store] Login error:`, error)
         const standardError = errorHandler.handleError(error, { showToast: false })
         return {
           success: false,

@@ -23,9 +23,14 @@ onMounted(() => {
   }
 })
 
+// Disconnect the SSE stream when leaving the page to avoid background leaks
+onUnmounted(() => {
+  monitoringStore.disconnectTransactions()
+})
+
 const refreshTransactions = () => {
   isRefreshing.value = true
-  monitoringStore.disconnectAll()
+  monitoringStore.disconnectTransactions()
   monitoringStore.clearEvents('transactions')
   monitoringStore.transactionStats = null
   monitoringStore.connectTransactions()
