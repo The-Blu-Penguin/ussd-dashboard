@@ -48,8 +48,8 @@ export const useDirectoryStore = defineStore('directory', {
       try {
         const api = useApi()
 
-        // Fetch directories without fullResponse=true to prevent backend NPE
-        const response = await api<any>(`/directory?page=${page}&size=${safeSize}`, {
+        // Use fullResponse=true so the backend includes full merchant details (name) in each item
+        const response = await api<any>(`/directory?page=${page}&size=${safeSize}&fullResponse=true`, {
           method: 'GET',
         })
 
@@ -58,10 +58,6 @@ export const useDirectoryStore = defineStore('directory', {
           const { content, totalPages, totalElements, number, size: pageSize } = response.data
 
           if (Array.isArray(content)) {
-            // Log the first item to debug the exact structure returned by the API
-            if (content.length > 0) {
-              console.log('[DEBUG] First raw directory item from API:', JSON.stringify(content[0], null, 2))
-            }
             // Map the response
             this.directories = content.map((item: any) => ({
               id: item.id,
@@ -230,7 +226,7 @@ export const useDirectoryStore = defineStore('directory', {
 
         const safeSize = Math.min(size, 100)
         const encodedQuery = encodeURIComponent(query)
-        const response = await api<any>(`/directory?search=${encodedQuery}&page=${page}&size=${safeSize}`, {
+        const response = await api<any>(`/directory?search=${encodedQuery}&page=${page}&size=${safeSize}&fullResponse=true`, {
           method: 'GET',
         })
 
@@ -309,7 +305,7 @@ export const useDirectoryStore = defineStore('directory', {
 
       try {
         // First request — get total count and first batch
-        const first = await api<any>(`/directory?page=0&size=${PAGE_SIZE}`, { method: 'GET' })
+        const first = await api<any>(`/directory?page=0&size=${PAGE_SIZE}&fullResponse=true`, { method: 'GET' })
         if (!first.success || !first.data?.content) return []
 
         const totalPages: number = first.data.totalPages ?? 1
@@ -337,7 +333,7 @@ export const useDirectoryStore = defineStore('directory', {
 
         // Fetch remaining pages in parallel (batches of 5 to be polite)
         for (let page = 1; page < totalPages; page++) {
-          const res = await api<any>(`/directory?page=${page}&size=${PAGE_SIZE}`, { method: 'GET' })
+          const res = await api<any>(`/directory?page=${page}&size=${PAGE_SIZE}&fullResponse=true`, { method: 'GET' })
           if (res.success && res.data?.content) {
             allItems.push(...res.data.content.map(mapItem))
           }
