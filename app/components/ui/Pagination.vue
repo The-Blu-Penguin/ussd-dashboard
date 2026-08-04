@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
 
 const props = defineProps<{
   currentPage: number
@@ -83,15 +84,15 @@ const handleLimitChange = (event: Event) => {
 <template>
   <nav 
     v-if="totalItems > 0"
-    class="px-6 py-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50/30" 
+    class="px-3 sm:px-6 py-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 bg-gray-50/30" 
     aria-label="Pagination"
   >
-    <div class="flex items-center space-x-4">
-      <span class="text-xs text-gray-500" role="status" aria-live="polite">
+    <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+      <span class="text-xs text-gray-500 whitespace-nowrap" role="status" aria-live="polite">
         Showing {{ startItem }} to {{ endItem }} of {{ totalItems }} entries
       </span>
       <div class="flex items-center space-x-2">
-        <label for="items-per-page" class="text-xs text-gray-500">Rows per page:</label>
+        <label for="items-per-page" class="text-xs text-gray-500 whitespace-nowrap">Rows per page:</label>
         <select 
           id="items-per-page"
           :value="itemsPerPageVal"
@@ -103,22 +104,23 @@ const handleLimitChange = (event: Event) => {
         </select>
       </div>
     </div>
-    <div class="flex items-center space-x-2" role="navigation" aria-label="Pagination navigation">
+    <div class="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2" role="navigation" aria-label="Pagination navigation">
       <button 
         @click="handlePageChange(currentPage - 1)"
         :disabled="currentPage === 1"
-        class="px-3 py-1 text-xs font-medium text-gray-500 bg-white border border-gray-200 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        class="flex items-center gap-1 px-2 sm:px-3 py-1 text-xs font-medium text-gray-500 bg-white border border-gray-200 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         aria-label="Go to previous page"
         :aria-disabled="currentPage === 1"
       >
-        Previous
+        <ChevronLeft class="w-3.5 h-3.5" aria-hidden="true" />
+        <span class="hidden sm:inline">Previous</span>
       </button>
       
       <template v-for="page in visiblePages" :key="page">
         <!-- Ellipsis -->
         <span 
           v-if="page < 0" 
-          class="text-gray-400 text-xs px-2" 
+          class="text-gray-400 text-xs px-1 sm:px-2" 
           aria-hidden="true"
         >
           ...
@@ -128,7 +130,7 @@ const handleLimitChange = (event: Event) => {
         <button 
           v-else
           @click="handlePageChange(page)"
-          class="px-3 py-1 text-xs font-medium rounded-md shadow-sm transition-colors"
+          class="min-w-[32px] px-2 sm:px-3 py-1 text-xs font-medium rounded-md shadow-sm transition-colors"
           :class="currentPage === page ? 'text-white bg-vibes-600 border border-vibes-600' : 'text-gray-500 bg-white border border-gray-200 hover:bg-gray-50'"
           :aria-label="`Go to page ${page}`"
           :aria-current="currentPage === page ? 'page' : undefined"
@@ -140,11 +142,12 @@ const handleLimitChange = (event: Event) => {
       <button 
         @click="handlePageChange(currentPage + 1)"
         :disabled="currentPage === totalPages || totalPages === 0"
-        class="px-3 py-1 text-xs font-medium text-gray-500 bg-white border border-gray-200 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        class="flex items-center gap-1 px-2 sm:px-3 py-1 text-xs font-medium text-gray-500 bg-white border border-gray-200 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         aria-label="Go to next page"
         :aria-disabled="currentPage === totalPages || totalPages === 0"
       >
-        Next
+        <span class="hidden sm:inline">Next</span>
+        <ChevronRight class="w-3.5 h-3.5" aria-hidden="true" />
       </button>
     </div>
   </nav>

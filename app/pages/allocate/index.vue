@@ -202,6 +202,15 @@ watch(() => newApp.value.merchantId, (newId) => {
   }, 500)
 })
 
+// Normalize backend status values (backend returns uppercase, e.g. "ACTIVE")
+const normalizeStatus = (status?: string): string => {
+  const s = (status || '').toLowerCase()
+  if (s === 'active') return 'Active'
+  if (s === 'inactive') return 'Inactive'
+  if (s === 'suspended') return 'Suspended'
+  return status || 'Unknown'
+}
+
 const apps = computed<App[]>(() => {
   return directoryStore.directories.map(dir => ({
     id: dir.id,
@@ -210,7 +219,7 @@ const apps = computed<App[]>(() => {
     code: dir.ussdCode,
     type: dir.level,
     menuFlow: dir.menuConfig?.metadata?.name || 'Standard Flow',
-    status: dir.status,
+    status: normalizeStatus(dir.status),
     traffic: '0'
   }))
 })
