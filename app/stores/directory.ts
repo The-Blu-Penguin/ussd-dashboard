@@ -78,17 +78,19 @@ export const useDirectoryStore = defineStore('directory', {
               createdBy: item.createdBy,
             }))
 
-            // Fetch merchant names in batch to populate names correctly
+            // Backfill only the merchant names the directory response didn't include
+            // (fullResponse=true provides most names, so this avoids N+1 fetches)
             const merchantsStore = useMerchantsStore()
-            const merchantCodes = this.directories
-              .map(dir => dir.merchantCode)
-              .filter(Boolean) as string[]
+            const missingCodes = this.directories
+              .filter(dir => dir.merchantCode && dir.merchantName === 'Unknown')
+              .map(dir => dir.merchantCode) as string[]
 
-            if (merchantCodes.length > 0) {
-              const merchantNames = await merchantsStore.fetchMerchantNamesBatch(merchantCodes)
+            if (missingCodes.length > 0) {
+              const merchantNames = await merchantsStore.fetchMerchantNamesBatch(missingCodes)
               this.directories.forEach(dir => {
-                if (dir.merchantCode && merchantNames[dir.merchantCode]) {
-                  dir.merchantName = merchantNames[dir.merchantCode]
+                const name = dir.merchantCode ? merchantNames[dir.merchantCode] : undefined
+                if (name && name !== 'Unknown Merchant') {
+                  dir.merchantName = name
                 }
               })
             }
@@ -253,17 +255,18 @@ export const useDirectoryStore = defineStore('directory', {
               createdBy: item.createdBy,
             }))
 
-            // Fetch merchant names in batch
+            // Backfill only missing merchant names (avoids N+1 fetches)
             const merchantsStore = useMerchantsStore()
-            const merchantCodes = this.directories
-              .map(dir => dir.merchantCode)
-              .filter(Boolean) as string[]
+            const missingCodes = this.directories
+              .filter(dir => dir.merchantCode && dir.merchantName === 'Unknown')
+              .map(dir => dir.merchantCode) as string[]
 
-            if (merchantCodes.length > 0) {
-              const merchantNames = await merchantsStore.fetchMerchantNamesBatch(merchantCodes)
+            if (missingCodes.length > 0) {
+              const merchantNames = await merchantsStore.fetchMerchantNamesBatch(missingCodes)
               this.directories.forEach(dir => {
-                if (dir.merchantCode && merchantNames[dir.merchantCode]) {
-                  dir.merchantName = merchantNames[dir.merchantCode]
+                const name = dir.merchantCode ? merchantNames[dir.merchantCode] : undefined
+                if (name && name !== 'Unknown Merchant') {
+                  dir.merchantName = name
                 }
               })
             }
@@ -339,17 +342,18 @@ export const useDirectoryStore = defineStore('directory', {
           }
         }
 
-        // Batch fetch merchant names for all export items
+        // Backfill only missing merchant names for export items
         const merchantsStore = useMerchantsStore()
-        const merchantCodes = allItems
-          .map(dir => dir.merchantCode)
-          .filter(Boolean) as string[]
+        const missingCodes = allItems
+          .filter(dir => dir.merchantCode && dir.merchantName === 'Unknown')
+          .map(dir => dir.merchantCode) as string[]
 
-        if (merchantCodes.length > 0) {
-          const merchantNames = await merchantsStore.fetchMerchantNamesBatch(merchantCodes)
+        if (missingCodes.length > 0) {
+          const merchantNames = await merchantsStore.fetchMerchantNamesBatch(missingCodes)
           allItems.forEach(dir => {
-            if (dir.merchantCode && merchantNames[dir.merchantCode]) {
-              dir.merchantName = merchantNames[dir.merchantCode]
+            const name = dir.merchantCode ? merchantNames[dir.merchantCode] : undefined
+            if (name && name !== 'Unknown Merchant') {
+              dir.merchantName = name
             }
           })
         }

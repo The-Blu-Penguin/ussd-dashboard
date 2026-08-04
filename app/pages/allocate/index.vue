@@ -8,13 +8,14 @@ import Shimmer from '~/components/ui/Shimmer.vue'
 import Spinner from '~/components/ui/Spinner.vue'
 import { useDirectoryStore } from '~/stores/directory'
 import { useMenuConfigsStore } from '~/stores/menuConfigs'
+import { useMerchantsStore } from '~/stores/merchants'
 import { useAuthStore } from '~/stores/auth'
 import { useApi } from '~/composables/useApi'
 import { useAllocateErrorHandler } from '~/composables/useAllocateErrorHandler'
-import type { MerchantApiResponse } from '~/types/api'
 
 const directoryStore = useDirectoryStore()
 const menuConfigsStore = useMenuConfigsStore()
+const merchantsStore = useMerchantsStore()
 const authStore = useAuthStore()
 const allocateHandler = useAllocateErrorHandler()
 
@@ -170,22 +171,8 @@ const fetchMerchantName = async (code: string) => {
 
   isFetchingMerchant.value = true
   try {
-    const api = useApi()
-    
-    const response = await api<MerchantApiResponse>(`/merchants/${code}`, {
-      method: 'GET',
-    })
-
-    if ((response.success || response.status === 'success') && response.data?.merchantName) {
-      newApp.value.merchant = response.data.merchantName
-    } else if ((response.success || response.status === 'success') && response.data?.merchant?.merchantName) {
-      newApp.value.merchant = response.data.merchant.merchantName
-    } else {
-      newApp.value.merchant = 'Unknown Merchant'
-    }
-  } catch (e) {
-    console.error('Failed to fetch merchant details:', e)
-    newApp.value.merchant = 'Unknown Merchant'
+    // Route through the merchants store for caching + in-flight deduplication
+    newApp.value.merchant = await merchantsStore.fetchMerchantName(code)
   } finally {
     isFetchingMerchant.value = false
   }
