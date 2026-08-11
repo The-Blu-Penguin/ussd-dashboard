@@ -1,0 +1,20 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://ussd.blupayafrica.com/api/v1/:path*"
+    },
+    {
+      "source": "/sse/:path*",
+      "destination": "https://ussd.blupayafrica.com/ussd/sse/:path*"
+    },
+    {
+      "source": "/ussd/sandbox/:path*",
+      "destination": "https://ussd.blupayafrica.com/ussd/sandbox/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
+  ]
+}
