@@ -17,7 +17,8 @@ import {
   ChevronRight,
   Hammer,
   FileJson,
-  Network
+  Network,
+  Server
 } from 'lucide-vue-next'
 
 import AuthNotification from '~/components/ui/AuthNotification.vue'
@@ -83,6 +84,7 @@ const menuItems = [
     items: [
       { name: 'Live Sessions', icon: Activity, to: '/live-sessions' },
       { name: 'Transaction Logs', icon: FileText, to: '/transaction-logs' },
+      { name: 'Service Logs', icon: Server, to: '/service-logs' },
     ]
   },
   {
