@@ -64,15 +64,18 @@ export const useSse = () => {
 
             const lines = block.split('\n')
             let eventName = 'message'
-            let data = ''
+            const dataLines: string[] = []
 
             for (const line of lines) {
               if (line.startsWith('event:')) {
                 eventName = line.slice(6).trim()
               } else if (line.startsWith('data:')) {
-                data = line.slice(5).trim()
+                dataLines.push(line.slice(5).trim())
               }
             }
+
+            // Per SSE spec, multiple `data:` lines in one event are joined with '\n'
+            const data = dataLines.join('\n')
 
             if (data) {
               try {

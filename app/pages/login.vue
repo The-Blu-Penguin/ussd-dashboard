@@ -3,12 +3,13 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import Button from '~/components/ui/Button.vue'
 import AuthNotification from '~/components/ui/AuthNotification.vue'
 import { useValidation } from '~/composables/useValidation'
+import { useAuthStore } from '~/stores/auth'
 
 definePageMeta({
   layout: 'auth'
 })
 
-const { login } = useAuth()
+const authStore = useAuthStore()
 const { validateEmail, validateRequired } = useValidation()
 
 const email = ref('')
@@ -47,7 +48,7 @@ const handleLogin = async () => {
     return
   }
 
-  const result = await login(email.value, password.value)
+  const result = await authStore.login(email.value, password.value)
 
   if (result.success) {
     showSuccessModal.value = true

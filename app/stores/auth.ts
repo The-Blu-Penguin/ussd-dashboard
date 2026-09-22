@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { useApi } from '~/composables/useApi'
+import { useApi, clearCache } from '~/composables/useApi'
 import { useErrorHandler } from '~/composables/useErrorHandler'
 import type { User, ApiResponse, LoginResponseData, ChangePasswordRequest } from '~/types/api'
 import { validatePassword } from '~/utils/passwordValidation'
@@ -49,14 +49,10 @@ export const useAuthStore = defineStore('auth', {
       try {
         const api = useApi()
 
-        console.log(`[Auth Store] Attempting login for ${email}`)
-
         const response = await api<ApiResponse<LoginResponseData>>('/auth/login', {
           method: 'POST',
           body: { email, password },
         })
-
-        console.log(`[Auth Store] Login response:`, response)
 
         if (response.success && response.data) {
           this.user = response.data.user
@@ -79,11 +75,9 @@ export const useAuthStore = defineStore('auth', {
 
           return { success: true, message: response.message }
         } else {
-          console.warn(`[Auth Store] Login returned false success flag`, response)
           return { success: false, message: response.message }
         }
       } catch (error: any) {
-        console.error(`[Auth Store] Login error:`, error)
         const standardError = errorHandler.handleError(error, { showToast: false })
         return {
           success: false,
@@ -118,6 +112,24 @@ export const useAuthStore = defineStore('auth', {
         accessTokenCookie.value = null
         userCookie.value = null
         tokenExpiryCookie.value = null
+
+        // Purge session-owned client state so nothing leaks to the next user:
+        // 1) drop all cached API responses, and 2) $reset every Pinia store
+        // except auth (cleared above) and theme (a device preference, not
+        // session data). Monitoring SSE streams are disconnected first.
+        clearCache()
+        try {
+          const pinia = useNuxtApp().$pinia as any
+          pinia?._s?.forEach((store: any) => {
+            if (store.$id === 'auth' || store.$id === 'theme') return
+            if (store.$id === 'monitoring' && typeof store.disconnectAll === 'function') {
+              store.disconnectAll()
+            }
+            if (typeof store.$reset === 'function') store.$reset()
+          })
+        } catch {
+          // Best-effort cleanup — never block logout on a reset failure
+        }
 
         navigateTo('/login')
       }

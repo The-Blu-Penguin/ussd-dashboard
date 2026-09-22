@@ -1,0 +1,2947 @@
+{
+  "info": {
+    "_postman_id": "939fa686-4e58-4f5e-b31e-a9a328a57084",
+    "name": "Blu Penguin Merchant Service Code Management API",
+    "description": "Hierarchical USSD code management system for merchants",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "9045604"
+  },
+  "item": [
+    {
+      "name": "users",
+      "item": [
+        {
+          "name": "{id}",
+          "item": [
+            {
+              "name": "get User By Id",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/users/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b07871ad-7da8-ac03-5238-a635f5ae1312"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      },
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "x-api-key",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/users/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "users",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b07871ad-7da8-ac03-5238-a635f5ae1312"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"message\": \"string\",\n  \"success\": true,\n  \"timestamp\": \"2022-10-29T10:24:28.487Z\",\n  \"data\": {\n    \"email\": \"string\",\n    \"fullName\": \"string\",\n    \"isActive\": false,\n    \"role\": \"VIEWER\",\n    \"id\": \"7e733d02-1f2b-28cb-5aaa-ea44e86ea9ee\",\n    \"permissions\": {\n      \"key_0\": {}\n    },\n    \"lastLogin\": \"1949-11-08T03:00:35.224Z\",\n    \"createdAt\": \"2005-09-09T18:50:16.842Z\"\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "update User",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fullName\": \"string\",\n  \"role\": \"EDITOR\",\n  \"avatarUrl\": \"string\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b07871ad-7da8-ac03-5238-a635f5ae1312"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "PUT",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      },
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "x-api-key",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"fullName\": \"string\",\n  \"role\": \"EDITOR\",\n  \"avatarUrl\": \"string\"\n}",
+                      "options": {
+                        "raw": {
+                          "headerFamily": "json",
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/users/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "users",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b07871ad-7da8-ac03-5238-a635f5ae1312"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"message\": \"string\",\n  \"success\": true,\n  \"timestamp\": \"2022-10-29T10:24:28.487Z\",\n  \"data\": {\n    \"email\": \"string\",\n    \"fullName\": \"string\",\n    \"isActive\": false,\n    \"role\": \"VIEWER\",\n    \"id\": \"7e733d02-1f2b-28cb-5aaa-ea44e86ea9ee\",\n    \"permissions\": {\n      \"key_0\": {}\n    },\n    \"lastLogin\": \"1949-11-08T03:00:35.224Z\",\n    \"createdAt\": \"2005-09-09T18:50:16.842Z\"\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "delete User",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/users/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b07871ad-7da8-ac03-5238-a635f5ae1312"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "DELETE",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      },
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "x-api-key",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/users/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "users",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b07871ad-7da8-ac03-5238-a635f5ae1312"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"message\": \"string\",\n  \"success\": false,\n  \"timestamp\": \"2013-06-01T23:41:25.835Z\",\n  \"data\": {\n    \"message\": \"string\"\n  }\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "me",
+          "item": [
+            {
+              "name": "get Current User",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/users/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      },
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "x-api-key",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/users/me",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "users",
+                        "me"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"message\": \"string\",\n  \"success\": true,\n  \"timestamp\": \"2022-10-29T10:24:28.487Z\",\n  \"data\": {\n    \"email\": \"string\",\n    \"fullName\": \"string\",\n    \"isActive\": false,\n    \"role\": \"VIEWER\",\n    \"id\": \"7e733d02-1f2b-28cb-5aaa-ea44e86ea9ee\",\n    \"permissions\": {\n      \"key_0\": {}\n    },\n    \"lastLogin\": \"1949-11-08T03:00:35.224Z\",\n    \"createdAt\": \"2005-09-09T18:50:16.842Z\"\n  }\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  },
+                  {
+                    "description": "Added as a part of security scheme: apikey",
+                    "key": "x-api-key",
+                    "value": "<API Key>"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/users",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "text",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "*/*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"string\",\n  \"success\": false,\n  \"timestamp\": \"1947-06-25T12:23:55.365Z\",\n  \"data\": [\n    {\n      \"email\": \"string\",\n      \"fullName\": \"string\",\n      \"isActive\": true,\n      \"role\": \"EDITOR\",\n      \"id\": \"b266afd3-0e78-7d03-d2c0-e351eec0995c\",\n      \"permissions\": {\n        \"key_0\": {}\n      },\n      \"lastLogin\": \"2024-09-12T21:29:33.166Z\",\n      \"createdAt\": \"1987-04-17T04:37:05.203Z\"\n    },\n    {\n      \"email\": \"string\",\n      \"fullName\": \"string\",\n      \"isActive\": false,\n      \"role\": \"ADMIN\",\n      \"id\": \"761cf775-f33c-762d-5ed7-dd567febe1fe\",\n      \"permissions\": {\n        \"key_0\": {}\n      },\n      \"lastLogin\": \"1973-04-17T08:06:22.176Z\",\n      \"createdAt\": \"1972-10-18T17:37:00.206Z\"\n    }\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "auth",
+      "item": [
+        {
+          "name": "{id}",
+          "item": [
+            {
+              "name": "change-password",
+              "item": [
+                {
+                  "name": "change Password",
+                  "request": {
+                    "method": "PUT",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"currentPassword\": \"string\",\n  \"newPassword\": \"stringstring\"\n}",
+                      "options": {
+                        "raw": {
+                          "headerFamily": "json",
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/auth/:id/change-password",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "auth",
+                        ":id",
+                        "change-password"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b07871ad-7da8-ac03-5238-a635f5ae1312"
+                        }
+                      ]
+                    }
+                  },
+                  "response": [
+                    {
+                      "name": "OK",
+                      "originalRequest": {
+                        "method": "PUT",
+                        "header": [
+                          {
+                            "key": "Content-Type",
+                            "value": "application/json"
+                          },
+                          {
+                            "key": "Accept",
+                            "value": "*/*"
+                          },
+                          {
+                            "description": "Added as a part of security scheme: apikey",
+                            "key": "x-api-key",
+                            "value": "<API Key>"
+                          }
+                        ],
+                        "body": {
+                          "mode": "raw",
+                          "raw": "{\n  \"currentPassword\": \"string\",\n  \"newPassword\": \"stringstring\"\n}",
+                          "options": {
+                            "raw": {
+                              "headerFamily": "json",
+                              "language": "json"
+                            }
+                          }
+                        },
+                        "url": {
+                          "raw": "{{baseUrl}}/auth/:id/change-password",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "auth",
+                            ":id",
+                            "change-password"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id",
+                              "value": "b07871ad-7da8-ac03-5238-a635f5ae1312"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "text",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "*/*"
+                        }
+                      ],
+                      "cookie": [],
+                      "body": "{\n  \"message\": \"string\",\n  \"success\": false,\n  \"timestamp\": \"2024-09-01T14:58:39.340Z\",\n  \"data\": {}\n}"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "register",
+          "item": [
+            {
+              "name": "register",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"string\",\n  \"fullName\": \"string\",\n  \"password\": \"stringstring\",\n  \"role\": \"VIEWER\",\n  \"avatarUrl\": \"string\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "register"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      },
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "x-api-key",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"email\": \"string\",\n  \"fullName\": \"string\",\n  \"password\": \"stringstring\",\n  \"role\": \"VIEWER\",\n  \"avatarUrl\": \"string\"\n}",
+                      "options": {
+                        "raw": {
+                          "headerFamily": "json",
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/auth/register",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "auth",
+                        "register"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"message\": \"string\",\n  \"success\": true,\n  \"timestamp\": \"2022-10-29T10:24:28.487Z\",\n  \"data\": {\n    \"email\": \"string\",\n    \"fullName\": \"string\",\n    \"isActive\": false,\n    \"role\": \"VIEWER\",\n    \"id\": \"7e733d02-1f2b-28cb-5aaa-ea44e86ea9ee\",\n    \"permissions\": {\n      \"key_0\": {}\n    },\n    \"lastLogin\": \"1949-11-08T03:00:35.224Z\",\n    \"createdAt\": \"2005-09-09T18:50:16.842Z\"\n  }\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "logout",
+          "item": [
+            {
+              "name": "logout",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/logout",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "logout"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      },
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "x-api-key",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/auth/logout",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "auth",
+                        "logout"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"message\": \"string\",\n  \"success\": false,\n  \"timestamp\": \"2024-09-01T14:58:39.340Z\",\n  \"data\": {}\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "login",
+          "item": [
+            {
+              "name": "login",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"string\",\n  \"password\": \"string\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      },
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "x-api-key",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"email\": \"string\",\n  \"password\": \"string\"\n}",
+                      "options": {
+                        "raw": {
+                          "headerFamily": "json",
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/auth/login",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "auth",
+                        "login"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"message\": \"string\",\n  \"success\": true,\n  \"timestamp\": \"1952-04-25T19:37:05.903Z\",\n  \"data\": {\n    \"accessToken\": \"string\",\n    \"expiresIn\": 4136,\n    \"tokenType\": \"string\",\n    \"user\": {\n      \"email\": \"string\",\n      \"fullName\": \"string\",\n      \"isActive\": false,\n      \"role\": \"ADMIN\",\n      \"id\": \"3decb963-91ab-ca0f-9443-5fd7c74b1019\",\n      \"permissions\": {\n        \"key_0\": {}\n      },\n      \"lastLogin\": \"1952-09-08T05:24:45.999Z\",\n      \"createdAt\": \"1947-02-28T11:19:06.244Z\"\n    }\n  }\n}"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "menuConfigFlow",
+      "item": [
+        {
+          "name": "{id}",
+          "item": [
+            {
+              "name": "get Menu Config Flow By Id",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/menuConfigFlow/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "menuConfigFlow",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b07871ad-7da8-ac03-5238-a635f5ae1312"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      },
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "x-api-key",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/menuConfigFlow/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "menuConfigFlow",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b07871ad-7da8-ac03-5238-a635f5ae1312"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"message\": \"string\",\n  \"success\": false,\n  \"timestamp\": \"1967-03-07T23:23:29.085Z\",\n  \"data\": {\n    \"createdAt\": \"1948-03-20T09:01:40.217Z\",\n    \"id\": \"f98bc00d-40fb-9653-f8f8-8c85a28d26c8\",\n    \"menuConfig\": {\n      \"key_0\": {}\n    },\n    \"name\": \"string\",\n    \"type\": \"CUSTOM_NOT_REFERENCED\",\n    \"description\": \"string\",\n    \"updatedAt\": \"1964-09-18T02:10:49.542Z\",\n    \"createdBy\": {\n      \"id\": \"e0962044-956a-9eb7-d7e3-63d6d7cc4b8a\",\n      \"email\": \"string\",\n      \"fullName\": \"string\"\n    }\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "delete Menu Config Flow",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/menuConfigFlow/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "menuConfigFlow",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b07871ad-7da8-ac03-5238-a635f5ae1312"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "DELETE",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      },
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "x-api-key",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/menuConfigFlow/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "menuConfigFlow",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b07871ad-7da8-ac03-5238-a635f5ae1312"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"message\": \"string\",\n  \"success\": false,\n  \"timestamp\": \"2024-09-01T14:58:39.340Z\",\n  \"data\": {}\n}"
+                }
+              ]
+            },
+            {
+              "name": "update Menu Config",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"string\",\n  \"type\": \"STANDARD_NOT_REFERENCED\",\n  \"hasReference\": false,\n  \"description\": \"string\",\n  \"menuConfig\": {\n    \"key_0\": {},\n    \"key_1\": {}\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/menuConfigFlow/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "menuConfigFlow",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b07871ad-7da8-ac03-5238-a635f5ae1312"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "PATCH",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      },
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "x-api-key",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"name\": \"string\",\n  \"type\": \"STANDARD_NOT_REFERENCED\",\n  \"hasReference\": false,\n  \"description\": \"string\",\n  \"menuConfig\": {\n    \"key_0\": {},\n    \"key_1\": {}\n  }\n}",
+                      "options": {
+                        "raw": {
+                          "headerFamily": "json",
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/menuConfigFlow/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "menuConfigFlow",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b07871ad-7da8-ac03-5238-a635f5ae1312"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"message\": \"string\",\n  \"success\": false,\n  \"timestamp\": \"1967-03-07T23:23:29.085Z\",\n  \"data\": {\n    \"createdAt\": \"1948-03-20T09:01:40.217Z\",\n    \"id\": \"f98bc00d-40fb-9653-f8f8-8c85a28d26c8\",\n    \"menuConfig\": {\n      \"key_0\": {}\n    },\n    \"name\": \"string\",\n    \"type\": \"CUSTOM_NOT_REFERENCED\",\n    \"description\": \"string\",\n    \"updatedAt\": \"1964-09-18T02:10:49.542Z\",\n    \"createdBy\": {\n      \"id\": \"e0962044-956a-9eb7-d7e3-63d6d7cc4b8a\",\n      \"email\": \"string\",\n      \"fullName\": \"string\"\n    }\n  }\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "get All Menu Config Flows",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/menuConfigFlow",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "menuConfigFlow"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  },
+                  {
+                    "description": "Added as a part of security scheme: apikey",
+                    "key": "x-api-key",
+                    "value": "<API Key>"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/menuConfigFlow",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "menuConfigFlow"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "text",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "*/*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"string\",\n  \"success\": false,\n  \"timestamp\": \"1972-01-01T21:05:02.307Z\",\n  \"data\": [\n    {\n      \"createdAt\": \"1965-11-17T15:19:03.523Z\",\n      \"id\": \"dcf04a16-7c99-a38e-6700-b6a3f8e203df\",\n      \"menuConfig\": {\n        \"key_0\": {},\n        \"key_1\": {},\n        \"key_2\": {},\n        \"key_3\": {}\n      },\n      \"name\": \"string\",\n      \"type\": \"STANDARD_REFERENCED\",\n      \"description\": \"string\",\n      \"updatedAt\": \"1976-07-14T20:00:09.037Z\",\n      \"createdBy\": {\n        \"id\": \"ecb8c5d3-0c89-615a-0493-b7e5b9f2248b\",\n        \"email\": \"string\",\n        \"fullName\": \"string\"\n      }\n    },\n    {\n      \"createdAt\": \"2021-11-17T01:10:29.635Z\",\n      \"id\": \"01734570-bbcf-dff4-0e3e-43191df29731\",\n      \"menuConfig\": {\n        \"key_0\": {},\n        \"key_1\": {},\n        \"key_2\": {}\n      },\n      \"name\": \"string\",\n      \"type\": \"STANDARD_REFERENCED\",\n      \"description\": \"string\",\n      \"updatedAt\": \"1948-06-05T07:15:43.522Z\",\n      \"createdBy\": {\n        \"id\": \"05537fcb-2095-d830-8d07-12f1090059f6\",\n        \"email\": \"string\",\n        \"fullName\": \"string\"\n      }\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "create Menu Config Flow",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"menuConfig\": {\n    \"key_0\": {},\n    \"key_1\": {}\n  },\n  \"name\": \"string\",\n  \"type\": \"STANDARD_NOT_REFERENCED\",\n  \"description\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "headerFamily": "json",
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/menuConfigFlow",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "menuConfigFlow"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  },
+                  {
+                    "description": "Added as a part of security scheme: apikey",
+                    "key": "x-api-key",
+                    "value": "<API Key>"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"menuConfig\": {\n    \"key_0\": {},\n    \"key_1\": {}\n  },\n  \"name\": \"string\",\n  \"type\": \"STANDARD_NOT_REFERENCED\",\n  \"description\": \"string\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/menuConfigFlow",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "menuConfigFlow"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "text",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "*/*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"string\",\n  \"success\": false,\n  \"timestamp\": \"1967-03-07T23:23:29.085Z\",\n  \"data\": {\n    \"createdAt\": \"1948-03-20T09:01:40.217Z\",\n    \"id\": \"f98bc00d-40fb-9653-f8f8-8c85a28d26c8\",\n    \"menuConfig\": {\n      \"key_0\": {}\n    },\n    \"name\": \"string\",\n    \"type\": \"CUSTOM_NOT_REFERENCED\",\n    \"description\": \"string\",\n    \"updatedAt\": \"1964-09-18T02:10:49.542Z\",\n    \"createdBy\": {\n      \"id\": \"e0962044-956a-9eb7-d7e3-63d6d7cc4b8a\",\n      \"email\": \"string\",\n      \"fullName\": \"string\"\n    }\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "directory",
+      "item": [
+        {
+          "name": "{id}",
+          "item": [
+            {
+              "name": "status",
+              "item": [
+                {
+                  "name": "update Directory Status",
+                  "request": {
+                    "method": "PATCH",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"status\": \"INACTIVE\",\n  \"reason\": \"string\"\n}",
+                      "options": {
+                        "raw": {
+                          "headerFamily": "json",
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/directory/:id/status",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "directory",
+                        ":id",
+                        "status"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b07871ad-7da8-ac03-5238-a635f5ae1312"
+                        }
+                      ]
+                    }
+                  },
+                  "response": [
+                    {
+                      "name": "OK",
+                      "originalRequest": {
+                        "method": "PATCH",
+                        "header": [
+                          {
+                            "key": "Content-Type",
+                            "value": "application/json"
+                          },
+                          {
+                            "key": "Accept",
+                            "value": "*/*"
+                          },
+                          {
+                            "description": "Added as a part of security scheme: apikey",
+                            "key": "x-api-key",
+                            "value": "<API Key>"
+                          }
+                        ],
+                        "body": {
+                          "mode": "raw",
+                          "raw": "{\n  \"status\": \"INACTIVE\",\n  \"reason\": \"string\"\n}",
+                          "options": {
+                            "raw": {
+                              "headerFamily": "json",
+                              "language": "json"
+                            }
+                          }
+                        },
+                        "url": {
+                          "raw": "{{baseUrl}}/directory/:id/status",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "directory",
+                            ":id",
+                            "status"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id",
+                              "value": "b07871ad-7da8-ac03-5238-a635f5ae1312"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "text",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "*/*"
+                        }
+                      ],
+                      "cookie": [],
+                      "body": "{\n  \"message\": \"string\",\n  \"success\": false,\n  \"timestamp\": \"1994-12-02T05:29:46.565Z\",\n  \"data\": {\n    \"assignedCode\": \"string\",\n    \"childrenCount\": 9793,\n    \"createdAt\": \"1974-11-06T20:48:47.776Z\",\n    \"id\": \"f4cf0697-a20e-52fa-be0d-39cbbe76ff26\",\n    \"level\": \"PRIMARY\",\n    \"merchantCode\": \"string\",\n    \"path\": \"string\",\n    \"status\": \"INACTIVE\",\n    \"ussdCode\": \"string\",\n    \"menuConfigFlowId\": \"c4207762-e65e-1d44-761b-27f4b529d4bd\",\n    \"parentDirectoryId\": \"515fa098-3e3b-444f-bb89-f559b0ab4c34\",\n    \"parentUssdCode\": \"string\",\n    \"updatedAt\": \"1999-02-24T16:38:03.351Z\",\n    \"createdBy\": {\n      \"id\": \"2c0301c7-76bf-3f83-db4c-e69c95cc863f\",\n      \"email\": \"string\",\n      \"fullName\": \"string\"\n    }\n  }\n}"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "tree",
+              "item": [
+                {
+                  "name": "get Directory Tree By Id",
+                  "request": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/directory/:id/tree",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "directory",
+                        ":id",
+                        "tree"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b07871ad-7da8-ac03-5238-a635f5ae1312"
+                        }
+                      ]
+                    }
+                  },
+                  "response": [
+                    {
+                      "name": "OK",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "*/*"
+                          },
+                          {
+                            "description": "Added as a part of security scheme: apikey",
+                            "key": "x-api-key",
+                            "value": "<API Key>"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/directory/:id/tree",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "directory",
+                            ":id",
+                            "tree"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id",
+                              "value": "b07871ad-7da8-ac03-5238-a635f5ae1312"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "text",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "*/*"
+                        }
+                      ],
+                      "cookie": [],
+                      "body": "{\n  \"message\": \"string\",\n  \"success\": false,\n  \"timestamp\": \"1974-06-27T05:20:54.011Z\",\n  \"data\": {\n    \"children\": [\n      {\n        \"value\": \"<Circular reference to #/components/schemas/DirectoryTreeNode detected>\"\n      },\n      {\n        \"value\": \"<Circular reference to #/components/schemas/DirectoryTreeNode detected>\"\n      }\n    ],\n    \"directory\": {\n      \"assignedCode\": \"string\",\n      \"childrenCount\": 18,\n      \"createdAt\": \"2009-03-31T04:27:03.821Z\",\n      \"id\": \"a8f34a0d-c142-ec72-bfc4-8721fc8772c2\",\n      \"level\": \"SECONDARY\",\n      \"merchantCode\": \"string\",\n      \"path\": \"string\",\n      \"status\": \"ACTIVE\",\n      \"ussdCode\": \"string\",\n      \"menuConfigFlowId\": \"15adabc0-c6d7-e0b1-fef7-94b2b0d5ec6d\",\n      \"parentDirectoryId\": \"977355f1-f7b5-9d51-e8d2-6bce87ee39a2\",\n      \"parentUssdCode\": \"string\",\n      \"updatedAt\": \"1976-06-26T02:25:21.949Z\",\n      \"createdBy\": {\n        \"id\": \"4a37bccf-a05d-cea8-81f7-19d5cb3bb2fc\",\n        \"email\": \"string\",\n        \"fullName\": \"string\"\n      }\n    }\n  }\n}"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "logs",
+              "item": [
+                {
+                  "name": "get Allocation Logs",
+                  "request": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/directory/:id/logs",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "directory",
+                        ":id",
+                        "logs"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b07871ad-7da8-ac03-5238-a635f5ae1312"
+                        }
+                      ]
+                    }
+                  },
+                  "response": [
+                    {
+                      "name": "OK",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "*/*"
+                          },
+                          {
+                            "description": "Added as a part of security scheme: apikey",
+                            "key": "x-api-key",
+                            "value": "<API Key>"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/directory/:id/logs",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "directory",
+                            ":id",
+                            "logs"
+                          ],
+                          "variable": [
+                            {
+                              "key": "id",
+                              "value": "b07871ad-7da8-ac03-5238-a635f5ae1312"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "text",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "*/*"
+                        }
+                      ],
+                      "cookie": [],
+                      "body": "{\n  \"message\": \"string\",\n  \"success\": true,\n  \"timestamp\": \"2008-01-15T14:29:04.885Z\",\n  \"data\": [\n    {\n      \"actionType\": \"string\",\n      \"allocationMethod\": \"string\",\n      \"id\": \"ea8ceb42-a71d-436f-32e0-68e648b3f98d\",\n      \"performedAt\": \"1959-11-29T00:54:04.754Z\",\n      \"code\": \"string\",\n      \"path\": \"string\"\n    },\n    {\n      \"actionType\": \"string\",\n      \"allocationMethod\": \"string\",\n      \"id\": \"1db05aae-ac17-0fce-4bb4-2329163b823f\",\n      \"performedAt\": \"1988-09-24T00:47:53.870Z\",\n      \"code\": \"string\",\n      \"path\": \"string\"\n    }\n  ]\n}"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "get Directory By Id",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/directory/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "directory",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b07871ad-7da8-ac03-5238-a635f5ae1312"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      },
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "x-api-key",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/directory/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "directory",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b07871ad-7da8-ac03-5238-a635f5ae1312"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"message\": \"string\",\n  \"success\": false,\n  \"timestamp\": \"1994-12-02T05:29:46.565Z\",\n  \"data\": {\n    \"assignedCode\": \"string\",\n    \"childrenCount\": 9793,\n    \"createdAt\": \"1974-11-06T20:48:47.776Z\",\n    \"id\": \"f4cf0697-a20e-52fa-be0d-39cbbe76ff26\",\n    \"level\": \"PRIMARY\",\n    \"merchantCode\": \"string\",\n    \"path\": \"string\",\n    \"status\": \"INACTIVE\",\n    \"ussdCode\": \"string\",\n    \"menuConfigFlowId\": \"c4207762-e65e-1d44-761b-27f4b529d4bd\",\n    \"parentDirectoryId\": \"515fa098-3e3b-444f-bb89-f559b0ab4c34\",\n    \"parentUssdCode\": \"string\",\n    \"updatedAt\": \"1999-02-24T16:38:03.351Z\",\n    \"createdBy\": {\n      \"id\": \"2c0301c7-76bf-3f83-db4c-e69c95cc863f\",\n      \"email\": \"string\",\n      \"fullName\": \"string\"\n    }\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "release Ussd Code",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/directory/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "directory",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b07871ad-7da8-ac03-5238-a635f5ae1312"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "DELETE",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      },
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "x-api-key",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/directory/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "directory",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b07871ad-7da8-ac03-5238-a635f5ae1312"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"message\": \"string\",\n  \"success\": false,\n  \"timestamp\": \"2024-09-01T14:58:39.340Z\",\n  \"data\": {}\n}"
+                }
+              ]
+            },
+            {
+              "name": "update Directory",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"merchantCode\": \"string\",\n  \"menuConfigFlowId\": \"db634b4e-cf42-8596-4929-3f248e266ef7\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/directory/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "directory",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "b07871ad-7da8-ac03-5238-a635f5ae1312"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "PATCH",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      },
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "x-api-key",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"merchantCode\": \"string\",\n  \"menuConfigFlowId\": \"db634b4e-cf42-8596-4929-3f248e266ef7\"\n}",
+                      "options": {
+                        "raw": {
+                          "headerFamily": "json",
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/directory/:id",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "directory",
+                        ":id"
+                      ],
+                      "variable": [
+                        {
+                          "key": "id",
+                          "value": "b07871ad-7da8-ac03-5238-a635f5ae1312"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"message\": \"string\",\n  \"success\": false,\n  \"timestamp\": \"1994-12-02T05:29:46.565Z\",\n  \"data\": {\n    \"assignedCode\": \"string\",\n    \"childrenCount\": 9793,\n    \"createdAt\": \"1974-11-06T20:48:47.776Z\",\n    \"id\": \"f4cf0697-a20e-52fa-be0d-39cbbe76ff26\",\n    \"level\": \"PRIMARY\",\n    \"merchantCode\": \"string\",\n    \"path\": \"string\",\n    \"status\": \"INACTIVE\",\n    \"ussdCode\": \"string\",\n    \"menuConfigFlowId\": \"c4207762-e65e-1d44-761b-27f4b529d4bd\",\n    \"parentDirectoryId\": \"515fa098-3e3b-444f-bb89-f559b0ab4c34\",\n    \"parentUssdCode\": \"string\",\n    \"updatedAt\": \"1999-02-24T16:38:03.351Z\",\n    \"createdBy\": {\n      \"id\": \"2c0301c7-76bf-3f83-db4c-e69c95cc863f\",\n      \"email\": \"string\",\n      \"fullName\": \"string\"\n    }\n  }\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "ussd",
+          "item": [
+            {
+              "name": "fetch Directory By Ussd Code",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/directory/ussd?code=string",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "directory",
+                    "ussd"
+                  ],
+                  "query": [
+                    {
+                      "key": "code",
+                      "value": "string"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      },
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "x-api-key",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/directory/ussd?code=string",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "directory",
+                        "ussd"
+                      ],
+                      "query": [
+                        {
+                          "key": "code",
+                          "value": "string"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"message\": \"string\",\n  \"success\": true,\n  \"timestamp\": \"1983-07-14T17:51:02.571Z\",\n  \"data\": {\n    \"id\": \"d9d2431e-9a97-89d4-fb5c-01bb7faff358\",\n    \"assignedCode\": \"string\",\n    \"ussdCode\": \"string\",\n    \"path\": \"string\",\n    \"level\": \"PRIMARY\",\n    \"status\": \"ACTIVE\",\n    \"createdAt\": \"1969-10-21T22:45:54.882Z\",\n    \"updatedAt\": \"1975-06-17T10:56:01.354Z\"\n  }\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "tree",
+          "item": [
+            {
+              "name": "get Directory Tree",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/directory/tree",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "directory",
+                    "tree"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      },
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "x-api-key",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/directory/tree",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "directory",
+                        "tree"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"message\": \"string\",\n  \"success\": true,\n  \"timestamp\": \"1977-01-26T01:39:04.437Z\",\n  \"data\": [\n    {\n      \"children\": [\n        {\n          \"value\": \"<Circular reference to #/components/schemas/DirectoryTreeNode detected>\"\n        },\n        {\n          \"value\": \"<Circular reference to #/components/schemas/DirectoryTreeNode detected>\"\n        }\n      ],\n      \"directory\": {\n        \"assignedCode\": \"string\",\n        \"childrenCount\": 630,\n        \"createdAt\": \"2008-03-30T22:46:10.435Z\",\n        \"id\": \"7721ab6a-9702-3540-d51d-9c1e31a91e9b\",\n        \"level\": \"PRIMARY\",\n        \"merchantCode\": \"string\",\n        \"path\": \"string\",\n        \"status\": \"ACTIVE\",\n        \"ussdCode\": \"string\",\n        \"menuConfigFlowId\": \"a3a36e09-fe09-f717-672c-74f6775393cf\",\n        \"parentDirectoryId\": \"ce5e27cb-e7d3-de34-db47-6a5a4585f55a\",\n        \"parentUssdCode\": \"string\",\n        \"updatedAt\": \"1961-02-01T03:36:47.529Z\",\n        \"createdBy\": {\n          \"id\": \"9d6045f6-7711-6546-b4c5-50cbf198ab46\",\n          \"email\": \"string\",\n          \"fullName\": \"string\"\n        }\n      }\n    },\n    {\n      \"children\": [\n        {\n          \"value\": \"<Circular reference to #/components/schemas/DirectoryTreeNode detected>\"\n        },\n        {\n          \"value\": \"<Circular reference to #/components/schemas/DirectoryTreeNode detected>\"\n        }\n      ],\n      \"directory\": {\n        \"assignedCode\": \"string\",\n        \"childrenCount\": 5528,\n        \"createdAt\": \"1999-12-01T12:53:29.860Z\",\n        \"id\": \"eded023b-1357-43ae-4d1e-ec99b9727959\",\n        \"level\": \"PRIMARY\",\n        \"merchantCode\": \"string\",\n        \"path\": \"string\",\n        \"status\": \"ACTIVE\",\n        \"ussdCode\": \"string\",\n        \"menuConfigFlowId\": \"22a12c59-d9a5-ba0e-e530-57532566ba6d\",\n        \"parentDirectoryId\": \"cdbcb9da-b13a-727b-aa9b-67f1cd7b5135\",\n        \"parentUssdCode\": \"string\",\n        \"updatedAt\": \"1991-11-25T04:11:49.880Z\",\n        \"createdBy\": {\n          \"id\": \"5813cb0f-b87d-b3e7-8b75-640a17c4c457\",\n          \"email\": \"string\",\n          \"fullName\": \"string\"\n        }\n      }\n    }\n  ]\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "root",
+          "item": [
+            {
+              "name": "get Root Directories",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/directory/root?status=ACTIVE",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "directory",
+                    "root"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "ACTIVE"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      },
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "x-api-key",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/directory/root?status=ACTIVE",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "directory",
+                        "root"
+                      ],
+                      "query": [
+                        {
+                          "key": "status",
+                          "value": "ACTIVE"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"message\": \"string\",\n  \"success\": true,\n  \"timestamp\": \"2002-12-26T04:35:30.739Z\",\n  \"data\": [\n    {\n      \"assignedCode\": \"string\",\n      \"childrenCount\": 1917,\n      \"createdAt\": \"2008-01-14T16:53:13.148Z\",\n      \"id\": \"55cd5505-7adf-9129-797a-0d7679f58459\",\n      \"level\": \"SECONDARY\",\n      \"merchantCode\": \"string\",\n      \"path\": \"string\",\n      \"status\": \"ACTIVE\",\n      \"ussdCode\": \"string\",\n      \"menuConfigFlowId\": \"5e613a92-a491-1409-6d52-93b83ac9b981\",\n      \"parentDirectoryId\": \"27a8481c-f231-9150-2461-9906a0c5d410\",\n      \"parentUssdCode\": \"string\",\n      \"updatedAt\": \"1978-10-30T19:58:19.157Z\",\n      \"createdBy\": {\n        \"id\": \"9ef7b9d5-a9e6-4f36-ac05-f0c55de46df3\",\n        \"email\": \"string\",\n        \"fullName\": \"string\"\n      }\n    },\n    {\n      \"assignedCode\": \"string\",\n      \"childrenCount\": 4742,\n      \"createdAt\": \"1991-11-24T20:18:22.300Z\",\n      \"id\": \"49397b94-e83b-58e5-c590-a5c677a1f517\",\n      \"level\": \"PRIMARY\",\n      \"merchantCode\": \"string\",\n      \"path\": \"string\",\n      \"status\": \"ACTIVE\",\n      \"ussdCode\": \"string\",\n      \"menuConfigFlowId\": \"c0cf3ed5-f6ea-9c82-1b0a-65ea5b1ede09\",\n      \"parentDirectoryId\": \"c7b653d5-0a3a-810f-1328-0d3aff4de1ac\",\n      \"parentUssdCode\": \"string\",\n      \"updatedAt\": \"2020-06-14T08:36:11.943Z\",\n      \"createdBy\": {\n        \"id\": \"c338a847-af75-1538-417f-aa982083693f\",\n        \"email\": \"string\",\n        \"fullName\": \"string\"\n      }\n    }\n  ]\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "merchant",
+          "item": [
+            {
+              "name": "{merchantCode}",
+              "item": [
+                {
+                  "name": "get Directories By Merchant Code",
+                  "request": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/directory/merchant/:merchantCode",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "directory",
+                        "merchant",
+                        ":merchantCode"
+                      ],
+                      "variable": [
+                        {
+                          "key": "merchantCode",
+                          "value": "string"
+                        }
+                      ]
+                    }
+                  },
+                  "response": [
+                    {
+                      "name": "OK",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "*/*"
+                          },
+                          {
+                            "description": "Added as a part of security scheme: apikey",
+                            "key": "x-api-key",
+                            "value": "<API Key>"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/directory/merchant/:merchantCode",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "directory",
+                            "merchant",
+                            ":merchantCode"
+                          ],
+                          "variable": [
+                            {
+                              "key": "merchantCode",
+                              "value": "string"
+                            }
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "text",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "*/*"
+                        }
+                      ],
+                      "cookie": [],
+                      "body": "{\n  \"message\": \"string\",\n  \"success\": false,\n  \"timestamp\": \"1994-12-02T05:29:46.565Z\",\n  \"data\": {\n    \"assignedCode\": \"string\",\n    \"childrenCount\": 9793,\n    \"createdAt\": \"1974-11-06T20:48:47.776Z\",\n    \"id\": \"f4cf0697-a20e-52fa-be0d-39cbbe76ff26\",\n    \"level\": \"PRIMARY\",\n    \"merchantCode\": \"string\",\n    \"path\": \"string\",\n    \"status\": \"INACTIVE\",\n    \"ussdCode\": \"string\",\n    \"menuConfigFlowId\": \"c4207762-e65e-1d44-761b-27f4b529d4bd\",\n    \"parentDirectoryId\": \"515fa098-3e3b-444f-bb89-f559b0ab4c34\",\n    \"parentUssdCode\": \"string\",\n    \"updatedAt\": \"1999-02-24T16:38:03.351Z\",\n    \"createdBy\": {\n      \"id\": \"2c0301c7-76bf-3f83-db4c-e69c95cc863f\",\n      \"email\": \"string\",\n      \"fullName\": \"string\"\n    }\n  }\n}"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "count",
+          "item": [
+            {
+              "name": "inactive",
+              "item": [
+                {
+                  "name": "get In Active Merchant Count",
+                  "request": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/directory/count/inactive",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "directory",
+                        "count",
+                        "inactive"
+                      ]
+                    }
+                  },
+                  "response": [
+                    {
+                      "name": "OK",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "*/*"
+                          },
+                          {
+                            "description": "Added as a part of security scheme: apikey",
+                            "key": "x-api-key",
+                            "value": "<API Key>"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/directory/count/inactive",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "directory",
+                            "count",
+                            "inactive"
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "text",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "*/*"
+                        }
+                      ],
+                      "cookie": [],
+                      "body": "{\n  \"message\": \"string\",\n  \"success\": true,\n  \"timestamp\": \"1970-03-30T11:00:32.902Z\",\n  \"data\": 9854\n}"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "active",
+              "item": [
+                {
+                  "name": "get Active Merchant Count",
+                  "request": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/directory/count/active",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "directory",
+                        "count",
+                        "active"
+                      ]
+                    }
+                  },
+                  "response": [
+                    {
+                      "name": "OK",
+                      "originalRequest": {
+                        "method": "GET",
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "*/*"
+                          },
+                          {
+                            "description": "Added as a part of security scheme: apikey",
+                            "key": "x-api-key",
+                            "value": "<API Key>"
+                          }
+                        ],
+                        "url": {
+                          "raw": "{{baseUrl}}/directory/count/active",
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "path": [
+                            "directory",
+                            "count",
+                            "active"
+                          ]
+                        }
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "_postman_previewlanguage": "text",
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "*/*"
+                        }
+                      ],
+                      "cookie": [],
+                      "body": "{\n  \"message\": \"string\",\n  \"success\": true,\n  \"timestamp\": \"1970-03-30T11:00:32.902Z\",\n  \"data\": 9854\n}"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "get Total Merchant",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/directory/count",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "directory",
+                    "count"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      },
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "x-api-key",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/directory/count",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "directory",
+                        "count"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"message\": \"string\",\n  \"success\": true,\n  \"timestamp\": \"1970-03-30T11:00:32.902Z\",\n  \"data\": 9854\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "check-availability",
+          "item": [
+            {
+              "name": "check Code Availability",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/directory/check-availability?parentCode=5135&code=5135",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "directory",
+                    "check-availability"
+                  ],
+                  "query": [
+                    {
+                      "key": "parentCode",
+                      "value": "5135"
+                    },
+                    {
+                      "key": "code",
+                      "value": "5135"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      },
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "x-api-key",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/directory/check-availability?parentCode=5135&code=5135",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "directory",
+                        "check-availability"
+                      ],
+                      "query": [
+                        {
+                          "key": "parentCode",
+                          "value": "5135"
+                        },
+                        {
+                          "key": "code",
+                          "value": "5135"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"message\": \"string\",\n  \"success\": false,\n  \"timestamp\": \"2020-01-27T01:57:50.862Z\",\n  \"data\": {\n    \"isAvailable\": false,\n    \"requestedCode\": 2283,\n    \"suggestedCodes\": [\n      4670,\n      7201\n    ],\n    \"parentDirectoryId\": \"1d445704-9dd7-fb46-6d73-97f60a7c5599\",\n    \"currentlyAssignedTo\": \"string\"\n  }\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "available-codes",
+          "item": [
+            {
+              "name": "get Available Codes By Level",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/directory/available-codes?level=SECONDARY&parentCode=5135&limit=5135",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "directory",
+                    "available-codes"
+                  ],
+                  "query": [
+                    {
+                      "key": "level",
+                      "value": "SECONDARY"
+                    },
+                    {
+                      "key": "parentCode",
+                      "value": "5135"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "5135"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      },
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "x-api-key",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/directory/available-codes?level=SECONDARY&parentCode=5135&limit=5135",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "directory",
+                        "available-codes"
+                      ],
+                      "query": [
+                        {
+                          "key": "level",
+                          "value": "SECONDARY"
+                        },
+                        {
+                          "key": "parentCode",
+                          "value": "5135"
+                        },
+                        {
+                          "key": "limit",
+                          "value": "5135"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"message\": \"string\",\n  \"success\": false,\n  \"timestamp\": \"1967-10-08T00:15:46.297Z\",\n  \"data\": {\n    \"assignedCodes\": [\n      6734,\n      9374\n    ],\n    \"availableCodes\": [\n      8252,\n      8491\n    ]\n  }\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "get All Directories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/directory?page=0&size=20&fullResponse=false&search=string&status=ACTIVE&level=SECONDARY",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "directory"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                },
+                {
+                  "key": "fullResponse",
+                  "value": "false"
+                },
+                {
+                  "key": "search",
+                  "value": "string"
+                },
+                {
+                  "key": "status",
+                  "value": "ACTIVE"
+                },
+                {
+                  "key": "level",
+                  "value": "SECONDARY"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  },
+                  {
+                    "description": "Added as a part of security scheme: apikey",
+                    "key": "x-api-key",
+                    "value": "<API Key>"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/directory?page=0&size=20&fullResponse=false&search=string&status=ACTIVE&level=SECONDARY",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "directory"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "20"
+                    },
+                    {
+                      "key": "fullResponse",
+                      "value": "false"
+                    },
+                    {
+                      "key": "search",
+                      "value": "string"
+                    },
+                    {
+                      "key": "status",
+                      "value": "ACTIVE"
+                    },
+                    {
+                      "key": "level",
+                      "value": "SECONDARY"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "text",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "*/*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"string\",\n  \"success\": true,\n  \"timestamp\": \"1948-01-22T01:49:39.416Z\",\n  \"data\": {\n    \"content\": [\n      {\n        \"id\": \"e48c06c0-d09d-56fe-9ef3-feca68bf301a\",\n        \"merchantData\": {\n          \"accessToken\": \"string\",\n          \"merchant\": {\n            \"merchantCode\": \"string\",\n            \"merchantName\": \"string\",\n            \"uuid\": \"string\"\n          }\n        },\n        \"menuConfigFlow\": {\n          \"createdAt\": \"1968-06-23T02:53:04.757Z\",\n          \"id\": \"c072b295-b4c0-5f14-f0ba-3aacd7266ec4\",\n          \"menuConfig\": {\n            \"key_0\": {},\n            \"key_1\": {}\n          },\n          \"name\": \"string\",\n          \"type\": \"CUSTOM_REFERENCED\",\n          \"description\": \"string\",\n          \"updatedAt\": \"1951-03-03T00:22:25.199Z\",\n          \"createdBy\": {\n            \"id\": \"7478d47b-3a54-8494-634d-0f555c6566d5\",\n            \"email\": \"string\",\n            \"fullName\": \"string\"\n          }\n        },\n        \"assignedCode\": \"string\",\n        \"ussdCode\": \"string\",\n        \"parentDirectoryId\": \"4c115aec-4347-6171-8597-0c4cf12f19a4\",\n        \"parentUssdCode\": \"string\",\n        \"path\": \"string\",\n        \"level\": \"PRIMARY\",\n        \"status\": \"INACTIVE\",\n        \"createdAt\": \"1955-06-27T03:11:51.123Z\",\n        \"updatedAt\": \"1956-01-22T23:02:16.904Z\"\n      },\n      {\n        \"id\": \"716eecf3-8c85-6cbf-c0b1-f97b7bb09ae7\",\n        \"merchantData\": {\n          \"accessToken\": \"string\",\n          \"merchant\": {\n            \"merchantCode\": \"string\",\n            \"merchantName\": \"string\",\n            \"uuid\": \"string\"\n          }\n        },\n        \"menuConfigFlow\": {\n          \"createdAt\": \"1961-12-03T14:35:47.901Z\",\n          \"id\": \"8c58fc4a-7177-2b2a-31e8-34a861c647d7\",\n          \"menuConfig\": {\n            \"key_0\": {}\n          },\n          \"name\": \"string\",\n          \"type\": \"STANDARD_REFERENCED\",\n          \"description\": \"string\",\n          \"updatedAt\": \"2025-02-28T07:20:42.039Z\",\n          \"createdBy\": {\n            \"id\": \"3223a3a1-dff6-47d1-b664-ab83618f3045\",\n            \"email\": \"string\",\n            \"fullName\": \"string\"\n          }\n        },\n        \"assignedCode\": \"string\",\n        \"ussdCode\": \"string\",\n        \"parentDirectoryId\": \"ac419642-a5c7-d057-1157-09c7ae914d0c\",\n        \"parentUssdCode\": \"string\",\n        \"path\": \"string\",\n        \"level\": \"SECONDARY\",\n        \"status\": \"INACTIVE\",\n        \"createdAt\": \"1994-06-09T17:59:03.297Z\",\n        \"updatedAt\": \"1959-04-18T12:48:52.007Z\"\n      }\n    ],\n    \"first\": false,\n    \"last\": true,\n    \"page\": 9389,\n    \"size\": 7136,\n    \"totalElements\": 1628,\n    \"totalPages\": 6448\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "allocate Ussd Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"level\": \"PRIMARY\",\n  \"menuConfigFlowId\": \"a5f35e6a-d3fa-7d32-47be-0d27230ed8d8\",\n  \"merchantCode\": \"string\",\n  \"methodOfAllocation\": \"AUTO\",\n  \"codeToAssign\": 459,\n  \"parentCode\": 799\n}",
+              "options": {
+                "raw": {
+                  "headerFamily": "json",
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/directory",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "directory"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  },
+                  {
+                    "description": "Added as a part of security scheme: apikey",
+                    "key": "x-api-key",
+                    "value": "<API Key>"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"level\": \"PRIMARY\",\n  \"menuConfigFlowId\": \"a5f35e6a-d3fa-7d32-47be-0d27230ed8d8\",\n  \"merchantCode\": \"string\",\n  \"methodOfAllocation\": \"AUTO\",\n  \"codeToAssign\": 459,\n  \"parentCode\": 799\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/directory",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "directory"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "text",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "*/*"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"string\",\n  \"success\": true,\n  \"timestamp\": \"2011-03-05T19:53:53.591Z\",\n  \"data\": {\n    \"allocationLog\": {\n      \"actionType\": \"string\",\n      \"allocationMethod\": \"string\",\n      \"id\": \"afb113ed-d09a-dc89-868e-812cb46d82d3\",\n      \"performedAt\": \"2015-12-19T12:20:06.664Z\",\n      \"code\": \"string\",\n      \"path\": \"string\"\n    },\n    \"availableCodes\": [\n      6317,\n      796\n    ],\n    \"directoryEntry\": {\n      \"assignedCode\": \"string\",\n      \"childrenCount\": 8423,\n      \"createdAt\": \"1977-03-30T19:53:16.067Z\",\n      \"id\": \"8a56c4d2-5290-38de-5c6e-aade7361d37d\",\n      \"level\": \"SECONDARY\",\n      \"merchantCode\": \"string\",\n      \"path\": \"string\",\n      \"status\": \"INACTIVE\",\n      \"ussdCode\": \"string\",\n      \"menuConfigFlowId\": \"6393bce5-a479-2fee-c3f0-52b0308e4959\",\n      \"parentDirectoryId\": \"5868fc61-a473-0911-23c1-fe2b6e646655\",\n      \"parentUssdCode\": \"string\",\n      \"updatedAt\": \"2008-11-01T23:44:07.560Z\",\n      \"createdBy\": {\n        \"id\": \"3e8be892-ed0e-21b1-56fe-d28373acbf23\",\n        \"email\": \"string\",\n        \"fullName\": \"string\"\n      }\n    }\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "merchants",
+      "item": [
+        {
+          "name": "{code}",
+          "item": [
+            {
+              "name": "merchants",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "*/*"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/merchants/:code",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "merchants",
+                    ":code"
+                  ],
+                  "variable": [
+                    {
+                      "key": "code",
+                      "value": "string"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "OK",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "*/*"
+                      },
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "x-api-key",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/merchants/:code",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "merchants",
+                        ":code"
+                      ],
+                      "variable": [
+                        {
+                          "key": "code",
+                          "value": "string"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "*/*"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"data\": {\n    \"accessToken\": \"string\",\n    \"merchant\": {\n      \"merchantCode\": \"string\",\n      \"merchantName\": \"string\",\n      \"uuid\": \"string\"\n    }\n  },\n  \"message\": \"string\",\n  \"status\": \"string\"\n}"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "monitoring",
+      "item": [
+        {
+          "name": "transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://ussd.blupayafrica.com/ussd/sse/transactions",
+              "protocol": "https",
+              "host": [
+                "ussd",
+                "blupayafrica",
+                "com"
+              ],
+              "path": [
+                "ussd",
+                "sse",
+                "transactions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "sessions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://ussd.blupayafrica.com/ussd/sse/sessions",
+              "protocol": "https",
+              "host": [
+                "ussd",
+                "blupayafrica",
+                "com"
+              ],
+              "path": [
+                "ussd",
+                "sse",
+                "sessions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://ussd.blupayafrica.com/ussd/sse/logs",
+              "protocol": "https",
+              "host": [
+                "ussd",
+                "blupayafrica",
+                "com"
+              ],
+              "path": [
+                "ussd",
+                "sse",
+                "logs"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "dashboard summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://ussd.blupayafrica.com/ussd/dashboard/summary",
+              "protocol": "https",
+              "host": [
+                "ussd",
+                "blupayafrica",
+                "com"
+              ],
+              "path": [
+                "ussd",
+                "dashboard",
+                "summary"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "recent transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://ussd.blupayafrica.com/ussd/dashboard/transactions/recent",
+              "protocol": "https",
+              "host": [
+                "ussd",
+                "blupayafrica",
+                "com"
+              ],
+              "path": [
+                "ussd",
+                "dashboard",
+                "transactions",
+                "recent"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "traffic",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://ussd.blupayafrica.com/ussd/sse/traffic",
+              "protocol": "https",
+              "host": [
+                "ussd",
+                "blupayafrica",
+                "com"
+              ],
+              "path": [
+                "ussd",
+                "sse",
+                "traffic"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "sand",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "sandbox",
+      "item": [
+        {
+          "name": "start",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "https://ussd.blupayafrica.com/ussd/sandbox/start",
+              "protocol": "https",
+              "host": [
+                "ussd",
+                "blupayafrica",
+                "com"
+              ],
+              "path": [
+                "ussd",
+                "sandbox",
+                "start"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "input",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "https://ussd.blupayafrica.com/ussd/sandbox/input",
+              "protocol": "https",
+              "host": [
+                "ussd",
+                "blupayafrica",
+                "com"
+              ],
+              "path": [
+                "ussd",
+                "sandbox",
+                "input"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "session",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"configJson\" : \"string\",\n    \"msisdn\": \"string\",\n    \"network\": \"string\",\n    \"ussdCode\": \"string\",\n    \"simulateFailure\": \"boolean\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://ussd.blupayafrica.com/ussd/sandbox/100001",
+              "protocol": "https",
+              "host": [
+                "ussd",
+                "blupayafrica",
+                "com"
+              ],
+              "path": [
+                "ussd",
+                "sandbox",
+                "100001"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "x-api-key",
+        "type": "string"
+      },
+      {
+        "key": "value",
+        "value": "{{apiKey}}",
+        "type": "string"
+      },
+      {
+        "key": "in",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://ussd.blupayafrica.com/api/v1"
+    }
+  ]
+}

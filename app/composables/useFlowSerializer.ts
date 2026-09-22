@@ -82,8 +82,6 @@ export function nodesEdgesToSteps(nodes: Node[], edges: Edge[]): { steps: FlowSt
     return true
   })
 
-  console.log(`[Flow Serializer] Processing ${validNodes.length} valid nodes out of ${nodes.length} total`)
-
   // Build adjacency maps
   const outgoing = new Map<string, Edge[]>()
   const incoming = new Map<string, number>()
@@ -140,7 +138,6 @@ export function nodesEdgesToSteps(nodes: Node[], edges: Edge[]): { steps: FlowSt
   // But ONLY include actual nodes, not edges or other artifacts
   for (const node of validNodes) {
     if (!visited.has(node.id) && node.data?.componentType) {
-      console.log(`[Flow Serializer] Including orphaned node: ${node.id}`)
       steps.push(nodeToStep(node, outgoing.get(node.id) || []))
     }
   }

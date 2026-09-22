@@ -3,9 +3,9 @@ import { computed } from 'vue'
 import { Menu, Moon, Sun, Bell, ChevronDown } from 'lucide-vue-next'
 import { useState } from '#imports'
 import { useTheme } from '~/composables/useTheme'
-import { useAuth } from '~/composables/useAuth'
+import { useAuthStore } from '~/stores/auth'
 
-const { user, logout } = useAuth()
+const authStore = useAuthStore()
 const { isDark, toggleTheme } = useTheme()
 const isMobileSidebarOpen = useState('mobileSidebarOpen', () => false)
 
@@ -82,16 +82,16 @@ const avatarColor = computed(() => {
         <div class="flex items-center space-x-2 sm:space-x-3">
           <div class="w-8 h-8 rounded-full overflow-hidden ring-2 ring-transparent group-hover:ring-blue-200 dark:group-hover:ring-blue-800 transition-all shrink-0 flex items-center justify-center" :class="user?.avatarUrl ? '' : avatarColor">
             <img 
-              v-if="user?.avatarUrl"
-              :src="user.avatarUrl"
-              :alt="`${user.fullName} avatar`" 
+              v-if="authStore.user?.avatarUrl"
+              :src="authStore.user.avatarUrl"
+              :alt="`${authStore.user.fullName} avatar`" 
               class="w-full h-full object-cover" 
             />
             <span v-else class="text-xs font-bold text-white select-none">{{ userInitials }}</span>
           </div>
           <div class="hidden md:block text-left">
-            <p class="text-sm font-semibold text-gray-700 dark:text-gray-200 group-hover:text-vibes-600 dark:group-hover:text-vibes-400">{{ user?.fullName || 'User' }}</p>
-            <p class="text-xs text-gray-400 dark:text-gray-500">{{ user?.role || 'N/A' }}</p>
+            <p class="text-sm font-semibold text-gray-700 dark:text-gray-200 group-hover:text-vibes-600 dark:group-hover:text-vibes-400">{{ authStore.user?.fullName || 'User' }}</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500">{{ authStore.user?.role || 'N/A' }}</p>
           </div>
           <ChevronDown class="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 hidden sm:block" aria-hidden="true" />
         </div>

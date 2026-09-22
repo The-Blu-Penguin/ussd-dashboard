@@ -28,6 +28,59 @@ export const clearCache = () => {
   responseCache.clear()
 }
 
+/** Field names whose values must never reach the logger (credentials, tokens, secrets). */
+const SENSITIVE_KEY_PATTERN = /pass(word)?|pwd|token|secret|authorization|auth|apikey|api_key|otp|pin|credential|cvv/i
+
+/**
+ * Recursively mask sensitive values in a request body before it is logged.
+ * Handles plain objects, arrays, and already-serialized JSON strings. Anything
+ * non-serializable (FormData, Blob, streams) is replaced with a placeholder so
+ * we never leak raw credential material.
+ */
+const redactSensitive = (value: any, depth = 0): any => {
+  if (value == null || depth > 4) return value
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim()
+    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+      try {
+        return redactSensitive(JSON.parse(trimmed), depth + 1)
+      } catch {
+        return '[unparseable body]'
+      }
+    }
+    return value
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(item => redactSensitive(item, depth + 1))
+  }
+
+  if (typeof value === 'object') {
+    // FormData / Blob / File and other non-plain objects: don't attempt to expose fields
+    if (typeof FormData !== 'undefined' && value instanceof FormData) return '[form-data]'
+    if (typeof Blob !== 'undefined' && value instanceof Blob) return '[binary]'
+
+    const output: Record<string, any> = {}
+    for (const [key, val] of Object.entries(value)) {
+      output[key] = SENSITIVE_KEY_PATTERN.test(key) ? '[REDACTED]' : redactSensitive(val, depth + 1)
+    }
+    return output
+  }
+
+  return value
+}
+
+/** Safely redact a request body for logging, never throwing. */
+const safeRedactBody = (body: any): any => {
+  if (body == null) return body
+  try {
+    return redactSensitive(body)
+  } catch {
+    return '[unserializable body]'
+  }
+}
+
 export const useApi = () => {
   const config = useRuntimeConfig()
   const authStore = useAuthStore()
@@ -60,8 +113,8 @@ export const useApi = () => {
         }
       }
       
-      // Log API request
-      logger.api.request(method, url, { body: options.body })
+      // Log API request (credentials/tokens are redacted from the body)
+      logger.api.request(method, url, { body: safeRedactBody(options.body) })
     },
     
     onResponse({ request, options, response }) {
@@ -122,20 +175,34 @@ export const useApi = () => {
       
       // Handle authentication errors - but NOT for login/logout endpoints to avoid loops
       const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/logout')
-      
-      if ((response.status === 401 || response.status === 403) && !isAuthEndpoint) {
+
+      if (response.status === 401 && !isAuthEndpoint) {
+        // 401 = the session is no longer valid → force logout
         logger.warn('Authentication token expired or invalid. Logging out...', { category: 'auth' })
         if (import.meta.client) {
           nuxtApp.runWithContext(() => {
             authStore.logout(true)
           })
         }
+      } else if (response.status === 403 && !isAuthEndpoint) {
+        // 403 = authenticated but not permitted for this action. Keep the session
+        // alive and let the caller's error handler surface the permission error.
+        logger.warn('Access denied for this resource (403). Session kept active.', { category: 'auth', metadata: { url } })
       }
     }
   })
 
   // Wrapper with request deduplication and caching
-  return new Proxy(fetcher, {
+  //
+  // `fetcher` is Nuxt's `$Fetch` type, whose call signatures embed Nitro's recursive
+  // route-matching types (`MatchedRoutes` / `MaxTuple`). If the Proxy infers that as
+  // its target type, `target` inside the `apply` trap becomes `$Fetch`, and the
+  // `Reflect.apply(target, ...)` calls below force TypeScript to relate `$Fetch` to
+  // `Function`. Expanding those recursive route types overflows the type-comparison
+  // stack (ts2321 "Excessive stack depth"). Casting the target to a plain callable
+  // keeps the trap shallow; the public `$Fetch` type is restored on the way out by
+  // the `as unknown as typeof fetcher` cast below.
+  return new Proxy(fetcher as unknown as (...args: any[]) => any, {
     apply(target, thisArg, args: any[]) {
       // Ensure we have at least the URL argument
       if (args.length === 0) {

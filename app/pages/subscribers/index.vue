@@ -62,13 +62,22 @@ onBeforeUnmount(() => {
   stopItemsPerPageWatch()
 })
 
+// Normalize backend status values (backend returns uppercase, e.g. "ACTIVE")
+const normalizeStatus = (status?: string): string => {
+  const s = (status || '').toLowerCase()
+  if (s === 'active') return 'Active'
+  if (s === 'inactive') return 'Inactive'
+  if (s === 'suspended') return 'Suspended'
+  return 'Unknown'
+}
+
 const mappedSubscribers = computed<MappedMerchant[]>(() => {
   return directoryStore.directories.map(dir => ({
     id: dir.id,
     merchantId: dir.merchantCode,
     name: dir.merchantName || dir.createdBy?.fullName || 'Unknown',
     ussdCode: dir.ussdCode,
-    status: dir.status === 'Active' ? 'Active' : dir.status === 'Inactive' ? 'Inactive' : dir.status === 'Suspended' ? 'Suspended' : 'Unknown',
+    status: normalizeStatus(dir.status),
     level: dir.level === 'PRIMARY' ? 'Primary' : dir.level === 'SECONDARY' ? 'Secondary' : dir.level,
     type: dir.menuConfig?.metadata?.name || 'Standard Flow',
     lastActive: dir.updatedAt ? formatDistanceToNow(new Date(dir.updatedAt), { addSuffix: true }) : 'Unknown',
@@ -254,7 +263,7 @@ const handleExportCsv = async () => {
       merchantId: dir.merchantCode,
       name: dir.merchantName || dir.createdBy?.fullName || 'Unknown',
       ussdCode: dir.ussdCode,
-      status: dir.status === 'Active' ? 'Active' : dir.status === 'Inactive' ? 'Inactive' : dir.status === 'Suspended' ? 'Suspended' : 'Unknown',
+      status: normalizeStatus(dir.status),
       level: dir.level === 'PRIMARY' ? 'Primary' : dir.level === 'SECONDARY' ? 'Secondary' : dir.level,
       type: dir.menuConfig?.metadata?.name || 'Standard Flow',
       lastActive: dir.updatedAt ? formatDistanceToNow(new Date(dir.updatedAt), { addSuffix: true }) : 'Unknown',
