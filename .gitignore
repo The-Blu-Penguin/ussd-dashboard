@@ -17,6 +17,7 @@ node_modules
 .DS_Store
 .fleet
 .idea
+.qoder
 
 # Local env files
 .env
