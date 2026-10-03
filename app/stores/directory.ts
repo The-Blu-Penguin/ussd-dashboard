@@ -298,11 +298,12 @@ export const useDirectoryStore = defineStore('directory', {
     },
 
     /**
-     * Fetches ALL directories across all pages (1000 per request) without
+     * Fetches ALL directories across all pages (998 per request) without
      * modifying store state. Used exclusively for full-data CSV exports.
      */
     async fetchAllForExport(): Promise<Directory[]> {
-      const PAGE_SIZE = 1000
+      // Backend validation: "Limit must be less than 999" — 998 is the max accepted value
+      const PAGE_SIZE = 998
       const api = useApi()
       const allItems: Directory[] = []
 
