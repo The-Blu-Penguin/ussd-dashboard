@@ -77,7 +77,7 @@ const activePrimaryCodes = ref<number[]>([])
 const fetchActivePrimaryCodes = async () => {
   try {
     const api = useApi()
-    const response = await api<any>(`/directory/available-codes?level=PRIMARY`, {
+    const response = await api<any>(`/directory/available-codes?level=PRIMARY&limit=1000`, {
       method: 'GET',
     })
 
@@ -125,7 +125,7 @@ const fetchAvailableCodes = async (level: string, parentCode: number) => {
     // parentCode is required for SECONDARY, omitted for PRIMARY
     const parentCodeQuery = levelQuery === 'SECONDARY' ? `&parentCode=${parentCode}` : ''
 
-    const response = await api<any>(`/directory/available-codes?level=${levelQuery}${parentCodeQuery}&limit=100`, {
+    const response = await api<any>(`/directory/available-codes?level=${levelQuery}${parentCodeQuery}&limit=1000`, {
       method: 'GET',
     })
 
