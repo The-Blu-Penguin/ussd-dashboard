@@ -89,9 +89,16 @@ export const useErrorHandler = (): UseErrorHandlerReturn => {
           break
       }
     } else if (err.message) {
-      // Handle network errors
-      standardError.message = 'Unable to connect. Please check your internet connection.'
-      standardError.isRetryable = true
+      if (error instanceof TypeError || err.name === 'FetchError' || err.name === 'AbortError') {
+        // Genuine network/timeout failures
+        standardError.message = 'Unable to connect. Please check your internet connection.'
+        standardError.isRetryable = true
+      } else {
+        // Plain Error with an explicit message (e.g., business-level API
+        // failure) — surface the real message instead of masking it
+        standardError.message = err.message
+        standardError.isRetryable = false
+      }
     }
 
     return standardError

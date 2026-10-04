@@ -100,11 +100,30 @@ describe('useErrorHandler', () => {
 
     it('handles network errors (no response)', () => {
       const handler = useErrorHandler()
-      const error = { message: 'Network error' }
+      // ofetch wraps genuine network failures as FetchError without a response
+      const error = { name: 'FetchError', message: 'fetch failed' }
 
       const result = handler.parseError(error)
       expect(result.message).toContain('Unable to connect')
       expect(result.isRetryable).toBe(true)
+    })
+
+    it('handles TypeError network errors (no response)', () => {
+      const handler = useErrorHandler()
+      const error = new TypeError('Failed to fetch')
+
+      const result = handler.parseError(error)
+      expect(result.message).toContain('Unable to connect')
+      expect(result.isRetryable).toBe(true)
+    })
+
+    it('surfaces the real message for plain Errors (business-level failures)', () => {
+      const handler = useErrorHandler()
+      const error = new Error('No data to export')
+
+      const result = handler.parseError(error)
+      expect(result.message).toBe('No data to export')
+      expect(result.isRetryable).toBe(false)
     })
 
     it('handles unknown errors', () => {
