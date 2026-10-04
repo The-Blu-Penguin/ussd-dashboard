@@ -310,7 +310,10 @@ export const useDirectoryStore = defineStore('directory', {
       try {
         // First request — get total count and first batch
         const first = await api<any>(`/directory?page=0&size=${PAGE_SIZE}&fullResponse=true`, { method: 'GET' })
-        if (!first.success || !first.data?.content) return []
+        if (!first.success || !first.data?.content) {
+          // Surface the backend's own message (e.g., page-size validation errors)
+          throw new Error(first.message || 'Export fetch failed: no data returned by API')
+        }
 
         const totalPages: number = first.data.totalPages ?? 1
 
@@ -362,7 +365,9 @@ export const useDirectoryStore = defineStore('directory', {
         return allItems
       } catch (error: any) {
         console.error('fetchAllForExport failed:', error)
-        return []
+        // Re-throw so callers surface the real API error instead of a
+        // generic "no data" fallback
+        throw error
       }
     }
   }

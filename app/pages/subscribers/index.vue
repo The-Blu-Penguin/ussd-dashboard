@@ -302,6 +302,9 @@ const handleExportCsv = async () => {
     URL.revokeObjectURL(url)
 
     subscribersHandler.handleSuccess(`Exported ${data.length} merchant${data.length === 1 ? '' : 's'} to CSV`)
+  } catch (error) {
+    // Surfaces the real API/backend message (fetchAllForExport re-throws)
+    subscribersHandler.handleFetchError(error)
   } finally {
     isExporting.value = false
   }
