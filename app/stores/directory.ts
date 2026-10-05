@@ -298,12 +298,15 @@ export const useDirectoryStore = defineStore('directory', {
     },
 
     /**
-     * Fetches ALL directories across all pages (998 per request) without
-     * modifying store state. Used exclusively for full-data CSV exports.
+     * Fetches ALL directories across all pages (100 per request, fetched in
+     * parallel batches) without modifying store state. Used exclusively for
+     * full-data CSV exports.
      */
     async fetchAllForExport(): Promise<Directory[]> {
-      // Backend validation: "Limit must be less than 999" — 998 is the max accepted value
-      const PAGE_SIZE = 998
+      // Verified live: /directory?size=998 returns HTTP 500 (the "<999"
+      // validation only guards the available-codes `limit` param). The real
+      // max page size this endpoint can serve with fullResponse=true is 100.
+      const PAGE_SIZE = 100
       const api = useApi()
       const allItems: Directory[] = []
 
@@ -338,10 +341,19 @@ export const useDirectoryStore = defineStore('directory', {
 
         allItems.push(...first.data.content.map(mapItem))
 
-        // Fetch remaining pages in parallel (batches of 5 to be polite)
-        for (let page = 1; page < totalPages; page++) {
-          const res = await api<any>(`/directory?page=${page}&size=${PAGE_SIZE}&fullResponse=true`, { method: 'GET' })
-          if (res.success && res.data?.content) {
+        // Fetch remaining pages concurrently in batches of 5 (keeps server
+        // load polite while still being far faster than sequential paging)
+        const remainingPages = Array.from({ length: Math.max(totalPages - 1, 0) }, (_, i) => i + 1)
+        const BATCH_SIZE = 5
+        for (let i = 0; i < remainingPages.length; i += BATCH_SIZE) {
+          const batch = remainingPages.slice(i, i + BATCH_SIZE)
+          const results = await Promise.all(
+            batch.map(page => api<any>(`/directory?page=${page}&size=${PAGE_SIZE}&fullResponse=true`, { method: 'GET' }))
+          )
+          for (const res of results) {
+            if (!res.success || !res.data?.content) {
+              throw new Error(res.message || 'Export fetch failed: a page request was rejected by the API')
+            }
             allItems.push(...res.data.content.map(mapItem))
           }
         }
