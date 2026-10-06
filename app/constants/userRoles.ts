@@ -45,4 +45,4 @@ export const COOKIE_CONFIG = {
 export const PUBLIC_ROUTES = ['/login', '/forgot-password'] as const
 
 /** Default redirect after login */
-export const DEFAULT_LOGIN_REDIRECT = '/live-sessions'
+export const DEFAULT_LOGIN_REDIRECT = '/subscribers'

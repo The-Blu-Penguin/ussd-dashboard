@@ -298,27 +298,61 @@ export const useDirectoryStore = defineStore('directory', {
     },
 
     /**
-     * Fetches ALL directories across all pages (100 per request, fetched in
-     * parallel batches) without modifying store state. Used exclusively for
+     * Fetches ALL directories across all pages (25 per request, fetched in
+     * parallel batches, with a 5-row sub-page fallback for pages the backend
+     * fails to serve) without modifying store state. Used exclusively for
      * full-data CSV exports.
      */
     async fetchAllForExport(): Promise<Directory[]> {
-      // Verified live: /directory?size=998 returns HTTP 500 (the "<999"
-      // validation only guards the available-codes `limit` param). The real
-      // max page size this endpoint can serve with fullResponse=true is 100.
-      const PAGE_SIZE = 100
+      // Verified live: fullResponse=true is REQUIRED (light rows omit
+      // merchantData entirely → empty MID/Unknown names), but the backend
+      // intermittently 500s after a fixed ~11s timeout — instantly at
+      // size=998, and on deep-offset pages even at size=25. Strategy:
+      // small pages, no client-side retries (each failed attempt already
+      // costs ~11s server-side), and failed pages are retried as 5-row
+      // sub-pages before the export gives up.
+      const PAGE_SIZE = 25
+      const FALLBACK_SIZE = 5
+      const CHUNKS = PAGE_SIZE / FALLBACK_SIZE
       const api = useApi()
       const allItems: Directory[] = []
 
+      // retry: 0 — a 500 here takes ~11s, so the default 2 automatic
+      // retries would triple the wait without a better outcome
+      const fetchPageSafe = async (page: number, size: number): Promise<any | null> => {
+        try {
+          const res = await api<any>(`/directory?page=${page}&size=${size}&fullResponse=true`, { method: 'GET', retry: 0 })
+          return res.success && res.data?.content ? res : null
+        } catch {
+          return null
+        }
+      }
+
+      /** Fetch one PAGE_SIZE page; on failure retry it as 5-row sub-pages. */
+      const fetchPageWithFallback = async (page: number): Promise<{ content: any[]; meta: any } | null> => {
+        const full = await fetchPageSafe(page, PAGE_SIZE)
+        if (full) return { content: full.data.content, meta: full.data }
+
+        const items: any[] = []
+        let meta: any = null
+        for (let c = 0; c < CHUNKS; c++) {
+          const sub = await fetchPageSafe(page * CHUNKS + c, FALLBACK_SIZE)
+          if (!sub) return null
+          items.push(...sub.data.content)
+          meta = meta ?? sub.data
+        }
+        return { content: items, meta }
+      }
+
       try {
         // First request — get total count and first batch
-        const first = await api<any>(`/directory?page=0&size=${PAGE_SIZE}&fullResponse=true`, { method: 'GET' })
-        if (!first.success || !first.data?.content) {
-          // Surface the backend's own message (e.g., page-size validation errors)
-          throw new Error(first.message || 'Export fetch failed: no data returned by API')
+        const first = await fetchPageWithFallback(0)
+        if (!first) {
+          throw new Error('Export fetch failed: the API could not serve the directory (HTTP 500) even at 5 rows per request. This looks like a backend issue — please try again later.')
         }
 
-        const totalPages: number = first.data.totalPages ?? 1
+        const totalElements: number = first.meta?.totalElements ?? first.content.length
+        const totalPages = Math.max(Math.ceil(totalElements / PAGE_SIZE), 1)
 
         const mapItem = (item: any): Directory => ({
           id: item.id,
@@ -339,7 +373,7 @@ export const useDirectoryStore = defineStore('directory', {
           createdBy: item.createdBy,
         })
 
-        allItems.push(...first.data.content.map(mapItem))
+        allItems.push(...first.content.map(mapItem))
 
         // Fetch remaining pages concurrently in batches of 5 (keeps server
         // load polite while still being far faster than sequential paging)
@@ -347,22 +381,23 @@ export const useDirectoryStore = defineStore('directory', {
         const BATCH_SIZE = 5
         for (let i = 0; i < remainingPages.length; i += BATCH_SIZE) {
           const batch = remainingPages.slice(i, i + BATCH_SIZE)
-          const results = await Promise.all(
-            batch.map(page => api<any>(`/directory?page=${page}&size=${PAGE_SIZE}&fullResponse=true`, { method: 'GET' }))
-          )
-          for (const res of results) {
-            if (!res.success || !res.data?.content) {
-              throw new Error(res.message || 'Export fetch failed: a page request was rejected by the API')
+          const results = await Promise.all(batch.map(page => fetchPageWithFallback(page)))
+          for (let r = 0; r < results.length; r++) {
+            const result = results[r]
+            if (!result) {
+              throw new Error(`Export fetch failed: the API could not serve page ${batch[r]} even at ${FALLBACK_SIZE} rows per request (HTTP 500). This looks like a backend issue — please try again later.`)
             }
-            allItems.push(...res.data.content.map(mapItem))
+            allItems.push(...result.content.map(mapItem))
           }
         }
 
         // Backfill only missing merchant names for export items
         const merchantsStore = useMerchantsStore()
-        const missingCodes = allItems
-          .filter(dir => dir.merchantCode && dir.merchantName === 'Unknown')
-          .map(dir => dir.merchantCode) as string[]
+        const missingCodes = [...new Set(
+          allItems
+            .filter(dir => dir.merchantCode && dir.merchantName === 'Unknown')
+            .map(dir => dir.merchantCode) as string[]
+        )]
 
         if (missingCodes.length > 0) {
           const merchantNames = await merchantsStore.fetchMerchantNamesBatch(missingCodes)

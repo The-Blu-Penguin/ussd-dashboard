@@ -4,6 +4,7 @@ import Button from '~/components/ui/Button.vue'
 import AuthNotification from '~/components/ui/AuthNotification.vue'
 import { useValidation } from '~/composables/useValidation'
 import { useAuthStore } from '~/stores/auth'
+import { DEFAULT_LOGIN_REDIRECT } from '~/constants/userRoles'
 
 definePageMeta({
   layout: 'auth'
@@ -53,7 +54,7 @@ const handleLogin = async () => {
   if (result.success) {
     showSuccessModal.value = true
     setTimeout(() => {
-      navigateTo('/live-sessions')
+      navigateTo(DEFAULT_LOGIN_REDIRECT)
     }, 1500)
   } else {
     error.value = result.message || 'Login failed'
